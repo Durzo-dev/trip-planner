@@ -1,3 +1,6 @@
+/**
+ * Banner: title, dates, countdown, participants (tooltip) and the meeting-time chip that points to its activity.
+ */
 import type { Trip } from "../types";
 import { capitalize, formatDate, formatTime, t } from "../i18n";
 import { daysBetween } from "../time";

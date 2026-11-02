@@ -1,3 +1,6 @@
+/**
+ * Weather panel: five hours spread over the day's schedule, at the first stop of the day.
+ */
 import type { ResolvedDay } from "../plan";
 import { fetchWeather, slotHours, type Sky } from "../weather";
 import { formatDate, formatTime, t } from "../i18n";

@@ -1,3 +1,7 @@
+/**
+ * Turns a trip file into what the page shows: applies poll results (the winning option takes the slot),
+ * numbers the map stops in visiting order and builds Google Maps links. Pure functions, unit-tested.
+ */
 import type { AltGroup, Day, Item, Place, Poll, Trip } from "./types";
 
 /** Index of the option voted by the current viewer, per poll key. */

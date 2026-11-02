@@ -1,3 +1,6 @@
+/**
+ * Tabs under the banner, and the light/dark switch next to them.
+ */
 import type { Trip } from "../types";
 import { capitalize, formatDate, formatTime, t } from "../i18n";
 import { isDark, toggleTheme } from "../theme";

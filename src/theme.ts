@@ -1,3 +1,7 @@
+/**
+ * Derives every colour of the page from three trip colours (gradient start, gradient end, accent),
+ * in light and dark mode, so a trip only has to pick its palette.
+ */
 import type { Theme } from "./types";
 import { load, save } from "./storage";
 
