@@ -1,3 +1,7 @@
+/**
+ * Schematic map of the day's stops, projected from their real coordinates. Clicking a stop scrolls the
+ * schedule to it, so the map doubles as a table of contents.
+ */
 import type { MapDecor } from "../types";
 import type { ResolvedDay } from "../plan";
 import { directionsUrl } from "../plan";

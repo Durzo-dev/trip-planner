@@ -1,3 +1,7 @@
+/**
+ * The schedule: one card per time slot with its venue, alternatives and poll, plus the live progress
+ * (time columns filling up, current slot, finished slots and map stops greyed out).
+ */
 import type { Trip } from "../types";
 import type { MyVotes, ResolvedDay, ResolvedItem } from "../plan";
 import { mapsUrl, pollVoters } from "../plan";

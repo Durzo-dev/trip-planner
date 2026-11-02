@@ -1,3 +1,6 @@
+/**
+ * Small DOM helpers shared by the views: escaping, links, scrolling to a card, highlighting stops.
+ */
 export const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 export const esc = (s: string) =>

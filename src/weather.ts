@@ -1,3 +1,7 @@
+/**
+ * Forecast for a trip day from Open-Meteo (free, no key). Beyond 16 days ahead there is no forecast,
+ * so the caller gets the date from which it will show up.
+ */
 import { daysBetween } from "./time";
 
 /** Open-Meteo: free, no API key, CORS-enabled. Forecasts cover the next 16 days. */

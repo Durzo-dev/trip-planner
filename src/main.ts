@@ -1,3 +1,7 @@
+/**
+ * Entry point: loads the trip named in ?trip=, builds the page shell and keeps the views in sync
+ * (selected day, votes, live progress). ?now= freezes the clock to preview a day.
+ */
 import "./styles.css";
 import type { Trip } from "./types";
 import { lang, t } from "./i18n";
