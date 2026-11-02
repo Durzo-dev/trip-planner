@@ -10,10 +10,10 @@
 
 ## 🌐 Try it
 
-[![Open the example trip](https://img.shields.io/badge/Open-Example_trip-7B61D9?style=for-the-badge&logo=googlechrome&logoColor=white)](https://durzo-dev.github.io/trip-planner/)
-[![Open the multi-day example](https://img.shields.io/badge/Open-Multi--day_example-4F93E2?style=for-the-badge&logo=googlechrome&logoColor=white)](https://durzo-dev.github.io/trip-planner/?trip=bordeaux-weekend-2026-11)
+[![Try the example trip](https://img.shields.io/badge/Try_it-Example_trip-7B61D9?style=for-the-badge&logo=googlechrome&logoColor=white)](https://durzo-dev.github.io/trip-planner/)
 
-Add `&now=2026-11-28T14:45` to the address to see the day as it unfolds.
+The example opens with a test bar under the tabs: pick colours, switch between light and dark mode, turn
+the illustrations off, switch to the multi-day example, or simulate the day to watch it unfold hour by hour.
 
 ---
 

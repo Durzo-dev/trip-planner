@@ -10,10 +10,11 @@
 
 ## 🌐 Essayer
 
-[![Ouvrir la sortie d'exemple](https://img.shields.io/badge/Ouvrir-Sortie_d'exemple-7B61D9?style=for-the-badge&logo=googlechrome&logoColor=white)](https://durzo-dev.github.io/trip-planner/)
-[![Ouvrir l'exemple sur plusieurs jours](https://img.shields.io/badge/Ouvrir-Exemple_sur_plusieurs_jours-4F93E2?style=for-the-badge&logo=googlechrome&logoColor=white)](https://durzo-dev.github.io/trip-planner/?trip=bordeaux-weekend-2026-11)
+[![Essayer la sortie d'exemple](https://img.shields.io/badge/Essayer-Sortie_d'exemple-7B61D9?style=for-the-badge&logo=googlechrome&logoColor=white)](https://durzo-dev.github.io/trip-planner/)
 
-Ajoutez `&now=2026-11-28T14:45` à l'adresse pour voir la journée se dérouler.
+L'exemple s'ouvre avec un bandeau de test sous les onglets : choisir les couleurs, passer en mode clair ou
+sombre, masquer les illustrations, basculer sur l'exemple de plusieurs jours, ou simuler la journée pour la
+voir se dérouler heure par heure.
 
 ---
 
