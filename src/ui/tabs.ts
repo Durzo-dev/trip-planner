@@ -51,7 +51,7 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
   };
 }
 
-function setThemeLabel(): void {
+export function setThemeLabel(): void {
   const label = isDark() ? t.themeLight : t.themeDark;
   const btn = $("theme-btn");
   btn.innerHTML = `<span aria-hidden="true">${isDark() ? "☀" : "☾"}</span><span class="lbl"> ${esc(label)}</span>`;

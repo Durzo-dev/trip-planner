@@ -1,6 +1,7 @@
 /**
  * Entry point: loads the trip named in ?trip=, builds the page shell and keeps the views in sync
- * (selected day, votes, live progress). ?now= freezes the clock to preview a day.
+ * (selected day, votes, live progress). ?now= freezes the clock to preview a day; on example trips the
+ * test bar can simulate the clock too.
  */
 import "./styles.css";
 import type { Trip } from "./types";
@@ -8,6 +9,7 @@ import { lang, t } from "./i18n";
 import { resolveDay, type MyVotes, type ResolvedDay } from "./plan";
 import { load, save } from "./storage";
 import { initTheme } from "./theme";
+import { renderDemoBar, storedColours } from "./ui/demoBar";
 import { minutesForDay, parseNowOverride, tripClock, type TripClock } from "./time";
 import { $, esc, focusCard, highlightStops } from "./ui/dom";
 import { renderHeader } from "./ui/header";
@@ -60,7 +62,9 @@ interface State {
 
 const params = new URLSearchParams(location.search);
 const override = parseNowOverride(params.get("now"));
-const clock = (trip: Trip): TripClock => override ?? tripClock(trip.timezone);
+/** Clock set from the test bar of an example trip. */
+let simulated: TripClock | null = null;
+const clock = (trip: Trip): TripClock => simulated ?? override ?? tripClock(trip.timezone);
 
 async function loadTrip(id: string): Promise<Trip> {
   if (!/^[a-z0-9-]+$/.test(id)) throw new Error("Invalid trip id");
@@ -139,7 +143,7 @@ async function start(): Promise<void> {
     app.innerHTML = `<p class="error">${esc(t.loadError)}</p>`;
     return;
   }
-  initTheme(trip.theme);
+  initTheme((trip.example && storedColours()) || trip.theme);
   app.outerHTML = SHELL;
   const today = clock(trip).date;
   const s: State = { trip, dayIndex: initialDay(trip, today), day: undefined as unknown as ResolvedDay, votes: loadVotes(trip) };
@@ -159,10 +163,19 @@ async function start(): Promise<void> {
   });
   showDay(s, s.dayIndex);
   if (trip.days.length === 1) selectTab(0);
+  if (trip.example) {
+    renderDemoBar(trip, s.dayIndex, {
+      onSimulate(c, dayIndex) {
+        simulated = c;
+        if (dayIndex !== null || !c) showDay(s, c ? dayIndex! : initialDay(trip, clock(trip).date));
+        else tick(s);
+      },
+    });
+  }
 
   $("scroll").addEventListener("scroll", () => syncTabWithScroll(trip), { passive: true });
   addEventListener("scroll", () => syncTabWithScroll(trip), { passive: true });
-  if (!override) setInterval(() => tick(s), 30_000);
+  if (!override) setInterval(() => { if (!simulated) tick(s); }, 30_000);
 }
 
 void start();

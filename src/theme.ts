@@ -8,6 +8,16 @@ import { load, save } from "./storage";
 /** Default colours: "Lilas" gradient with a violet accent. */
 export const DEFAULT_THEME: Theme = { gradientStart: "#4F93E2", gradientEnd: "#B7A6EE", accent: "#7B61D9" };
 
+/** Ready-made palettes offered in the test bar of the example trips. */
+export const PRESETS: Record<string, Theme & { name: string }> = {
+  aube: { name: "Aube", gradientStart: "#3F8FD8", gradientEnd: "#93D5F4", accent: "#2A78BE" },
+  lilas: { name: "Lilas", ...DEFAULT_THEME },
+  garonne: { name: "Garonne", gradientStart: "#163A57", gradientEnd: "#2F7AA8", accent: "#2B6E97" },
+  lagon: { name: "Lagon", gradientStart: "#0E6F7E", gradientEnd: "#45B8B2", accent: "#167A88" },
+  pervenche: { name: "Pervenche", gradientStart: "#3D4FB5", gradientEnd: "#8C9DF0", accent: "#4A5DC0" },
+  bordeaux: { name: "Bordeaux", gradientStart: "#5E0F29", gradientEnd: "#A8324F", accent: "#7A1734" },
+};
+
 type RGB = [number, number, number];
 const toRgb = (hex: string): RGB => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as RGB;
 const toHex = (c: number[]) => "#" + c.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("");
@@ -55,6 +65,7 @@ export function applyTheme(theme: Theme = current): void {
   set("--chip-live-fg", leftLight ? "#FFFFFF" : mix(theme.gradientStart, "#000000", 0.15));
   set("--date", rightLight ? inkRight : "#F2CD78");
   set("--date-sub", rightLight ? rgba(inkRight, 0.85) : "#FFFFFF");
+  set("--demo-bg", mix(theme.gradientStart, "#000000", dark ? 0.6 : 0.4));
   set("--halo", `rgba(255,255,255,${rightLight ? 0.28 : 0.07})`);
   if (!dark) {
     set("--accent", accent);
