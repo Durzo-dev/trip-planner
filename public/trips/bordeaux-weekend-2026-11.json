@@ -1,0 +1,644 @@
+{
+  "$schema": "../../schema/trip.schema.json",
+  "id": "bordeaux-weekend-2026-11",
+  "title": "Week-end à Bordeaux",
+  "tagline": "Balade · escape game · marché de Noël · Bassins des Lumières · Cité du Vin",
+  "timezone": "Europe/Paris",
+  "example": true,
+  "theme": {
+    "gradientStart": "#4F93E2",
+    "gradientEnd": "#B7A6EE",
+    "accent": "#7B61D9"
+  },
+  "participants": [
+    "Camille",
+    "Hugo",
+    "Léa",
+    "Tom"
+  ],
+  "meetingPoint": {
+    "date": "2026-11-28",
+    "time": "12:30"
+  },
+  "mapDecor": {
+    "river": {
+      "label": "Garonne",
+      "points": [
+        [
+          44.878,
+          -0.541
+        ],
+        [
+          44.87,
+          -0.5455
+        ],
+        [
+          44.863,
+          -0.5485
+        ],
+        [
+          44.857,
+          -0.556
+        ],
+        [
+          44.852,
+          -0.5675
+        ],
+        [
+          44.846,
+          -0.5662
+        ],
+        [
+          44.841,
+          -0.5655
+        ],
+        [
+          44.8375,
+          -0.5632
+        ],
+        [
+          44.834,
+          -0.5603
+        ],
+        [
+          44.829,
+          -0.5565
+        ],
+        [
+          44.823,
+          -0.5525
+        ]
+      ]
+    }
+  },
+  "days": [
+    {
+      "date": "2026-11-27",
+      "label": "Arrivée",
+      "sections": [
+        {
+          "label": "Soirée",
+          "note": "on arrive au fil de la journée",
+          "items": [
+            {
+              "start": "18:30",
+              "end": "19:30",
+              "title": "Arrivée",
+              "illustration": "monument",
+              "places": [
+                {
+                  "name": "Gare Saint-Jean",
+                  "lat": 44.8256,
+                  "lng": -0.5562,
+                  "address": "Gare de Bordeaux Saint-Jean, Bordeaux"
+                }
+              ],
+              "text": "Rendez-vous à la gare, puis dépôt des sacs à l'hôtel.",
+              "addressLine": "Gare Saint-Jean"
+            },
+            {
+              "start": "20:00",
+              "end": "22:00",
+              "title": "Ouverture du marché de Noël",
+              "illustration": "christmasMarket",
+              "places": [
+                {
+                  "name": "Marché de Noël",
+                  "lat": 44.8445,
+                  "lng": -0.5747,
+                  "address": "Place des Quinconces, Bordeaux"
+                }
+              ],
+              "text": "Premier soir du marché : vin chaud et dîner sur les stands.",
+              "addressLine": "Place des Quinconces"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-11-28",
+      "sections": [
+        {
+          "label": "Matin",
+          "note": "libre · pour les motivés",
+          "items": [
+            {
+              "start": "10:00",
+              "end": "11:00",
+              "title": "Marché des Capucins",
+              "tag": "OPTIONNEL",
+              "tagStyle": "optional",
+              "illustration": "market",
+              "places": [
+                {
+                  "name": "Marché des Capucins",
+                  "lat": 44.8306,
+                  "lng": -0.5683,
+                  "address": "Marché des Capucins, Place des Capucins, Bordeaux"
+                }
+              ],
+              "text": "Café et ambiance du samedi matin.",
+              "addressLine": "Place des Capucins"
+            },
+            {
+              "start": "11:00",
+              "end": "12:30",
+              "title": "Balade dans le centre historique",
+              "tag": "OPTIONNEL",
+              "tagStyle": "optional",
+              "illustration": "belltower",
+              "places": [
+                {
+                  "name": "Grosse Cloche",
+                  "lat": 44.8364,
+                  "lng": -0.5716,
+                  "address": "Grosse Cloche, Rue Saint-James, Bordeaux"
+                },
+                {
+                  "name": "Cathédrale Saint-André",
+                  "lat": 44.8378,
+                  "lng": -0.5777,
+                  "address": "Cathédrale Saint-André, Place Pey-Berland, Bordeaux"
+                },
+                {
+                  "name": "Porte Cailhau",
+                  "lat": 44.8381,
+                  "lng": -0.5697,
+                  "address": "Porte Cailhau, Place du Palais, Bordeaux"
+                }
+              ],
+              "text": "Par la rue Sainte-Catherine, jusqu'à la place du Parlement.",
+              "addressLine": "Environ 2,5 km à pied, arrêts compris",
+              "alternatives": [
+                {
+                  "label": "Sur le trajet",
+                  "links": [
+                    {
+                      "name": "Krazy Kat",
+                      "url": "https://maps.google.com/?cid=17111668576218744162"
+                    },
+                    {
+                      "name": "Manga Kat",
+                      "url": "https://maps.google.com/?cid=12189337704836778220"
+                    }
+                  ],
+                  "note": "librairies manga"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Après-midi",
+          "note": "tout le groupe",
+          "items": [
+            {
+              "start": "12:30",
+              "end": "14:30",
+              "title": "Déjeuner",
+              "tag": "RENDEZ-VOUS DE TOUS",
+              "tagStyle": "all",
+              "illustration": "meal",
+              "poll": "lunch",
+              "choices": [
+                {
+                  "place": {
+                    "name": "Le Comptoir d'Étienne",
+                    "lat": 44.8392,
+                    "lng": -0.5718,
+                    "address": "Le Comptoir d'Etienne, 21 Rue Maucoudinat, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=8517941929597250107"
+                  },
+                  "text": "Viandes cuites sur pierre, portions généreuses. Attention aux planches à partager qui font grimper l'addition.",
+                  "addressLine": "21 rue Maucoudinat"
+                },
+                {
+                  "place": {
+                    "name": "La Côte de Bœuf",
+                    "lat": 44.8405,
+                    "lng": -0.5706,
+                    "address": "La Côte de Boeuf, 13 Rue des Faussets, Bordeaux"
+                  },
+                  "text": "Spécialiste de la côte de bœuf, autour de 25 à 30 € par personne.",
+                  "addressLine": "13 rue des Faussets"
+                },
+                {
+                  "place": {
+                    "name": "Copain Comme Canard",
+                    "lat": 44.8396,
+                    "lng": -0.5698,
+                    "address": "Copain Comme Canard, 14 Rue de la Cour des Aides, Bordeaux"
+                  },
+                  "text": "Tout autour du canard : magret, confit, cœurs de canard.",
+                  "addressLine": "14 rue de la Cour des Aides"
+                }
+              ]
+            },
+            {
+              "start": "14:30",
+              "end": "16:00",
+              "title": "Escape game",
+              "illustration": "escape",
+              "poll": "escape",
+              "choices": [
+                {
+                  "place": {
+                    "name": "Le Passage",
+                    "lat": 44.8336,
+                    "lng": -0.5677,
+                    "address": "Escape Game Le Passage, 37 Rue des Menuts, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=8706879347876657234"
+                  },
+                  "text": "Salle Einstein très réputée. Arriver 10 min avant.",
+                  "addressLine": "37 rue des Menuts"
+                },
+                {
+                  "place": {
+                    "name": "La Maison – goodlock",
+                    "lat": 44.8341,
+                    "lng": -0.5848,
+                    "address": "La Maison goodlock escape game, 81 Cours Anatole France, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=16250834877313260798"
+                  },
+                  "text": "Ambiance plus sombre. Arriver 10 min avant.",
+                  "addressLine": "81 cours Anatole France"
+                }
+              ]
+            },
+            {
+              "start": "16:00",
+              "end": "17:00",
+              "title": "Pause bubble tea",
+              "illustration": "bubbleTea",
+              "poll": "second",
+              "choices": [
+                {
+                  "title": "2e escape game",
+                  "illustration": "escape",
+                  "repeatLoserOf": "escape",
+                  "text": "On enchaîne sur une 2e partie, à réserver aussi."
+                },
+                {
+                  "title": "Pause bubble tea",
+                  "illustration": "bubbleTea",
+                  "place": {
+                    "name": "Quoi Thé",
+                    "lat": 44.8383,
+                    "lng": -0.5678,
+                    "address": "Quoi thé, 35 Quai Richelieu, Bordeaux"
+                  },
+                  "text": "Bubble tea, gaufres et jeux de société, à 2 min du Miroir d'eau.",
+                  "addressLine": "35 quai Richelieu · ouvert 12 h – 20 h",
+                  "alternatives": [
+                    {
+                      "label": "Alternative",
+                      "links": [
+                        {
+                          "name": "Nekomata",
+                          "url": "https://www.google.com/maps/search/?api=1&query=Nekomata%20Cat%20Cafe%2C%2040%20Rue%20Lafaurie%20de%20Monbadon%2C%20Bordeaux"
+                        }
+                      ],
+                      "note": "café japonais à chats, réserver"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "start": "17:00",
+              "end": "17:45",
+              "title": "Miroir d'eau",
+              "illustration": "monument",
+              "places": [
+                {
+                  "name": "Miroir d'eau",
+                  "lat": 44.8414,
+                  "lng": -0.5697,
+                  "address": "Miroir d'eau, Place de la Bourse, Bordeaux"
+                }
+              ],
+              "text": "Coucher de soleil sur la place de la Bourse.",
+              "addressLine": "Place de la Bourse"
+            }
+          ]
+        },
+        {
+          "label": "Soirée",
+          "note": "jusqu'au bout de la nuit",
+          "items": [
+            {
+              "start": "17:45",
+              "end": "21:00",
+              "title": "Marché de Noël",
+              "illustration": "christmasMarket",
+              "places": [
+                {
+                  "name": "Marché de Noël",
+                  "lat": 44.8445,
+                  "lng": -0.5747,
+                  "address": "Place des Quinconces, Bordeaux"
+                }
+              ],
+              "text": "Vin chaud et dîner sur les stands : aligot, crêpes, gaufres… (attention lardons et saucisses). Fermeture vers 21 h.",
+              "addressLine": "Place des Quinconces · entrée libre"
+            },
+            {
+              "start": "21:00",
+              "end": "00:30",
+              "title": "Bar à jeux",
+              "illustration": "boardGames",
+              "poll": "bar",
+              "choices": [
+                {
+                  "place": {
+                    "name": "Atelier B",
+                    "lat": 44.8374,
+                    "lng": -0.5685,
+                    "address": "Atelier B, 29 Rue de la Rousselle, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=16379046099483481838"
+                  },
+                  "text": "Plein de jeux et planches de produits locaux, jusqu'à 0 h 30.",
+                  "addressLine": "29 rue de la Rousselle"
+                },
+                {
+                  "place": {
+                    "name": "Lila and the Barber",
+                    "lat": 44.8397,
+                    "lng": -0.5819,
+                    "address": "Lila and the Barber, 14 Rue Saint-Sernin, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=8044580806308497131"
+                  },
+                  "text": "Jeux, cocktails et petite carte, jusqu'à 1 h 30. Réservation obligatoire le week-end.",
+                  "addressLine": "14 rue Saint-Sernin"
+                },
+                {
+                  "place": {
+                    "name": "Noub",
+                    "lat": 44.8392,
+                    "lng": -0.5689,
+                    "address": "Noub, 22 Rue du Chai des Farines, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=11134806467895633356"
+                  },
+                  "text": "Jeux gratuits et planches à partager, jusqu'à minuit.",
+                  "addressLine": "22 rue du Chai des Farines"
+                },
+                {
+                  "place": {
+                    "name": "Barjo",
+                    "lat": 44.8365,
+                    "lng": -0.5714,
+                    "address": "Barjo, 12 Rue Saint-James, Bordeaux",
+                    "mapsUrl": "https://maps.google.com/?cid=626610570339410761"
+                  },
+                  "text": "Le plus grand choix de jeux, avec un maître du jeu qui explique les règles, jusqu'à minuit.",
+                  "addressLine": "12 rue Saint-James"
+                }
+              ]
+            },
+            {
+              "start": "00:30",
+              "end": "01:30",
+              "title": "Dernier verre",
+              "tag": "OPTIONNEL",
+              "tagStyle": "optional",
+              "illustration": "cocktail",
+              "places": [
+                {
+                  "name": "Madame Pang",
+                  "lat": 44.8398,
+                  "lng": -0.5716,
+                  "address": "Madame Pang, 16 Rue de la Devise, Bordeaux",
+                  "mapsUrl": "https://maps.google.com/?cid=12581301322888436763"
+                }
+              ],
+              "text": "Cocktails parmi les meilleurs de Bordeaux, jusqu'à 1 h 30.",
+              "addressLine": "16 rue de la Devise · quartier Saint-Pierre",
+              "alternatives": [
+                {
+                  "label": "Alternatives",
+                  "links": [
+                    {
+                      "name": "Le Laboratoire",
+                      "url": "https://maps.google.com/?cid=5403851250250989432"
+                    },
+                    {
+                      "name": "Jeannot",
+                      "url": "https://maps.google.com/?cid=17188135821385385736"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "label": "Centre historique"
+    },
+    {
+      "date": "2026-11-29",
+      "label": "Bassins à flot · Cité du Vin",
+      "sections": [
+        {
+          "label": "Matin",
+          "note": "grasse matinée possible",
+          "items": [
+            {
+              "start": "10:30",
+              "end": "12:00",
+              "title": "Bassins des Lumières",
+              "illustration": "monument",
+              "places": [
+                {
+                  "name": "Bassins des Lumières",
+                  "lat": 44.8708,
+                  "lng": -0.559,
+                  "address": "Bassins des Lumières, Impasse Brown de Colstoun, Bordeaux"
+                }
+              ],
+              "text": "Exposition numérique immersive dans l'ancienne base sous-marine. Réserver un créneau.",
+              "addressLine": "Base sous-marine · tram B, arrêt Cité du Vin"
+            }
+          ]
+        },
+        {
+          "label": "Après-midi",
+          "note": "tout le groupe",
+          "items": [
+            {
+              "start": "12:30",
+              "end": "14:00",
+              "title": "Déjeuner",
+              "tag": "RENDEZ-VOUS DE TOUS",
+              "tagStyle": "all",
+              "illustration": "meal",
+              "places": [
+                {
+                  "name": "Halles de Bacalan",
+                  "lat": 44.8628,
+                  "lng": -0.5508,
+                  "address": "Halles de Bacalan, 149 Quai de Bacalan, Bordeaux"
+                }
+              ],
+              "text": "Halle gourmande : chacun choisit son stand, idéal à 5.",
+              "addressLine": "149 quai de Bacalan"
+            },
+            {
+              "start": "14:00",
+              "end": "16:30",
+              "title": "La Cité du Vin",
+              "illustration": "cocktail",
+              "places": [
+                {
+                  "name": "La Cité du Vin",
+                  "lat": 44.8624,
+                  "lng": -0.5502,
+                  "address": "La Cité du Vin, 134 Quai de Bacalan, Bordeaux"
+                }
+              ],
+              "text": "Parcours permanent et dégustation au belvédère, avec vue sur la Garonne.",
+              "addressLine": "134 quai de Bacalan"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-11-30",
+      "label": "Départ",
+      "sections": [
+        {
+          "label": "Matin",
+          "note": "dernier tour avant le train",
+          "items": [
+            {
+              "start": "09:30",
+              "end": "11:00",
+              "title": "Petit-déjeuner aux Capucins",
+              "illustration": "market",
+              "places": [
+                {
+                  "name": "Marché des Capucins",
+                  "lat": 44.8306,
+                  "lng": -0.5683,
+                  "address": "Marché des Capucins, Place des Capucins, Bordeaux"
+                }
+              ],
+              "text": "Café et dernières emplettes au marché.",
+              "addressLine": "Place des Capucins"
+            },
+            {
+              "start": "11:30",
+              "end": "12:30",
+              "title": "Départ",
+              "illustration": "monument",
+              "places": [
+                {
+                  "name": "Gare Saint-Jean",
+                  "lat": 44.8256,
+                  "lng": -0.5562,
+                  "address": "Gare de Bordeaux Saint-Jean, Bordeaux"
+                }
+              ],
+              "text": "Une quinzaine de minutes à pied jusqu'à la gare.",
+              "addressLine": "Gare Saint-Jean"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "polls": {
+    "lunch": {
+      "question": "Où déjeune-t-on ?",
+      "options": [
+        {
+          "label": "Le Comptoir d'Étienne",
+          "voters": [
+            "Camille",
+            "Hugo"
+          ]
+        },
+        {
+          "label": "La Côte de Bœuf",
+          "voters": [
+            "Léa"
+          ]
+        },
+        {
+          "label": "Copain Comme Canard",
+          "voters": [
+            "Tom"
+          ]
+        }
+      ]
+    },
+    "escape": {
+      "question": "Quel escape game ?",
+      "options": [
+        {
+          "label": "Le Passage",
+          "voters": [
+            "Léa",
+            "Tom"
+          ]
+        },
+        {
+          "label": "La Maison – goodlock",
+          "voters": [
+            "Camille",
+            "Hugo"
+          ]
+        }
+      ]
+    },
+    "second": {
+      "question": "Un 2e escape game à 16 h ?",
+      "default": 1,
+      "options": [
+        {
+          "label": "Oui, on enchaîne",
+          "voters": [
+            "Hugo",
+            "Tom"
+          ]
+        },
+        {
+          "label": "Non, pause bubble tea",
+          "voters": [
+            "Camille",
+            "Léa"
+          ]
+        }
+      ]
+    },
+    "bar": {
+      "question": "Quel bar à jeux ?",
+      "options": [
+        {
+          "label": "Atelier B",
+          "voters": [
+            "Camille",
+            "Léa"
+          ]
+        },
+        {
+          "label": "Lila and the Barber",
+          "voters": [
+            "Hugo"
+          ]
+        },
+        {
+          "label": "Noub",
+          "voters": [
+            "Tom"
+          ]
+        },
+        {
+          "label": "Barjo",
+          "voters": []
+        }
+      ]
+    }
+  }
+}

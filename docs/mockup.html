@@ -1,0 +1,1030 @@
+<title>Samedi à Bordeaux</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: wine banner, then a two-column body on desktop (sticky weather + map on the left, programme on the right), one column on phones. */
+:root {
+  --bg: #FCFAFB;
+  --surface: #FFFFFF;
+  --rose: #F6ECEF;
+  --line: #EADBE0;
+  --fg: #1F1A1C;
+  --muted: #6E6266;
+  --wine: #7A1734;
+  --wine-ink: #7A1734;
+  --banner: #7A1734;
+  --banner-ink: #5A0F25;
+  --gold: #B8872E;
+  --gold-soft: #F4E7CC;
+  --river: #CFE0EA;
+  --ok: #2F7D4F;
+  --fill: #E8C7D1;
+  --done: #B8AEB1;
+  --art-o: .13;
+  --banner-fg: #FFFFFF;
+  --banner-soft: #F2D9E1;
+  --chip: rgba(255,255,255,.13);
+  --chip-live-bg: #FFFFFF;
+  --chip-live-fg: #7A1734;
+  --date: #E2BC6A;
+  --halo: rgba(255,255,255,.06);
+  --font: "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141012; --surface: #1D171A; --rose: #2A1E22; --line: #3A2C31;
+    --fg: #F3ECEE; --muted: #B5A6AB; --wine: #C24A6C; --wine-ink: #E7A3B6;
+    --banner: #5E1229; --banner-ink: #430B1C; --gold: #D9B26A; --gold-soft: #3A2E18;
+    --river: #1E3440; --ok: #6CC596; --fill: #5A2637; --done: #5E5458; --art-o: .2; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141012; --surface: #1D171A; --rose: #2A1E22; --line: #3A2C31;
+  --fg: #F3ECEE; --muted: #B5A6AB; --wine: #C24A6C; --wine-ink: #E7A3B6;
+  --banner: #5E1229; --banner-ink: #430B1C; --gold: #D9B26A; --gold-soft: #3A2E18;
+  --river: #1E3440; --ok: #6CC596; --fill: #5A2637; --done: #5E5458; --art-o: .2; color-scheme: dark;
+}
+
+/* Colour picker in the demo bar */
+.pal { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sws { display: flex; gap: 5px; }
+.pal .sw { width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 2px solid transparent; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.pal .sw[aria-pressed="true"] { border-color: #FFFFFF; }
+.pick { display: inline-flex; align-items: center; gap: 4px; }
+.pick input[type="color"] { width: 26px; height: 22px; padding: 0; border: 1px solid rgba(255,255,255,.4); border-radius: 6px; background: none; cursor: pointer; }
+.pick input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+.pick input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
+.sep { width: 1px; height: 18px; background: rgba(255,255,255,.25); }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; }
+a { color: var(--wine-ink); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Banner */
+.banner { background: var(--banner-grad, var(--banner)); color: var(--banner-fg); position: relative; z-index: 4; }
+.banner::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle 160px at calc(100% - 80px) 40px, var(--halo) 99%, transparent 100%); }
+.banner .wrap { padding-block: 28px 22px; display: flex; gap: 24px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; position: relative; z-index: 1; }
+.banner h1 { margin: 0; font-size: clamp(28px, 5vw, 42px); font-weight: 700; line-height: 1.1; letter-spacing: -.01em; text-wrap: balance; }
+.banner .tagline { margin: 6px 0 0; color: var(--banner-soft); font-weight: 300; font-size: 15px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: var(--chip); color: var(--banner-fg); }
+.chip.live { background: var(--chip-live-bg); color: var(--chip-live-fg); }
+button.chip { font-family: inherit; border: 0; cursor: pointer; position: relative; }
+button.chip:hover, button.chip:focus-visible { filter: brightness(1.12); text-decoration: underline; text-underline-offset: 3px; }
+.chip .tip { position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 170px; padding: 8px 11px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 12px; font-weight: 400; line-height: 1.5; text-align: left; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.2); opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .15s, transform .15s; }
+.chip .tip::before { content: ""; position: absolute; left: 16px; bottom: 100%; border: 6px solid transparent; border-bottom-color: var(--fg); }
+.chip .tip b { display: block; font-weight: 600; font-size: 11px; opacity: .75; margin-bottom: 2px; }
+.chip:hover .tip, .chip:focus-visible .tip { opacity: 1; transform: none; }
+/* Tabs under the banner */
+.tabs { background: var(--surface); border-bottom: 1px solid var(--line); position: relative; z-index: 3; }
+.tabs .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tab { font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 11px 14px 9px; cursor: pointer; white-space: nowrap; display: flex; align-items: baseline; gap: 8px; }
+.tab small { font-size: 11.5px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tab:hover { color: var(--fg); }
+.tab[aria-selected="true"] { color: var(--wine-ink); border-bottom-color: var(--wine); font-weight: 600; }
+@media (max-width: 560px) { .tab small { display: none; } .tab { padding-inline: 12px; } }
+.tab.past { opacity: .45; filter: grayscale(1); }
+.tab.past:hover { opacity: .75; }
+.now-lbl { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #FFFFFF; background: var(--wine); border-radius: 4px; padding: 1px 6px; align-self: center; }
+.tabs .wrap { scroll-snap-type: x proximity; }
+.tab { scroll-snap-align: start; }
+.tab .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); align-self: center; }
+.datebox { text-align: right; line-height: 1; }
+.datebox .d { font-size: 56px; font-weight: 700; color: var(--date); white-space: nowrap; }
+.datebox .m { font-size: 12px; font-weight: 500; letter-spacing: .12em; margin-top: 6px; color: var(--date-sub, var(--banner-fg)); }
+@media (max-width: 560px) { .datebox { text-align: left; display: flex; align-items: baseline; gap: 10px; } .datebox .d { font-size: 40px; } }
+.demo-bar { background: var(--demo-bg, var(--banner-ink)); color: rgba(255,255,255,.86); font-size: 12px; }
+.demo-bar .wrap { padding-block: 7px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.demo-bar button { font: inherit; font-size: 12px; font-weight: 500; color: #FFFFFF; background: rgba(255,255,255,.14); border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.demo-bar button[aria-pressed="true"] { background: #F2CD78; color: #2A1E06; }
+.sim { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sim label { display: flex; align-items: center; gap: 8px; }
+.sim input[type="range"] { width: min(260px, 52vw); accent-color: #E2BC6A; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sim select { font: inherit; font-size: 12px; color: #FFFFFF; background: rgba(255,255,255,.14); border: 0; border-radius: 999px; padding: 4px 10px; }
+.sim select option { color: #1F1A1C; }
+.sim output { font-weight: 600; color: #FFFFFF; font-variant-numeric: tabular-nums; min-width: 58px; }
+
+/* Body grid */
+.main { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 28px; padding-block: 24px 48px; align-items: start; }
+.side { display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+@media (max-width: 880px) { .main { grid-template-columns: minmax(0, 1fr); } .side { position: static; } }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.panel h2 { margin: 0 0 2px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--wine-ink); }
+.panel .sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+.sample { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: var(--gold); background: var(--gold-soft); border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; }
+
+/* Weather */
+.wx { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.wx div { text-align: center; padding: 8px 2px; border-radius: 8px; background: var(--rose); }
+.wx .h { font-size: 11px; color: var(--muted); }
+.wx .t { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.wx .r { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.wx svg { width: 26px; height: 26px; display: block; margin: 4px auto 2px; }
+.wx-foot { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+/* Map */
+.map { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--rose); }
+.map .river { fill: none; stroke: var(--river); stroke-width: 26; stroke-linecap: round; stroke-linejoin: round; }
+.map .river-l { font-size: 11px; fill: var(--muted); font-style: italic; }
+.map .route { fill: none; stroke: var(--wine); stroke-width: 2.4; stroke-dasharray: 5 4; opacity: .75; }
+.map .route.done { stroke: var(--done); opacity: .9; }
+.map .mk .base { fill: var(--surface); stroke: var(--wine); stroke-width: 2; transition: r .15s; }
+.map .mk .ring { opacity: 0; }
+.map .mk.live .ring { opacity: 1; }
+.map .mk .ring { fill: none; stroke: var(--gold); stroke-width: 3.2; stroke-linecap: round; transition: stroke-dasharray .4s; }
+.map .mk text { font-size: 11px; font-weight: 600; fill: var(--wine-ink); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.map .mk { cursor: pointer; outline: none; }
+.map .mk:focus-visible .base { stroke: var(--gold); stroke-width: 3.5; }
+.map .mk.done .base { fill: var(--line); stroke: var(--done); }
+.map .mk.done text { fill: var(--muted); }
+.map .mk.on .base { fill: var(--wine); r: 13; }
+.map .mk.on text { fill: #fff; }
+.map-legend { margin: 10px 0 0; font-size: 12px; color: var(--muted); min-height: 18px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; text-decoration: none; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--wine); color: var(--wine-ink); background: transparent; }
+.btn.fill { background: var(--wine); color: #fff; }
+.btn:hover { filter: brightness(1.08); }
+
+/* Programme */
+.prog { display: grid; gap: 26px; min-width: 0; }
+.sec-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; }
+.sec-h h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--wine-ink); }
+.sec-h span { font-size: 13px; color: var(--muted); font-weight: 300; }
+.sec-h::after { content: ""; flex: 1; height: 1px; background: var(--line); align-self: center; }
+.cards { display: grid; gap: 10px; }
+.card { display: grid; grid-template-columns: 76px minmax(0, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: border-color .15s, box-shadow .15s; }
+.card.hl { border-color: var(--wine); box-shadow: 0 0 0 1px var(--wine); }
+.card .time { --p: 0; background: linear-gradient(to bottom, transparent 0, transparent calc(var(--p) * 100%), var(--rose) calc(var(--p) * 100%), var(--rose) 100%), linear-gradient(to bottom, var(--prog1, var(--fill)), var(--prog2, var(--fill))); border-right: 3px solid var(--wine); padding: 14px 6px; text-align: center; font-weight: 700; font-size: 15px; color: var(--wine-ink); font-variant-numeric: tabular-nums; }
+.card .time .pct[hidden] { display: none; }
+.card .time .pct { display: block; margin-top: 6px; font-size: 11px; font-weight: 600; color: var(--wine-ink); }
+.card.past { filter: grayscale(1); opacity: .5; }
+.card.past .time { border-right-color: var(--done); }
+.card .time small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.card .body { padding: 12px 16px 14px; min-width: 0; position: relative; isolation: isolate; }
+.card .art { position: absolute; top: 8px; right: 10px; width: 118px; height: 118px; z-index: -1; pointer-events: none; color: var(--wine-ink); opacity: var(--art-o); fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.card .art { -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 55%); mask-image: linear-gradient(to right, transparent 0%, #000 55%); }
+.card .art .f { fill: currentColor; stroke: none; }
+.card .art .d { stroke-dasharray: 6 6; }
+body.no-art .card .art, body.no-art .card .photo { display: none; }
+.card .photo { display: block; margin: -12px -16px 12px; height: 150px; overflow: hidden; position: relative; background: var(--rose); }
+.card .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .photo::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: linear-gradient(to top, rgba(0,0,0,.35), transparent); }
+.card .photo figcaption { position: absolute; left: 12px; bottom: 7px; z-index: 1; font-size: 10.5px; color: #fff; opacity: .9; }
+@media (max-width: 560px) { .card .photo { height: 120px; } }
+@media (max-width: 560px) { .card .art { width: 80px; height: 80px; top: auto; bottom: 10px; opacity: calc(var(--art-o) * .7); } }
+.card h3 { margin: 0; font-size: 16px; font-weight: 500; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tag { font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; color: #fff; background: var(--gold); }
+.tag.all { background: var(--wine); }
+.tag.now { background: var(--ok); }
+.tag.vote { background: transparent; color: var(--wine-ink); border: 1px solid var(--wine); }
+.tag.tie { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.card p { margin: 4px 0 0; }
+.card .alt { font-size: 13px; color: var(--muted); }
+.card .alt b { color: var(--fg); font-weight: 500; }
+.card .addr { font-size: 12px; color: var(--muted); margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; }
+.maps { font-size: 12px; font-weight: 500; white-space: nowrap; text-decoration: none; }
+.maps::after { content: " ↗"; }
+.stopn { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--wine); color: var(--wine-ink); font-size: 10px; font-weight: 600; }
+
+/* Polls */
+.poll { margin-top: 12px; padding: 12px; border-radius: 10px; background: var(--rose); }
+.poll-q { font-size: 13px; font-weight: 600; margin: 0 0 8px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.poll-q span { font-weight: 400; color: var(--muted); font-size: 12px; }
+.opt { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; font: inherit; font-size: 13px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; margin-top: 6px; cursor: pointer; }
+.opt .fillbar { position: absolute; inset: 0 auto 0 0; background: var(--gold-soft); transition: width .3s; z-index: 0; border-radius: 7px 0 0 7px; }
+.opt .right { display: flex; align-items: center; gap: 8px; }
+.faces { display: flex; }
+.face { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; color: #fff; border: 1.5px solid var(--surface); margin-left: -6px; }
+.face:first-child { margin-left: 0; }
+.face.me { background: var(--wine) !important; }
+.who { position: absolute; z-index: 5; left: 10px; bottom: calc(100% + 6px); min-width: 140px; max-width: 260px; padding: 7px 10px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 12px; line-height: 1.45; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .15s, transform .15s; }
+.who::after { content: ""; position: absolute; left: 16px; top: 100%; border: 6px solid transparent; border-top-color: var(--fg); }
+.who b { display: block; font-weight: 600; font-size: 11px; opacity: .75; margin-bottom: 2px; }
+.opt > span.who { position: absolute; z-index: 5; }
+.opt:hover .who, .opt:focus-visible .who { opacity: 1; transform: none; }
+.pending { color: var(--muted); }
+.opt > span { position: relative; z-index: 1; }
+.opt .n { font-variant-numeric: tabular-nums; color: var(--muted); }
+.opt[aria-pressed="true"] { border-color: var(--wine); }
+.opt[aria-pressed="true"] .lbl::before { content: "✓ "; color: var(--wine-ink); font-weight: 700; }
+.poll-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+footer { font-size: 12px; color: var(--muted); padding-block: 28px 8px; }
+.scroll { min-width: 0; }
+.sec-h { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); padding-block: 8px; margin-top: -8px; }
+.card { scroll-margin-top: 56px; }
+.card.flash { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+/* Desktop: one-screen layout, only the programme column scrolls */
+@media (min-width: 881px) {
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  .banner, .demo-bar, .tabs { flex: none; }
+  .banner .wrap { padding-block: 22px 18px; }
+  .main { flex: 1; min-height: 0; width: 100%; padding-block: 0; align-items: stretch; grid-template-rows: minmax(0, 1fr); }
+  .side { position: static; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; padding-block: 16px; scrollbar-width: thin; }
+  .side .panel { flex: none; }
+  .side .panel.map-panel { flex: 1 1 auto; min-height: 260px; display: flex; flex-direction: column; }
+  .map-panel .map { flex: 1 1 auto; min-height: 140px; height: 100%; }
+  .map-panel .map-legend { min-height: 0; margin-top: 6px; }
+  .side .panel .sub { margin-bottom: 8px; }
+  #wx-sub, .map-panel .sub { display: none; }
+  .side .panel h2 { margin-bottom: 10px; }
+  .wx div { padding: 6px 2px; }
+  .wx svg { width: 22px; height: 22px; margin: 2px auto 0; }
+  .wx .t { font-size: 15px; }
+  .wx-foot { margin-top: 8px; }
+  .side .panel.map-panel { min-height: 330px; }
+  .map-panel .map { min-height: 200px; }
+  .scroll { overflow-y: auto; padding-block: 12px 24px; padding-right: 6px; overscroll-behavior: contain; scrollbar-width: thin; }
+  .sec-h { top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<script>
+/* Colour engine: the whole page derives from a gradient (2 colours) and an accent */
+window.THEME = (function () {
+  var PRESETS = {
+    aube:      { name: "Aube",      g1: "#3F8FD8", g2: "#93D5F4", accent: "#2A78BE" },
+    lilas:     { name: "Lilas",     g1: "#4F93E2", g2: "#B7A6EE", accent: "#7B61D9" },
+    garonne:   { name: "Garonne",   g1: "#163A57", g2: "#2F7AA8", accent: "#2B6E97" },
+    lagon:     { name: "Lagon",     g1: "#0E6F7E", g2: "#45B8B2", accent: "#167A88" },
+    pervenche: { name: "Pervenche", g1: "#3D4FB5", g2: "#8C9DF0", accent: "#4A5DC0" },
+    bordeaux:  { name: "Bordeaux",  g1: "#5E0F29", g2: "#A8324F", accent: "#7A1734" }
+  };
+  function h2r(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }); }
+  function r2h(a) { return "#" + a.map(function (v) { return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0"); }).join(""); }
+  function mix(a, b, t) { var A = h2r(a), B = h2r(b); return r2h(A.map(function (v, i) { return v + (B[i] - v) * t; })); }
+  function lum(h) { var c = h2r(h).map(function (v) { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; }
+  function rgba(h, a) { return "rgba(" + h2r(h).join(",") + "," + a + ")"; }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function save(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  var cur = null;
+  function isDark() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t) return t === "dark";
+    return matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function apply(c) {
+    cur = c;
+    save("colors-v2", JSON.stringify(c));
+    var d = isDark(), st = document.documentElement.style;
+    function set(k, v) { st.setProperty(k, v); }
+    var g1 = d ? mix(c.g1, "#000000", .35) : c.g1, g2 = d ? mix(c.g2, "#000000", .35) : c.g2;
+    var leftLight = lum(mix(g1, g2, .2)) > .38, rightLight = lum(mix(g1, g2, .85)) > .35;
+    var ink = mix(c.g1, "#000000", .62), inkR = mix(c.g2, "#000000", .66);
+    set("--banner-grad", "linear-gradient(115deg," + g1 + " 0%," + g2 + " 100%)");
+    set("--banner", g1);
+    set("--banner-fg", leftLight ? ink : "#FFFFFF");
+    set("--banner-soft", leftLight ? rgba(ink, .78) : "rgba(255,255,255,.84)");
+    set("--chip", leftLight ? rgba(ink, .1) : "rgba(255,255,255,.16)");
+    set("--chip-live-bg", leftLight ? ink : "#FFFFFF");
+    set("--chip-live-fg", leftLight ? "#FFFFFF" : mix(c.g1, "#000000", .15));
+    set("--date", rightLight ? inkR : "#F2CD78");
+    set("--date-sub", rightLight ? rgba(inkR, .85) : "#FFFFFF");
+    set("--halo", "rgba(255,255,255," + (rightLight ? .28 : .07) + ")");
+    set("--demo-bg", mix(c.g1, "#000000", d ? .6 : .4));
+    set("--tag-fg", "#FFFFFF");
+    if (!d) {
+      set("--wine", c.accent);
+      set("--wine-ink", lum(c.accent) > .18 ? mix(c.accent, "#000000", .3) : c.accent);
+      set("--bg", mix(c.accent, "#FFFFFF", .965)); set("--surface", "#FFFFFF");
+      set("--fg", mix(c.accent, "#141414", .88)); set("--muted", mix(c.accent, "#666666", .8));
+      set("--rose", mix(c.accent, "#FFFFFF", .92)); set("--line", mix(c.accent, "#FFFFFF", .83));
+      set("--fill", mix(c.accent, "#FFFFFF", .68)); set("--done", "#B3B8BD");
+      set("--prog1", mix(c.g1, "#FFFFFF", .5)); set("--prog2", mix(c.g2, "#FFFFFF", .5));
+      set("--gold-soft", "#F4E7CC"); set("--river", "#CFE3EE"); set("color-scheme", "light");
+    } else {
+      set("--wine", mix(c.accent, "#FFFFFF", .3)); set("--wine-ink", mix(c.accent, "#FFFFFF", .6));
+      set("--bg", mix(c.accent, "#0E1114", .92)); set("--surface", mix(c.accent, "#161A1E", .9));
+      set("--fg", "#ECEFF2"); set("--muted", mix(c.accent, "#A3AAB1", .8));
+      set("--rose", mix(c.accent, "#161A1E", .82)); set("--line", mix(c.accent, "#2A3036", .86));
+      set("--fill", mix(c.accent, "#161A1E", .58)); set("--done", "#555B61");
+      set("--prog1", mix(c.g1, "#161A1E", .45)); set("--prog2", mix(c.g2, "#161A1E", .45));
+      set("--gold-soft", "#3A3018"); set("--river", "#1E3440"); set("color-scheme", "dark");
+    }
+  }
+  function setTheme(t) { document.documentElement.setAttribute("data-theme", t); save("theme", t); apply(cur); }
+  var t0 = load("theme"); if (t0 === "dark" || t0 === "light") document.documentElement.setAttribute("data-theme", t0);
+  var c0 = null; try { c0 = JSON.parse(load("colors-v2")); } catch (e) {}
+  apply(c0 && c0.g1 && c0.g2 && c0.accent ? c0 : Object.assign({ preset: "lilas" }, PRESETS.lilas));
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { apply(cur); }); } catch (e) {}
+  return { presets: PRESETS, apply: apply, get: function () { return cur; }, isDark: isDark, setTheme: setTheme };
+})();
+</script>
+<header class="banner">
+  <div class="wrap">
+    <div>
+      <h1 id="t-title">Samedi à Bordeaux</h1>
+      <p class="tagline" id="t-tag"></p>
+      <div class="chips" id="t-chips"></div>
+    </div>
+    <div class="datebox" aria-label="Date de la sortie"><div class="d" id="t-day">28</div><div class="m" id="t-month">NOVEMBRE 2026</div></div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Moments de la journée"><div class="wrap" id="tabs" role="tablist"></div></nav>
+<div class="demo-bar">
+  <div class="wrap">
+    <span>Maquette : météo et votes d'exemple, plan schématique.</span>
+    <div class="sim">
+      <div class="pal" role="group" aria-label="Couleurs">
+        <span>Couleurs</span>
+        <span class="sws" id="pal-sw"></span>
+        <span class="sep" aria-hidden="true"></span>
+        <span class="pick">Dégradé <input type="color" id="c-g1" aria-label="Début du dégradé" title="Début du dégradé"><input type="color" id="c-g2" aria-label="Fin du dégradé" title="Fin du dégradé"></span>
+        <span class="pick">Accent <input type="color" id="c-acc" aria-label="Couleur d'accent" title="Couleur d'accent"></span>
+      </div>
+      <button type="button" id="theme-toggle">Mode sombre</button>
+      <button type="button" id="art-toggle" aria-pressed="true">Illustrations</button>
+      <button type="button" id="multi-toggle" aria-pressed="false">Démo plusieurs jours</button>
+      <button type="button" id="simulate" aria-pressed="false">Simuler le jour J</button>
+      <select id="sim-day" aria-label="Jour simulé" hidden></select>
+      <label id="sim-wrap" hidden><span class="sr">Heure</span>
+        <input type="range" id="sim-range" min="570" max="1560" step="5" value="885" aria-label="Heure simulée">
+        <output id="sim-out" for="sim-range">14 h 45</output>
+      </label>
+    </div>
+  </div>
+</div>
+
+<main class="wrap main">
+  <aside class="side">
+    <section class="panel" aria-labelledby="wx-h">
+      <h2 id="wx-h">Météo du jour <span class="sample">EXEMPLE</span></h2>
+      <p class="sub" id="wx-sub"></p>
+      <div class="wx" id="wx"></div>
+      <div class="wx-foot" id="wx-foot"></div>
+    </section>
+    <section class="panel map-panel" aria-labelledby="map-h">
+      <h2 id="map-h">Le trajet</h2>
+      <p class="sub">Plan schématique à pied. Cliquez sur une étape pour l'afficher dans le programme.</p>
+      <svg class="map" id="map" role="img" aria-label="Plan des étapes de la journée"></svg>
+      <p class="map-legend" id="map-legend"></p>
+      <div class="btns">
+        <a class="btn fill" id="route-all" target="_blank" rel="noopener">Trajet complet ↗</a>
+        <a class="btn" id="route-lunch" target="_blank" rel="noopener">Depuis le déjeuner ↗</a>
+      </div>
+    </section>
+  </aside>
+
+  <div class="scroll" id="scroll">
+    <div class="prog" id="prog"></div>
+    <footer>Page générée à partir d'un seul fichier de données : changer de sortie revient à changer ce fichier.</footer>
+  </div>
+</main>
+
+<script>
+/* ===== Données de la sortie (futur trip.json) ===== */
+const cid = n => "https://maps.google.com/?cid=" + n;
+const q = s => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(s);
+
+const TRIP = {
+  title: "Samedi à Bordeaux",
+  date: "2026-11-28",
+  tagline: "Balade · escape game · marché de Noël · bar à jeux",
+  chips: [{ kind: "participants" }, { kind: "meet", at: "12:30" }],
+  participants: ["Vous", "Camille", "Hugo", "Léa", "Tom"],
+  weather: {
+    sample: true,
+    slots: [
+      { h: "10 h", t: 8, sky: "cloud", rain: 20 },
+      { h: "13 h", t: 11, sky: "partly", rain: 10 },
+      { h: "16 h", t: 12, sky: "sun", rain: 5 },
+      { h: "19 h", t: 9, sky: "cloud", rain: 25 },
+      { h: "22 h", t: 7, sky: "rain", rain: 55 }
+    ],
+    normals: "Normales fin novembre : 12° / 5°",
+    sunset: "Coucher du soleil vers 17 h 15"
+  },
+  stops: [
+    { n: 1, name: "Marché des Capucins", lat: 44.8306, lng: -0.5683, addr: "Marché des Capucins, Place des Capucins, Bordeaux" },
+    { n: 2, name: "Grosse Cloche", lat: 44.8364, lng: -0.5716, addr: "Grosse Cloche, Rue Saint-James, Bordeaux" },
+    { n: 3, name: "Cathédrale Saint-André", lat: 44.8378, lng: -0.5777, addr: "Cathédrale Saint-André, Place Pey-Berland, Bordeaux" },
+    { n: 4, name: "Porte Cailhau", lat: 44.8381, lng: -0.5697, addr: "Porte Cailhau, Place du Palais, Bordeaux" },
+    { n: 5, name: "Le Comptoir d'Étienne", lat: 44.8392, lng: -0.5718, addr: "Le Comptoir d'Etienne, 21 Rue Maucoudinat, Bordeaux" },
+    { n: 6, name: "Escape game Le Passage", lat: 44.8336, lng: -0.5677, addr: "Escape Game Le Passage, 37 Rue des Menuts, Bordeaux" },
+    { n: 7, name: "Quoi Thé", lat: 44.8383, lng: -0.5678, addr: "Quoi thé, 35 Quai Richelieu, Bordeaux" },
+    { n: 8, name: "Miroir d'eau", lat: 44.8414, lng: -0.5697, addr: "Miroir d'eau, Place de la Bourse, Bordeaux" },
+    { n: 9, name: "Marché de Noël", lat: 44.8445, lng: -0.5747, addr: "Place des Quinconces, Bordeaux" },
+    { n: 10, name: "Atelier B", lat: 44.8374, lng: -0.5685, addr: "Atelier B, 29 Rue de la Rousselle, Bordeaux" },
+    { n: 11, name: "Madame Pang", lat: 44.8398, lng: -0.5716, addr: "Madame Pang, 16 Rue de la Devise, Bordeaux" }
+  ],
+  sections: [
+    { label: "Matin", note: "libre · pour les motivés", items: [
+      { start: "10:00", end: "11:00", title: "Marché des Capucins", art: "market", tag: "OPTIONNEL", stops: [1],
+        text: "Café et ambiance du samedi matin.", addr: "Place des Capucins", maps: q("Marché des Capucins, Bordeaux") },
+      { start: "11:00", end: "12:30", title: "Balade dans le centre historique", art: "cloche", tag: "OPTIONNEL", stops: [2, 3, 4],
+        text: "Grosse Cloche → Cathédrale Saint-André → rue Sainte-Catherine → Porte Cailhau → place du Parlement.",
+        alts: [{ label: "Sur le trajet", items: [["Krazy Kat", cid("17111668576218744162")], ["Manga Kat", cid("12189337704836778220")]], note: "librairies manga" }],
+        addr: "Environ 2,5 km à pied, arrêts compris" }
+    ]},
+    { label: "Après-midi", note: "tout le groupe", items: [
+      { start: "12:30", end: "14:30", title: "Déjeuner", art: "lunch", photo: "lunch", photoPos: "center 45%", tag: "RENDEZ-VOUS DE TOUS", tagClass: "all", stops: [5],
+        poll: "lunch", choices: [
+          { name: "Le Comptoir d'Étienne", url: cid("8517941929597250107"), lat: 44.8392, lng: -0.5718, mapsAddr: "Le Comptoir d'Etienne, 21 Rue Maucoudinat, Bordeaux",
+            text: "Viandes cuites sur pierre, portions généreuses. Attention aux planches à partager qui font grimper l'addition.", addr: "21 rue Maucoudinat" },
+          { name: "La Côte de Bœuf", url: q("La Côte de Boeuf, 13 Rue des Faussets, Bordeaux"), lat: 44.8405, lng: -0.5706, mapsAddr: "La Côte de Boeuf, 13 Rue des Faussets, Bordeaux",
+            text: "Spécialiste de la côte de bœuf, autour de 25 à 30 € par personne.", addr: "13 rue des Faussets" },
+          { name: "Copain Comme Canard", url: q("Copain Comme Canard, 14 Rue de la Cour des Aides, Bordeaux"), lat: 44.8396, lng: -0.5698, mapsAddr: "Copain Comme Canard, 14 Rue de la Cour des Aides, Bordeaux",
+            text: "Tout autour du canard : magret, confit, cœurs de canard.", addr: "14 rue de la Cour des Aides" }
+        ] },
+      { start: "14:30", end: "16:00", title: "Escape game", art: "escape", photo: "escape", photoPos: "center 40%", stops: [6],
+        poll: "escape", choices: [
+          { name: "Le Passage", url: cid("8706879347876657234"), lat: 44.8336, lng: -0.5677, mapsAddr: "Escape Game Le Passage, 37 Rue des Menuts, Bordeaux",
+            text: "Salle Einstein très réputée. Arriver 10 min avant.", addr: "37 rue des Menuts" },
+          { name: "La Maison – goodlock", url: cid("16250834877313260798"), lat: 44.8341, lng: -0.5848, mapsAddr: "La Maison goodlock escape game, 81 Cours Anatole France, Bordeaux",
+            text: "Ambiance plus sombre. Arriver 10 min avant.", addr: "81 cours Anatole France" }
+        ] },
+      { start: "16:00", end: "17:00", title: "Pause bubble tea", art: "tea", stops: [7],
+        poll: "second", choices: [
+          { secondEscape: true, title: "2e escape game", art: "escape" },
+          { title: "Pause bubble tea", art: "tea", name: "Quoi Thé", url: q("Quoi thé, 35 Quai Richelieu, Bordeaux"), lat: 44.8383, lng: -0.5678, mapsAddr: "Quoi thé, 35 Quai Richelieu, Bordeaux",
+            text: "Bubble tea, gaufres et jeux de société, à 2 min du Miroir d'eau.", addr: "35 quai Richelieu · ouvert 12 h – 20 h",
+            alts: [{ label: "Alternative", items: [["Nekomata", q("Nekomata Cat Cafe, 40 Rue Lafaurie de Monbadon, Bordeaux")]], note: "café japonais à chats, réserver" }] }
+        ] },
+      { start: "17:00", end: "17:45", title: "Miroir d'eau", art: "bourse", stops: [8],
+        text: "Coucher de soleil sur la place de la Bourse.", addr: "Place de la Bourse", maps: q("Miroir d'eau, Place de la Bourse, Bordeaux") }
+    ]},
+    { label: "Soirée", note: "jusqu'au bout de la nuit", items: [
+      { start: "17:45", end: "21:00", title: "Marché de Noël", art: "noel", photo: "noel", photoPos: "center 55%", stops: [9],
+        text: "Vin chaud et dîner sur les stands : aligot, crêpes, gaufres… (attention lardons et saucisses). Fermeture vers 21 h.",
+        addr: "Place des Quinconces · entrée libre", maps: q("Place des Quinconces, Bordeaux") },
+      { start: "21:00", end: "00:30", title: "Bar à jeux", art: "games", stops: [10],
+        poll: "bar", choices: [
+          { name: "Atelier B", url: cid("16379046099483481838"), lat: 44.8374, lng: -0.5685, mapsAddr: "Atelier B, 29 Rue de la Rousselle, Bordeaux",
+            text: "Plein de jeux et planches de produits locaux, jusqu'à 0 h 30.", addr: "29 rue de la Rousselle" },
+          { name: "Lila and the Barber", url: cid("8044580806308497131"), lat: 44.8397, lng: -0.5819, mapsAddr: "Lila and the Barber, 14 Rue Saint-Sernin, Bordeaux",
+            text: "Jeux, cocktails et petite carte, jusqu'à 1 h 30. Réservation obligatoire le week-end.", addr: "14 rue Saint-Sernin" },
+          { name: "Noub", url: cid("11134806467895633356"), lat: 44.8392, lng: -0.5689, mapsAddr: "Noub, 22 Rue du Chai des Farines, Bordeaux",
+            text: "Jeux gratuits et planches à partager, jusqu'à minuit.", addr: "22 rue du Chai des Farines" },
+          { name: "Barjo", url: cid("626610570339410761"), lat: 44.8365, lng: -0.5714, mapsAddr: "Barjo, 12 Rue Saint-James, Bordeaux",
+            text: "Le plus grand choix de jeux, avec un maître du jeu qui explique les règles, jusqu'à minuit.", addr: "12 rue Saint-James" }
+        ] },
+      { start: "00:30", end: "01:30", title: "Dernier verre", art: "cocktail", tag: "OPTIONNEL", stops: [11],
+        fav: ["Madame Pang", cid("12581301322888436763")],
+        text: "Cocktails parmi les meilleurs de Bordeaux, jusqu'à 1 h 30.",
+        alts: [{ label: "Alternatives", items: [["Le Laboratoire", cid("5403851250250989432")], ["Jeannot", cid("17188135821385385736")]] }],
+        addr: "16 rue de la Devise · quartier Saint-Pierre" }
+    ]}
+  ],
+  polls: {
+    lunch: { q: "Où déjeune-t-on ?", options: [["Le Comptoir d'Étienne", ["Camille", "Hugo"]], ["La Côte de Bœuf", ["Léa"]], ["Copain Comme Canard", ["Tom"]]] },
+    escape: { q: "Quel escape game ?", options: [["Le Passage", ["Léa", "Tom"]], ["La Maison – goodlock", ["Camille", "Hugo"]]] },
+    second: { q: "Un 2e escape game à 16 h ?", default: 1, options: [["Oui, on enchaîne", ["Hugo", "Tom"]], ["Non, pause bubble tea", ["Camille", "Léa"]]] },
+    bar: { q: "Quel bar à jeux ?", options: [["Atelier B", ["Camille", "Léa"]], ["Lila and the Barber", ["Hugo"]], ["Noub", ["Tom"]], ["Barjo", []]] }
+  }
+};
+
+/* ===== Multi-day demo: a fictional Sunday added to show day tabs ===== */
+const DAY1 = { date: TRIP.date, short: "Centre historique", weather: TRIP.weather, stops: TRIP.stops, sections: TRIP.sections };
+const DAY2 = {
+  date: "2026-11-29", short: "Bassins à flot · Cité du Vin",
+  weather: {
+    slots: [
+      { h: "10 h", t: 7, sky: "partly", rain: 10 },
+      { h: "13 h", t: 11, sky: "sun", rain: 5 },
+      { h: "16 h", t: 12, sky: "partly", rain: 10 },
+      { h: "19 h", t: 9, sky: "cloud", rain: 30 },
+      { h: "22 h", t: 6, sky: "cloud", rain: 35 }
+    ],
+    normals: "Normales fin novembre : 12° / 5°",
+    sunset: "Coucher du soleil vers 17 h 15"
+  },
+  stops: [
+    { n: 1, name: "Bassins des Lumières", lat: 44.8708, lng: -0.5590, addr: "Bassins des Lumières, Impasse Brown de Colstoun, Bordeaux" },
+    { n: 2, name: "Halles de Bacalan", lat: 44.8628, lng: -0.5508, addr: "Halles de Bacalan, 149 Quai de Bacalan, Bordeaux" },
+    { n: 3, name: "La Cité du Vin", lat: 44.8624, lng: -0.5502, addr: "La Cité du Vin, 134 Quai de Bacalan, Bordeaux" },
+    { n: 4, name: "Gare Saint-Jean", lat: 44.8256, lng: -0.5562, addr: "Gare de Bordeaux Saint-Jean, Bordeaux" }
+  ],
+  sections: [
+    { label: "Matin", note: "grasse matinée possible", items: [
+      { start: "10:30", end: "12:00", title: "Bassins des Lumières", art: "bourse", stops: [1],
+        text: "Exposition numérique immersive dans l'ancienne base sous-marine. Réserver un créneau.",
+        addr: "Base sous-marine · tram B, arrêt Cité du Vin", maps: q("Bassins des Lumières, Bordeaux") }
+    ]},
+    { label: "Après-midi", note: "tout le groupe", items: [
+      { start: "12:30", end: "14:00", title: "Déjeuner", art: "lunch", tag: "RENDEZ-VOUS DE TOUS", tagClass: "all", stops: [2],
+        text: "Halle gourmande : chacun choisit son stand, idéal à 5. Plusieurs comptoirs viande et produits du Sud-Ouest.",
+        addr: "149 quai de Bacalan", maps: q("Halles de Bacalan, Bordeaux") },
+      { start: "14:00", end: "16:30", title: "La Cité du Vin", art: "cocktail", stops: [3],
+        text: "Parcours permanent et dégustation au belvédère, avec vue sur la Garonne.",
+        addr: "134 quai de Bacalan · juste à côté des Halles", maps: q("La Cité du Vin, Bordeaux") }
+    ]},
+    { label: "Retour", note: "fin du week-end", items: [
+      { start: "17:00", end: "18:00", title: "Départ", art: "bourse", stops: [4],
+        text: "Tram B jusqu'au centre puis tram C jusqu'à la gare, environ 35 minutes.",
+        addr: "Gare Saint-Jean", maps: q("Gare de Bordeaux Saint-Jean") }
+    ]}
+  ]
+};
+const DAY0 = {
+  date: "2026-11-27", short: "Arrivée",
+  weather: { slots: [{ h: "16 h", t: 11, sky: "cloud", rain: 25 }, { h: "18 h", t: 10, sky: "cloud", rain: 30 }, { h: "20 h", t: 8, sky: "rain", rain: 50 }, { h: "22 h", t: 7, sky: "cloud", rain: 35 }, { h: "0 h", t: 6, sky: "cloud", rain: 20 }],
+    normals: "Normales fin novembre : 12° / 5°", sunset: "Coucher du soleil vers 17 h 15" },
+  stops: [
+    { n: 1, name: "Gare Saint-Jean", lat: 44.8256, lng: -0.5562, addr: "Gare de Bordeaux Saint-Jean, Bordeaux" },
+    { n: 2, name: "Marché de Noël", lat: 44.8445, lng: -0.5747, addr: "Place des Quinconces, Bordeaux" }
+  ],
+  sections: [
+    { label: "Soirée", note: "on arrive au fil de la journée", items: [
+      { start: "18:30", end: "19:30", title: "Arrivée", art: "bourse", stops: [1],
+        text: "Rendez-vous à la gare, puis dépôt des sacs à l'hôtel.", addr: "Gare Saint-Jean", maps: q("Gare de Bordeaux Saint-Jean") },
+      { start: "20:00", end: "22:00", title: "Ouverture du marché de Noël", art: "noel", stops: [2],
+        text: "Premier soir du marché : vin chaud et dîner sur les stands.", addr: "Place des Quinconces", maps: q("Place des Quinconces, Bordeaux") }
+    ]}
+  ]
+};
+const DAY3 = {
+  date: "2026-11-30", short: "Départ",
+  weather: { slots: [{ h: "8 h", t: 5, sky: "cloud", rain: 20 }, { h: "10 h", t: 7, sky: "partly", rain: 10 }, { h: "12 h", t: 10, sky: "sun", rain: 5 }, { h: "14 h", t: 11, sky: "partly", rain: 10 }, { h: "16 h", t: 11, sky: "cloud", rain: 20 }],
+    normals: "Normales fin novembre : 12° / 5°", sunset: "Coucher du soleil vers 17 h 15" },
+  stops: [
+    { n: 1, name: "Marché des Capucins", lat: 44.8306, lng: -0.5683, addr: "Marché des Capucins, Place des Capucins, Bordeaux" },
+    { n: 2, name: "Gare Saint-Jean", lat: 44.8256, lng: -0.5562, addr: "Gare de Bordeaux Saint-Jean, Bordeaux" }
+  ],
+  sections: [
+    { label: "Matin", note: "dernier tour avant le train", items: [
+      { start: "09:30", end: "11:00", title: "Petit-déjeuner aux Capucins", art: "market", stops: [1],
+        text: "Café et dernières emplettes au marché.", addr: "Place des Capucins", maps: q("Marché des Capucins, Bordeaux") },
+      { start: "11:30", end: "12:30", title: "Départ", art: "bourse", stops: [2],
+        text: "Une quinzaine de minutes à pied jusqu'à la gare.", addr: "Gare Saint-Jean", maps: q("Gare de Bordeaux Saint-Jean") }
+    ]}
+  ]
+};
+let multiDay = false, dayIdx = 0;
+const tripDays = () => multiDay ? [DAY0, DAY1, DAY2, DAY3] : [DAY1];
+
+/* Trip-day date in Paris (a night out until 6 am still counts as the previous day) */
+function parisNow() {
+  const paris = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+  let m = paris.getHours() * 60 + paris.getMinutes();
+  if (paris.getHours() < 6) { paris.setDate(paris.getDate() - 1); m += 24 * 60; }
+  const ymd = paris.getFullYear() + "-" + String(paris.getMonth() + 1).padStart(2, "0") + "-" + String(paris.getDate()).padStart(2, "0");
+  return { ymd, m };
+}
+/* "Today" for the tab bar: the simulated day, or the real date */
+function todayYMD() {
+  const days = tripDays();
+  if (typeof simulated !== "undefined" && simulated && multiDay) return days[+$("sim-day").value].date;
+  return parisNow().ymd;
+}
+function todayIndex() {
+  const days = tripDays(), ymd = todayYMD();
+  const i = days.findIndex(d => d.date === ymd);
+  return i >= 0 ? i : (ymd < days[0].date ? 0 : days.length - 1);
+}
+function useDay(i) {
+  const d = tripDays()[i] || DAY1;
+  dayIdx = tripDays().indexOf(d);
+  Object.assign(TRIP, { date: d.date, weather: d.weather, stops: d.stops, sections: d.sections });
+  ITEMS = TRIP.sections.flatMap(sec => sec.items);
+}
+
+
+/* Line illustrations (120 × 120), drawn for this page */
+const ART = {
+  market: '<path d="M10 46 L22 24 H98 L110 46 Z"/><path d="M40 24 L36 46 M60 24 V46 M80 24 L84 46"/><path d="M10 46 q12.5 12 25 0 q12.5 12 25 0 q12.5 12 25 0 q12.5 12 25 0"/><path d="M18 52 V104 M102 52 V104"/><rect x="12" y="76" width="96" height="10" rx="2"/><circle cx="34" cy="70" r="6"/><circle cx="48" cy="70" r="6"/><circle cx="41" cy="60" r="6"/><rect x="66" y="60" width="26" height="16" rx="2"/><path d="M8 104 H112"/>',
+  cloche: '<rect x="20" y="40" width="22" height="64"/><rect x="78" y="40" width="22" height="64"/><path d="M17 40 L31 12 L45 40 M75 40 L89 12 L103 40"/><rect x="42" y="52" width="36" height="52"/><path d="M50 104 V84 a10 10 0 0 1 20 0 V104"/><path d="M48 52 V38 H72 V52"/><path d="M54 50 q0 -10 6 -10 q6 0 6 10 z"/><circle cx="60" cy="68" r="6"/><path d="M60 64 V68 L63 70"/><path d="M8 104 H112"/>',
+  lunch: '<circle cx="62" cy="64" r="34"/><circle cx="62" cy="64" r="24"/><path d="M48 60 q4 -12 18 -10 q12 2 10 14 q-2 10 -16 9 q-14 -1 -12 -13 z"/><circle cx="72" cy="58" r="3"/><path d="M14 30 V98 M8 30 V48 q0 6 6 6 q6 0 6 -6 V30"/><path d="M110 30 q-9 12 -7 32 h7 V98"/>',
+  escape: '<rect x="58" y="56" width="44" height="40" rx="6"/><path d="M66 56 V44 a14 14 0 0 1 28 0 V56"/><circle cx="80" cy="72" r="4"/><path d="M80 76 V84"/><circle cx="28" cy="32" r="13"/><circle cx="28" cy="32" r="4"/><path d="M33 44 L50 100 M42 74 l8 -3 M46 87 l8 -3"/>',
+  tea: '<path d="M34 38 H86 L78 106 H42 Z"/><path d="M30 38 H90 M36 38 q24 -16 48 0"/><path d="M64 32 L76 8"/><path d="M38 60 H82"/><circle class="f" cx="50" cy="97" r="4"/><circle class="f" cx="61" cy="99" r="4"/><circle class="f" cx="71" cy="96" r="4"/><circle class="f" cx="55" cy="88" r="4"/><circle class="f" cx="66" cy="88" r="4"/>',
+  bourse: '<path d="M10 64 H110 M14 64 V40 H106 V64"/><path d="M14 40 L20 34 H100 L106 40"/><path d="M46 34 V26 H74 V34 M44 26 L60 16 L76 26"/><path d="M20 58 V48 h6 V58 M32 58 V48 h6 V58 M82 58 V48 h6 V58 M94 58 V48 h6 V58 M54 58 V46 h12 V58"/><path class="d" d="M14 76 H106 M22 86 H98 M32 96 H88 M44 106 H76"/>',
+  noel: '<path d="M22 60 L50 34 L78 60"/><path d="M28 56 V100 H72 V56"/><rect x="44" y="78" width="12" height="22"/><rect x="33" y="65" width="10" height="10"/><path d="M96 32 L82 56 H90 L78 78 H114 L102 56 H110 Z"/><path d="M96 78 V92"/><path d="M96 14 l2.5 5 5.5 .8 -4 3.9 .9 5.5 -4.9 -2.6 -4.9 2.6 .9 -5.5 -4 -3.9 5.5 -.8 z"/><path d="M8 100 H116"/><circle class="f" cx="18" cy="30" r="2"/><circle class="f" cx="70" cy="20" r="2"/><circle class="f" cx="30" cy="16" r="2"/>',
+  games: '<rect x="14" y="52" width="42" height="42" rx="8"/><circle class="f" cx="25" cy="63" r="3.5"/><circle class="f" cx="35" cy="73" r="3.5"/><circle class="f" cx="45" cy="83" r="3.5"/><g transform="rotate(14 78 44)"><rect x="60" y="26" width="36" height="36" rx="7"/><circle class="f" cx="71" cy="37" r="3.2"/><circle class="f" cx="85" cy="51" r="3.2"/></g><path d="M78 106 h30 l-7 -20 q10 -3 10 -10 q0 -6 -10 -6 h-3 a8 8 0 1 0 -10 0 h-3 q-10 0 -10 6 q0 7 10 10 z"/>',
+  cocktail: '<path d="M26 30 H94 L60 68 Z M60 68 V102 M44 104 H76"/><path d="M37 42 H83"/><circle cx="90" cy="30" r="10"/><path d="M90 20 V40 M80 30 H100"/><path d="M72 14 L56 54"/>'
+};
+
+/* Photos supplied for the mock-up (Google Places photos in the final version) */
+const PHOTOS = {}; /* photos removed from the public copy */
+
+/* ===== Rendu ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = hm => { const [h, m] = hm.split(":"); return (+h) + " h " + m; };
+const toMin = hm => { let [h, m] = hm.split(":").map(Number); if (h < 6) h += 24; return h * 60 + m; };
+
+function store(key, val) {
+  try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); } catch (e) { return null; }
+}
+
+function renderHeader() {
+  const days = tripDays();
+  const d = new Date(days[0].date + "T12:00:00"), dl = new Date(days[days.length - 1].date + "T12:00:00");
+  $("t-title").textContent = multiDay ? "Week-end à Bordeaux" : TRIP.title;
+  $("t-tag").textContent = multiDay ? "Balade · escape game · marché de Noël · Bassins des Lumières · Cité du Vin" : TRIP.tagline;
+  $("t-day").textContent = multiDay ? d.getDate() + "–" + dl.getDate() : d.getDate();
+  $("t-month").textContent = d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }).toUpperCase();
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const left = Math.round((d - today) / 86400000);
+  const live = left > 1 ? "Dans " + left + " jours" : left === 1 ? "C'est demain" : left === 0 ? "C'est aujourd'hui" : "Sortie passée";
+  const people = TRIP.participants;
+  $("t-chips").innerHTML = '<span class="chip live">' + live + "</span>" + TRIP.chips.map(c => {
+    if (c.kind === "participants")
+      return '<button type="button" class="chip" id="chip-people" aria-describedby="tip-people">' + people.length + ' participants' +
+        '<span class="tip" role="tooltip" id="tip-people"><b>Participants</b>' + people.map(esc).join("<br>") + "</span></button>";
+    if (c.kind === "meet")
+      return '<button type="button" class="chip" id="chip-meet" data-at="' + c.at + '">Rendez-vous ' + fmt(c.at) + "</button>";
+    return '<span class="chip">' + esc(c.label || "") + "</span>";
+  }).join("");
+  const meet = $("chip-meet");
+  if (meet) {
+    const target = () => tripDays()[dayIdx] === DAY1 ? ITEMS.find(it => it.start === meet.dataset.at) : null;
+    const on = () => { const it = target(); if (it) highlight(it.stops, true); };
+    meet.addEventListener("mouseenter", on);
+    meet.addEventListener("focus", on);
+    meet.addEventListener("mouseleave", () => highlight([]));
+    meet.addEventListener("blur", () => highlight([]));
+    meet.addEventListener("click", () => {
+      if (tripDays()[dayIdx] !== DAY1) switchDay(tripDays().indexOf(DAY1));
+      const it = target(); if (it) focusCard(document.querySelector('.card[data-i="' + ITEMS.indexOf(it) + '"]'));
+    });
+  }
+}
+
+/* Show another day of a multi-day trip */
+function switchDay(i) {
+  useDay(i);
+  renderWeather(); renderTabs();
+  resolvePlan(); renderMap(); renderProgramme(); highlight([]); refresh();
+  $("scroll").scrollTop = 0;
+  if (getComputedStyle($("scroll")).overflowY !== "auto") $("tabs").scrollIntoView({ block: "start" });
+}
+
+/* Scroll the programme to a card and flash it */
+function focusCard(card) {
+  if (!card) return;
+  card.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
+  clearTimeout(card._flash); card._flash = setTimeout(() => card.classList.remove("flash"), 1600);
+}
+
+/* Tabs: one per part of the day; click scrolls, the active tab follows the scroll */
+function renderTabs() {
+  if (multiDay) {
+    const ymd = todayYMD(), ti = todayIndex();
+    $("tabs").innerHTML = tripDays().map((d, i) => {
+      const lab = new Date(d.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+      const past = d.date < ymd, today = d.date === ymd;
+      return '<button type="button" class="tab' + (past ? " past" : "") + (today ? " today" : "") + '" role="tab" id="tab-' + i + '" aria-selected="' + (i === dayIdx) + '">' +
+        '<span class="dot" hidden></span>' + esc(lab.charAt(0).toUpperCase() + lab.slice(1)) +
+        (today ? '<em class="now-lbl">Aujourd\'hui</em>' : "") + "<small>" + esc(d.short) + "</small></button>";
+    }).join("");
+    $("tabs").querySelectorAll(".tab").forEach((t, i) => t.addEventListener("click", () => switchDay(i)));
+    $("tabs").parentElement.setAttribute("aria-label", "Jours de la sortie");
+    /* today is always the first tab on the left: pad the end so it can reach the left edge */
+    const wrap = $("tabs"), first = $("tab-" + ti);
+    const want = first ? first.offsetLeft - wrap.firstElementChild.offsetLeft : 0;
+    const cs = getComputedStyle(wrap), last = wrap.lastElementChild;
+    const content = last.offsetLeft + last.offsetWidth - wrap.firstElementChild.offsetLeft;
+    const gap = want + wrap.clientWidth - (parseFloat(cs.paddingLeft) + content + parseFloat(cs.paddingRight));
+    if (gap > 0) {
+      const sp = document.createElement("span");
+      sp.className = "tab-spacer"; sp.setAttribute("aria-hidden", "true");
+      sp.style.cssText = "flex:none;width:" + Math.ceil(gap) + "px";
+      wrap.appendChild(sp);
+    }
+    wrap.scrollLeft = want;
+    return;
+  }
+  $("tabs").parentElement.setAttribute("aria-label", "Moments de la journée");
+  $("tabs").innerHTML = TRIP.sections.map((sec, i) => {
+    const first = sec.items[0].start, last = sec.items[sec.items.length - 1].end;
+    return '<button type="button" class="tab" role="tab" id="tab-' + i + '" aria-controls="sec-' + i + '" aria-selected="' + (i === 0) + '">' +
+      '<span class="dot" hidden></span>' + esc(sec.label) + "<small>" + fmt(first) + " – " + fmt(last) + "</small></button>";
+  }).join("");
+  $("tabs").querySelectorAll(".tab").forEach((t, i) => t.addEventListener("click", () => {
+    const sec = $("sec-" + i);
+    if (sec) sec.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    setTab(i);
+  }));
+}
+function setTab(i) {
+  $("tabs").querySelectorAll(".tab").forEach((t, k) => t.setAttribute("aria-selected", k === i));
+}
+function syncTab() {
+  if (multiDay) return;
+  const sc = $("scroll"), inner = getComputedStyle(sc).overflowY === "auto";
+  const top = inner ? sc.getBoundingClientRect().top : 0;
+  let cur = 0;
+  TRIP.sections.forEach((s, i) => { const el = $("sec-" + i); if (el && el.getBoundingClientRect().top - top <= 80) cur = i; });
+  const atEnd = inner ? sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 4 : innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+  setTab(atEnd ? TRIP.sections.length - 1 : cur);
+}
+
+const SKY = {
+  sun: '<circle cx="13" cy="13" r="5" fill="#E2A93B"/><g stroke="#E2A93B" stroke-width="1.6" stroke-linecap="round"><path d="M13 2v3M13 21v3M2 13h3M21 13h3M5 5l2 2M19 19l2 2M5 21l2-2M19 7l2-2"/></g>',
+  partly: '<circle cx="10" cy="10" r="4.5" fill="#E2A93B"/><path d="M8 20h11a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.4 1.6A3.3 3.3 0 0 0 8 20z" fill="#9AA6B2"/>',
+  cloud: '<path d="M7 19h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4 1.8A3.6 3.6 0 0 0 7 19z" fill="#9AA6B2"/>',
+  rain: '<path d="M7 15h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4 1.8A3.6 3.6 0 0 0 7 15z" fill="#8792A0"/><g stroke="#4F8FC0" stroke-width="1.6" stroke-linecap="round"><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3"/></g>'
+};
+
+function renderWeather() {
+  const w = TRIP.weather;
+  $("wx-sub").textContent = "Les vraies prévisions s'afficheront automatiquement à partir de J-16.";
+  $("wx").innerHTML = w.slots.map(s =>
+    '<div><span class="h">' + s.h + '</span><svg viewBox="0 0 26 26" aria-hidden="true">' + SKY[s.sky] +
+    '</svg><span class="t">' + s.t + '°</span><br><span class="r">' + s.rain + ' % pluie</span></div>').join("");
+  $("wx-foot").innerHTML = "<span>" + esc(w.normals) + "</span><span>" + esc(w.sunset) + "</span>";
+}
+
+/* Map: equirectangular projection of real coordinates */
+const RIVER = [[44.878, -0.5410], [44.870, -0.5455], [44.863, -0.5485], [44.857, -0.5560], [44.852, -0.5675], [44.846, -0.5662], [44.841, -0.5655], [44.8375, -0.5632], [44.834, -0.5603], [44.829, -0.5565], [44.823, -0.5525]];
+function renderMap() {
+  const W = 300, H = 340, pad = 22;
+  const lats = TRIP.stops.map(s => s.lat), lngs = TRIP.stops.map(s => s.lng);
+  const k = Math.cos(44.84 * Math.PI / 180);
+  const minX = Math.min(...lngs) * k, maxX = Math.max(...lngs) * k, minY = Math.min(...lats), maxY = Math.max(...lats);
+  const sc = Math.min((W - 2 * pad) / (maxX - minX), (H - 2 * pad) / (maxY - minY));
+  const ox = (W - (maxX - minX) * sc) / 2, oy = (H - (maxY - minY) * sc) / 2;
+  const P = (lat, lng) => [ox + (lng * k - minX) * sc, H - (oy + (lat - minY) * sc)];
+  const river = RIVER.map(([a, b]) => P(a, b).map(v => v.toFixed(1)).join(",")).join(" ");
+  const pts = TRIP.stops.map(s => P(s.lat, s.lng));
+  /* nudge markers that would overlap */
+  for (let i = 0; i < pts.length; i++) for (let j = 0; j < i; j++) {
+    const dx = pts[i][0] - pts[j][0], dy = pts[i][1] - pts[j][1];
+    if (Math.hypot(dx, dy) < 22) { pts[i] = [pts[i][0] - 16, pts[i][1] - 13]; j = -1; }
+  }
+  const route = pts.map(p => p.map(v => v.toFixed(1)).join(",")).join(" ");
+  const rl = P(44.8395, -0.5628);
+  let svg = '<polyline class="river" points="' + river + '"/>' +
+    '<text class="river-l" x="' + (rl[0] + 4).toFixed(0) + '" y="' + rl[1].toFixed(0) + '">Garonne</text>';
+  for (let i = 1; i < pts.length; i++) {
+    svg += '<line class="route" data-to="' + TRIP.stops[i].n + '" x1="' + pts[i - 1][0].toFixed(1) + '" y1="' + pts[i - 1][1].toFixed(1) +
+      '" x2="' + pts[i][0].toFixed(1) + '" y2="' + pts[i][1].toFixed(1) + '"/>';
+  }
+  TRIP.stops.forEach((s, i) => {
+    const x = pts[i][0].toFixed(1), y = pts[i][1].toFixed(1);
+    svg += '<g class="mk" data-n="' + s.n + '" tabindex="0" role="button" aria-label="' + esc(s.n + ". " + s.name) + '">' +
+      '<circle class="base" cx="' + x + '" cy="' + y + '" r="10.5"/>' +
+      '<circle class="ring" cx="' + x + '" cy="' + y + '" r="13.5" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 ' + x + " " + y + ')"/>' +
+      '<text x="' + x + '" y="' + y + '">' + s.n + "</text></g>";
+  });
+  const map = $("map");
+  map.setAttribute("viewBox", "0 0 " + W + " " + H);
+  map.innerHTML = svg;
+  map.querySelectorAll(".mk").forEach(g => {
+    const n = +g.dataset.n;
+    g.addEventListener("mouseenter", () => highlight([n], true));
+    g.addEventListener("focus", () => highlight([n], true));
+    const go = () => focusCard(document.querySelector('.card[data-stops~="' + n + '"]'));
+    g.addEventListener("click", go);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+  if (!map._wired) { map.addEventListener("mouseleave", () => highlight([])); map._wired = true; }
+
+  const dir = list => "https://www.google.com/maps/dir/?api=1&origin=" + encodeURIComponent(list[0].addr) +
+    "&destination=" + encodeURIComponent(list[list.length - 1].addr) +
+    "&waypoints=" + encodeURIComponent(list.slice(1, -1).map(s => s.addr).join("|")) + "&travelmode=walking";
+  $("route-all").href = dir(TRIP.stops);
+  const lunch = ITEMS.find(it => it.title === "Déjeuner");
+  $("route-lunch").href = dir(TRIP.stops.slice(lunch ? lunch.stops[0] - 1 : 0));
+}
+
+function highlight(ns, fromMap) {
+  document.querySelectorAll("#map .mk").forEach(g => g.classList.toggle("on", ns.includes(+g.dataset.n)));
+  document.querySelectorAll(".card").forEach(c => {
+    const cs = c.dataset.stops.split(" ").map(Number);
+    c.classList.toggle("hl", !!(fromMap && cs.some(n => ns.includes(n))));
+  });
+  const names = TRIP.stops.filter(s => ns.includes(s.n)).map(s => s.n + ". " + s.name);
+  $("map-legend").textContent = names.length ? names.join(" · ") : "Cliquez sur une étape pour l'afficher dans le programme.";
+}
+
+function link(name, url) { return '<a class="maps" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + "</a>"; }
+
+/* The option with the most votes takes the slot; a tie keeps the organiser's default */
+function pollResult(key) {
+  const p = TRIP.polls[key];
+  const counts = p.options.map(([, v], i) => v.length + (myVote[key] === i ? 1 : 0));
+  const max = Math.max(...counts), total = counts.reduce((a, b) => a + b, 0);
+  const top = counts.map((c, i) => c === max ? i : -1).filter(i => i >= 0);
+  const def = p.default || 0;
+  const win = top.includes(def) ? def : top[0];
+  return { win, votes: counts[win], total, tie: total > 0 && top.length > 1 };
+}
+
+function resolvePlan() {
+  const escItem = DAY1.sections.flatMap(sec => sec.items).find(it => it.poll === "escape");
+  ITEMS.filter(it => it.choices).forEach(it => {
+    const r = pollResult(it.poll);
+    let cur = it.choices[r.win];
+    let others = it.choices.filter((c, i) => i !== r.win && c.name);
+    if (cur.secondEscape) {
+      const first = escItem.choices[pollResult("escape").win];
+      const other = escItem.choices.find(c => c !== first);
+      cur = Object.assign({}, other, { title: cur.title, art: cur.art, text: "On enchaîne sur une 2e partie. " + other.text.replace("Arriver 10 min avant.", "À réserver aussi.") });
+      others = [];
+    }
+    it.cur = cur; it.others = others; it.result = r;
+    it.title = cur.title || it.title;
+    const stop = TRIP.stops[it.stops[0] - 1];
+    Object.assign(stop, { name: cur.name, lat: cur.lat, lng: cur.lng, addr: cur.mapsAddr });
+  });
+}
+
+function renderProgramme() {
+  let html = "";
+  let idx = 0;
+  TRIP.sections.forEach(sec => {
+    html += '<section id="sec-' + TRIP.sections.indexOf(sec) + '"><div class="sec-h"><h2>' + esc(sec.label) + "</h2><span>" + esc(sec.note) + '</span></div><div class="cards">';
+    sec.items.forEach(it => {
+      let tags = '<span class="tag now" hidden>EN COURS</span>';
+      if (it.tag) tags += '<span class="tag ' + (it.tagClass || "") + '">' + esc(it.tag) + "</span>";
+      if (it.result && it.result.total) tags += it.result.tie
+        ? '<span class="tag tie">ÉGALITÉ · CHOIX INITIAL</span>'
+        : '<span class="tag vote">CHOIX DU GROUPE · ' + it.result.votes + (it.result.votes > 1 ? " VOTES" : " VOTE") + "</span>";
+      const stopsBadges = it.stops.map(n => '<span class="stopn" title="Étape ' + n + ' sur le plan">' + n + "</span>").join(" ");
+      let body = it.photo && PHOTOS[it.photo]
+        ? '<figure class="photo"><img src="' + PHOTOS[it.photo] + '" alt="" loading="lazy" style="object-position:' + (it.photoPos || "center") + '"><figcaption>Photo d\'illustration</figcaption></figure>'
+        : ((it.cur && it.cur.art) || it.art) && ART[(it.cur && it.cur.art) || it.art] ? '<svg class="art" viewBox="0 0 120 120" aria-hidden="true">' + ART[(it.cur && it.cur.art) || it.art] + "</svg>" : "";
+      body += "<h3>" + esc(it.title) + tags + "</h3>";
+      const fav = it.cur ? [it.cur.name, it.cur.url] : it.fav;
+      const text = it.cur ? it.cur.text : it.text;
+      body += fav ? "<p><b>" + link(fav[0], fav[1]) + "</b> · " + esc(text) + "</p>" : "<p>" + esc(text) + (it.maps ? " " + link("Maps", it.maps) : "") + "</p>";
+      const alts = it.cur ? (it.others.length ? [{ label: "Autres options", items: it.others.map(c => [c.name, c.url]) }] : []).concat(it.cur.alts || []) : (it.alts || []);
+      alts.forEach(a => {
+        body += '<p class="alt"><i>' + esc(a.label) + " :</i> " + a.items.map(([n, u]) => "<b>" + link(n, u) + "</b>").join(" · ") + (a.note ? " (" + esc(a.note) + ")" : "") + "</p>";
+      });
+      body += '<div class="addr"><span>' + stopsBadges + "</span><span>" + esc(it.cur ? it.cur.addr : it.addr) + "</span></div>";
+      if (it.poll) body += '<div class="poll" data-poll="' + it.poll + '"></div>';
+      html += '<article class="card" data-i="' + (idx++) + '" data-stops="' + it.stops.join(" ") +
+        '"><div class="time">' + fmt(it.start) + "<small>" + fmt(it.end) + '</small></div><div class="body">' + body + "</div></article>";
+    });
+    html += "</div></section>";
+  });
+  $("prog").innerHTML = html;
+  document.querySelectorAll(".card").forEach(c => {
+    const ns = c.dataset.stops.split(" ").map(Number);
+    c.addEventListener("mouseenter", () => highlight(ns, false));
+    c.addEventListener("mouseleave", () => highlight([]));
+  });
+  document.querySelectorAll(".poll").forEach(renderPoll);
+}
+
+let ITEMS = TRIP.sections.flatMap(s => s.items);
+
+function rerender() {
+  const sc = $("scroll"), top = sc.scrollTop, wy = window.scrollY;
+  resolvePlan(); renderMap(); renderProgramme(); highlight([]); refresh();
+  sc.scrollTop = top; window.scrollTo(0, wy);
+}
+
+/* Polls: in-memory for the mock-up; the GitHub version stores votes in a shared database */
+const myVote = {};
+Object.keys(TRIP.polls).forEach(k => { const v = store("vote-" + k); if (v != null && TRIP.polls[k].options[+v]) myVote[k] = +v; });
+
+const FACE_COLORS = ["#B8872E", "#3E7C8C", "#7D5BA6", "#4F8A4B", "#C0634A", "#5C6C8A"];
+const faceColor = name => FACE_COLORS[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % FACE_COLORS.length];
+
+function renderPoll(el) {
+  const key = el.dataset.poll, p = TRIP.polls[key];
+  const voters = p.options.map(([, v], i) => (myVote[key] === i ? ["Vous"] : []).concat(v));
+  const counts = voters.map(v => v.length);
+  const total = counts.reduce((a, b) => a + b, 0);
+  const voted = new Set(voters.flat());
+  const waiting = TRIP.participants.filter(n => !voted.has(n));
+  el.innerHTML = '<p class="poll-q">' + esc(p.q) + "<span>" + total + " / " + TRIP.participants.length + " ont voté</span></p>" +
+    p.options.map(([label], i) => {
+      const v = voters[i];
+      const faces = v.slice(0, 4).map(n => '<span class="face' + (n === "Vous" ? " me" : "") + '" style="background:' + faceColor(n) + '">' + esc(n[0]) + "</span>").join("") +
+        (v.length > 4 ? '<span class="face" style="background:#8A7F83">+' + (v.length - 4) + "</span>" : "");
+      const who = v.length ? "<b>" + v.length + (v.length > 1 ? " votes" : " vote") + "</b>" + v.map(esc).join(", ") : "<b>Aucun vote</b>Personne pour l'instant";
+      return '<button type="button" class="opt" id="opt-' + key + "-" + i + '" aria-pressed="' + (myVote[key] === i) + '" data-i="' + i + '" aria-describedby="who-' + key + "-" + i + '">' +
+        '<span class="fillbar" style="width:' + (total ? Math.round(counts[i] / total * 100) : 0) + '%"></span>' +
+        '<span class="lbl">' + esc(label) + '</span>' +
+        '<span class="right"><span class="faces" aria-hidden="true">' + faces + '</span><span class="n">' + counts[i] + "</span></span>" +
+        '<span class="who" role="tooltip" id="who-' + key + "-" + i + '">' + who + "</span></button>";
+    }).join("") +
+    '<p class="poll-note">' + (waiting.length ? '<span class="pending">Pas encore voté : ' + waiting.map(esc).join(", ") + ".</span> " : "") +
+    "Votes d'exemple. Survolez une option pour voir qui a voté.</p>";
+  el.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => {
+    const i = +b.dataset.i;
+    if (myVote[key] === i) { delete myVote[key]; store("vote-" + key, ""); } else { myVote[key] = i; store("vote-" + key, String(i)); }
+    rerender();
+    const again = document.getElementById("opt-" + key + "-" + i);
+    if (again) again.focus({ preventScroll: true });
+  }));
+}
+
+/* Progress over the day: time columns fill, finished slots and map stops turn grey */
+
+/* Minutes since midnight of the trip day (Paris time); before the day: -1, after the night: Infinity */
+function currentMinutes() {
+  const { ymd, m } = parisNow();
+  if (ymd < TRIP.date) return -1;
+  if (ymd > TRIP.date) return Infinity;
+  return m;
+}
+
+const clamp01 = v => Math.max(0, Math.min(1, v));
+
+function applyTime(now) {
+  const stopP = {};
+  document.querySelectorAll(".card").forEach(card => {
+    const it = ITEMS[+card.dataset.i];
+    const s = toMin(it.start), e = toMin(it.end);
+    const p = clamp01((now - s) / (e - s));
+    const time = card.querySelector(".time");
+    time.style.setProperty("--p", p.toFixed(3));
+    const live = p > 0 && p < 1;
+    card.querySelector(".tag.now").hidden = !live;
+    card.classList.toggle("past", p >= 1);
+    /* a slot with several stops visits them one after the other */
+    it.stops.forEach((n, k) => { stopP[n] = clamp01(p * it.stops.length - k); });
+  });
+  if (multiDay) {
+    const s = toMin(ITEMS[0].start), e = toMin(ITEMS[ITEMS.length - 1].end);
+    document.querySelectorAll("#tabs .dot").forEach((dot, i) => { dot.hidden = !(i === dayIdx && now >= s && now < e); });
+  } else TRIP.sections.forEach((sec, i) => {
+    const s = toMin(sec.items[0].start), e = toMin(sec.items[sec.items.length - 1].end);
+    const dot = document.querySelector("#tab-" + i + " .dot");
+    if (dot) dot.hidden = !(now >= s && now < e);
+  });
+  document.querySelectorAll("#map .mk").forEach(g => {
+    const p = stopP[+g.dataset.n] || 0;
+    g.classList.toggle("done", p >= 1);
+    g.classList.toggle("live", p > 0 && p < 1);
+    g.querySelector(".ring").setAttribute("stroke-dasharray", (p > 0 && p < 1 ? (p * 100).toFixed(1) : 0) + " 100");
+  });
+  document.querySelectorAll("#map .route").forEach(l => {
+    l.classList.toggle("done", (stopP[+l.dataset.to] || 0) > 0);
+  });
+}
+
+const artBtn = $("art-toggle");
+function setArt(on) { document.body.classList.toggle("no-art", !on); artBtn.setAttribute("aria-pressed", on); store("art", on ? "1" : "0"); }
+artBtn.addEventListener("click", () => setArt(artBtn.getAttribute("aria-pressed") !== "true"));
+setArt(store("art") !== "0");
+
+/* Colour controls */
+const swWrap = $("pal-sw"), cG1 = $("c-g1"), cG2 = $("c-g2"), cAcc = $("c-acc"), themeBtn = $("theme-toggle");
+Object.entries(THEME.presets).forEach(([key, c]) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "sw"; b.dataset.preset = key; b.title = c.name; b.setAttribute("aria-label", c.name);
+  b.style.background = "linear-gradient(135deg," + c.g1 + "," + c.g2 + ")";
+  b.addEventListener("click", () => { THEME.apply(Object.assign({ preset: key }, c)); syncColors(); });
+  swWrap.appendChild(b);
+});
+function syncColors() {
+  const c = THEME.get();
+  cG1.value = c.g1; cG2.value = c.g2; cAcc.value = c.accent;
+  swWrap.querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", b.dataset.preset === c.preset));
+  themeBtn.textContent = THEME.isDark() ? "☀ Mode clair" : "☾ Mode sombre";
+}
+[cG1, cG2, cAcc].forEach(inp => inp.addEventListener("input", () => {
+  THEME.apply({ g1: cG1.value, g2: cG2.value, accent: cAcc.value, preset: null }); syncColors();
+}));
+themeBtn.addEventListener("click", () => { THEME.setTheme(THEME.isDark() ? "light" : "dark"); syncColors(); });
+syncColors();
+
+let simulated = false;
+const range = $("sim-range");
+const label = m => { const h = Math.floor(m / 60) % 24; return h + " h " + String(m % 60).padStart(2, "0"); };
+function refresh() {
+  let now = simulated ? +range.value : currentMinutes();
+  if (simulated && multiDay) { const sd = +$("sim-day").value; now = dayIdx < sd ? Infinity : dayIdx > sd ? -1 : now; }
+  $("sim-out").textContent = label(+range.value);
+  applyTime(now);
+}
+function fillSimDays() {
+  const sel = $("sim-day");
+  sel.innerHTML = tripDays().map((d, i) => '<option value="' + i + '">' +
+    new Date(d.date + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric" }) + "</option>").join("");
+  sel.value = String(Math.min(1, tripDays().length - 1));
+  sel.hidden = !(simulated && multiDay);
+}
+$("simulate").addEventListener("click", () => {
+  simulated = !simulated;
+  $("simulate").setAttribute("aria-pressed", simulated);
+  $("sim-wrap").hidden = !simulated;
+  fillSimDays();
+  if (multiDay) switchDay(todayIndex()); else refresh();
+});
+$("sim-day").addEventListener("change", () => switchDay(todayIndex()));
+range.addEventListener("input", refresh);
+
+renderHeader();
+renderTabs();
+renderWeather();
+resolvePlan();
+renderMap();
+renderProgramme();
+highlight([]);
+refresh();
+$("scroll").addEventListener("scroll", syncTab, { passive: true });
+$("multi-toggle").addEventListener("click", () => {
+  multiDay = !multiDay;
+  $("multi-toggle").setAttribute("aria-pressed", multiDay);
+  renderHeader();
+  fillSimDays();
+  switchDay(multiDay ? todayIndex() : 0);
+});
+window.addEventListener("scroll", syncTab, { passive: true });
+setInterval(() => { if (!simulated) refresh(); }, 30000);
+</script>
