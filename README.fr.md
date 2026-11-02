@@ -146,7 +146,14 @@ Si ce projet vous est utile et que vous souhaitez me remercier, un petit don est
 
 ## 📄 Licence
 
-Aucune licence n'est encore choisie : tous droits réservés d'ici là.
+**Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**
+
+Vous pouvez librement utiliser, modifier et redistribuer ce projet, **à condition de** :
+- Créditer l'auteur original
+- Ne pas en faire un usage commercial
+- Redistribuer les versions modifiées sous la même licence
+
+🔗 [Lire la licence complète](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 ---
 

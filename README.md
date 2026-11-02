@@ -146,7 +146,14 @@ If you enjoy this project and want to say thanks, a small donation is always app
 
 ## 📄 License
 
-No license has been chosen yet: all rights reserved until then.
+**Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**
+
+You are free to use, modify and redistribute this project, provided you:
+- Credit the original author
+- Do not use it for commercial purposes
+- Distribute modified versions under the same license
+
+🔗 [Read the full license](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 ---
 
