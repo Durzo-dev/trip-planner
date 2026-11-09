@@ -58,11 +58,18 @@ button.chip:hover, button.chip:focus-visible { filter: brightness(1.12); text-de
 
 /* ---------- Form ----------
    .field          label above its input, select or textarea; .narrow / .tiny for dates and times
-   .row            fields side by side, wrapping on small screens */
+   .row            fields side by side, wrapping on small screens
+   Label text goes in <span class="lbl"> so it can stay on one line. */
 .form { display: grid; gap: var(--space-3); }
 .row { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-end; }
 .hint { color: var(--muted); font-size: var(--text-md); }
 .field { display: grid; gap: var(--space-1); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--muted); flex: 1 1 160px; min-width: 0; }
+/* A label stays on one line; when it does not fit it is cut with "…" and scrolls into view on hover
+   (ui/marquee.ts sets --overflow, the distance to scroll). */
+.field > .lbl { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.field > .lbl.marquee { text-overflow: clip; }
+.field > .lbl.marquee > span { display: inline-block; animation: marquee var(--marquee-time, 3s) ease-in-out .3s infinite alternate; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--overflow, 0px))); } }
 .field.narrow { flex: 0 0 170px; }
 .field.tiny { flex: 0 0 130px; }
 .field input, .field select, .field textarea { font: inherit; font-size: var(--text-base); font-weight: var(--weight-regular); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-2) 10px; width: 100%; }

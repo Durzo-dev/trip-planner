@@ -128,8 +128,20 @@ export function removeItem(trip: Trip, dayIndex: number, sectionIndex: number, i
  * (".../@43.61,3.87,15z", "...!3d43.61!4d3.87", "?q=43.61,3.87").
  */
 export function parseCoordinates(input: string): { lat: number; lng: number } | null {
-  const s = input.trim();
-  const patterns = [/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/, /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/, /[?&](?:q|query|ll)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/, /^(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)$/];
+  let s = input.trim();
+  try {
+    s = decodeURIComponent(s); // %2C, %20 in shared links
+  } catch {
+    // not URL-encoded
+  }
+  const N = String.raw`(-?\d+(?:\.\d+)?)`;
+  const patterns = [
+    new RegExp(String.raw`!3d${N}!4d${N}`), // place pin, the most precise
+    new RegExp(String.raw`/(?:search|dir|place)/(?:[^/]*/)?${N},\s*\+?${N}`), // searched point, destination
+    new RegExp(String.raw`[?&](?:q|query|ll|destination|center)=${N},\s*\+?${N}`),
+    new RegExp(String.raw`@${N},\s*${N}`), // map centre, only when nothing better is in the link
+    new RegExp(String.raw`^${N}\s*[,; ]\s*${N}$`), // typed by hand
+  ];
   for (const p of patterns) {
     const m = s.match(p);
     if (!m) continue;
@@ -139,6 +151,12 @@ export function parseCoordinates(input: string): { lat: number; lng: number } | 
   }
   return null;
 }
+
+/** A Google Maps link that holds no coordinates: the short share links (maps.app.goo.gl, goo.gl/maps). */
+export const isShortMapsLink = (input: string) => /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(input.trim());
+
+/** Keeps a pasted Google Maps link as the place's own link (the "Maps" button then opens exactly it). */
+export const mapsLinkOf = (input: string) => (/^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(input.trim()) ? input.trim() : undefined);
 
 export type TripError =
   | { code: "title" }

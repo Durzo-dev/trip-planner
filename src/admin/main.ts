@@ -12,11 +12,12 @@ import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t 
 import { initTheme } from "../theme";
 import { $, esc } from "../ui/dom";
 import { mountSettingsButton } from "../ui/settings";
+import { enableLabelMarquee } from "../ui/marquee";
 import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
-  addDay, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
+  addDay, isShortMapsLink, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
 } from "./edit";
 
 const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE === "true";
@@ -42,6 +43,7 @@ function chromeTexts(): void {
 
 function initChrome(): void {
   chromeTexts();
+  enableLabelMarquee();
   initTheme(undefined);
   mountSettingsButton(document.querySelector<HTMLElement>(".admin-tools")!, "settings-btn");
   document.addEventListener(LANG_CHANGE, () => {
@@ -93,7 +95,7 @@ function renderSignIn(): void {
     <h1>${esc(t.signInTitle)}</h1>
     <p class="hint">${esc(t.signInHint)}</p>
     <form class="row" id="otp">
-      <label class="field">${esc(t.email)}<input type="email" name="email" required autocomplete="email"></label>
+      <label class="field"><span class="lbl">${esc(t.email)}</span><input type="email" name="email" required autocomplete="email"></label>
       <button class="btn fill add" type="submit">${esc(t.sendLink)}</button>
     </form>
     <div id="otp-msg"></div>
@@ -139,11 +141,11 @@ async function renderList(): Promise<void> {
     <section class="panel">
       <h2>${esc(t.newTrip)}</h2>
       <form class="form" id="create">
-        <label class="field">${esc(t.tripTitle)}<input name="title" required maxlength="80"></label>
+        <label class="field"><span class="lbl">${esc(t.tripTitle)}</span><input name="title" required maxlength="80"></label>
         <div class="row">
-          <label class="field narrow">${esc(t.firstDay)}<input type="date" name="first" required min="${today}"></label>
-          <label class="field narrow">${esc(t.lastDay)}<input type="date" name="last" required min="${today}"></label>
-          <label class="field">${esc(t.timezone)}<input name="zone" required value="${esc(zone)}"></label>
+          <label class="field narrow"><span class="lbl">${esc(t.firstDay)}</span><input type="date" name="first" required min="${today}"></label>
+          <label class="field narrow"><span class="lbl">${esc(t.lastDay)}</span><input type="date" name="last" required min="${today}"></label>
+          <label class="field"><span class="lbl">${esc(t.timezone)}</span><input name="zone" required value="${esc(zone)}"></label>
         </div>
         <div><button class="btn fill add" type="submit">${esc(t.create)}</button></div>
         <div id="create-msg"></div>
@@ -216,13 +218,44 @@ function meetingOptions(trip: Trip): string {
 }
 
 function placeRow(p?: Place): string {
-  const coords = p ? `${p.lat}, ${p.lng}` : "";
+  const coords = p && Number.isFinite(p.lat) && Number.isFinite(p.lng) ? `${p.lat}, ${p.lng}` : "";
   return `<div class="place-row">
-    <label class="field">${esc(t.placeName)}<input data-k="name" value="${esc(p?.name ?? "")}"></label>
-    <label class="field">${esc(t.placeAddress)}<input data-k="address" value="${esc(p?.address ?? "")}"></label>
-    <label class="field">${esc(t.placeCoordinates)}<input data-k="coords" value="${esc(coords)}" placeholder="44.84, -0.57"></label>
+    <label class="field"><span class="lbl">${esc(t.placeName)}</span><input data-k="name" value="${esc(p?.name ?? "")}"></label>
+    <label class="field"><span class="lbl">${esc(t.placeAddress)}</span><input data-k="address" value="${esc(p?.address ?? "")}"></label>
+    <label class="field"><span class="lbl">${esc(t.placeCoordinates)}</span><input data-k="coords" value="${esc(coords)}" placeholder="44.84, -0.57"></label>
     <button type="button" class="btn small danger" data-remove-place>${esc(t.removePlace)}</button>
+    <p class="place-error" hidden></p>
   </div>`;
+}
+
+/**
+ * Checks the places of the open form before anything is saved: a place needs a name, an address and
+ * coordinates that can be read. Marks each faulty row with what to do; returns false if any is faulty.
+ */
+function checkPlaces(form: HTMLFormElement): boolean {
+  let ok = true;
+  form.querySelectorAll<HTMLElement>(".place-row").forEach((r) => {
+    const val = (k: string) => (r.querySelector<HTMLInputElement>(`[data-k="${k}"]`)?.value ?? "").trim();
+    const error = r.querySelector<HTMLElement>(".place-error")!;
+    const empty = !val("name") && !val("address") && !val("coords");
+    let message = "";
+    let field = "";
+    if (!empty) {
+      if (!val("name") || !val("address")) {
+        message = t.placeNeedsNameAddress;
+        field = val("name") ? "address" : "name";
+      } else if (!parseCoordinates(val("coords"))) {
+        message = isShortMapsLink(val("coords")) ? t.placeShortLink : t.placeNoCoordinates;
+        field = "coords";
+      }
+    }
+    error.textContent = message;
+    error.hidden = !message;
+    r.classList.toggle("bad", Boolean(message));
+    if (message && ok) r.querySelector<HTMLInputElement>(`[data-k="${field}"]`)?.focus();
+    if (message) ok = false;
+  });
+  return ok;
 }
 
 function itemForm(it: Item | null): string {
@@ -230,21 +263,21 @@ function itemForm(it: Item | null): string {
   const style = it?.tagStyle ?? "";
   return `<form class="item-form form" id="item-form">
     <div class="row">
-      <label class="field tiny">${esc(t.start)}<input type="time" name="start" required value="${v(it?.start)}"></label>
-      <label class="field tiny">${esc(t.end)}<input type="time" name="end" required value="${v(it?.end)}"></label>
-      <label class="field">${esc(t.activityTitle)}<input name="title" required value="${v(it?.title)}"></label>
+      <label class="field tiny"><span class="lbl">${esc(t.start)}</span><input type="time" name="start" required value="${v(it?.start)}"></label>
+      <label class="field tiny"><span class="lbl">${esc(t.end)}</span><input type="time" name="end" required value="${v(it?.end)}"></label>
+      <label class="field"><span class="lbl">${esc(t.activityTitle)}</span><input name="title" required value="${v(it?.title)}"></label>
     </div>
     <div class="row">
-      <label class="field">${esc(t.tag)}<input name="tag" value="${v(it?.tag)}"></label>
-      <label class="field narrow">${esc(t.tagStyle)}<select name="tagStyle">
+      <label class="field"><span class="lbl">${esc(t.tag)}</span><input name="tag" value="${v(it?.tag)}"></label>
+      <label class="field narrow"><span class="lbl">${esc(t.tagStyle)}</span><select name="tagStyle">
         <option value=""${style === "" ? " selected" : ""}>${esc(t.tagStyleNone)}</option>
         <option value="all"${style === "all" ? " selected" : ""}>${esc(t.tagStyleAll)}</option>
         <option value="optional"${style === "optional" ? " selected" : ""}>${esc(t.tagStyleOptional)}</option>
       </select></label>
     </div>
-    <label class="field">${esc(t.description)}<textarea name="text">${v(it?.text)}</textarea></label>
-    <label class="field">${esc(t.addressLine)}<input name="addressLine" value="${v(it?.addressLine)}"></label>
-    ${it?.poll ? `<p class="note">${esc(t.pollNote)}</p>` : `<div class="form"><span class="field">${esc(t.places)}</span><div class="form" id="places">${(it?.places ?? []).map(placeRow).join("")}</div>
+    <label class="field"><span class="lbl">${esc(t.description)}</span><textarea name="text">${v(it?.text)}</textarea></label>
+    <label class="field"><span class="lbl">${esc(t.addressLine)}</span><input name="addressLine" value="${v(it?.addressLine)}"></label>
+    ${it?.poll ? `<p class="note">${esc(t.pollNote)}</p>` : `<div class="places"><span class="field">${esc(t.places)}</span><div class="form" id="places">${(it?.places ?? []).map(placeRow).join("")}</div>
       <div><button type="button" class="btn small add" id="add-place">${esc(t.addPlace)}</button></div></div>`}
     <div class="row"><button class="btn fill add" type="submit">${esc(t.done)}</button><button class="btn" type="button" id="cancel-item">${esc(t.back)}</button></div>
   </form>`;
@@ -264,15 +297,19 @@ function readItemForm(form: HTMLFormElement, original: Item | null): Item {
   else delete item.tagStyle;
   const rows = form.querySelectorAll<HTMLElement>(".place-row");
   if (!original?.poll) {
-    const places: Place[] = [...rows].map((r) => {
+    const places: Place[] = [...rows].filter((r) => [...r.querySelectorAll("input")].some((i) => i.value.trim())).map((r) => {
       const val = (k: string) => (r.querySelector<HTMLInputElement>(`[data-k="${k}"]`)?.value ?? "").trim();
-      const c = parseCoordinates(val("coords"));
-      return { name: val("name"), address: val("address"), lat: c?.lat ?? Number.NaN, lng: c?.lng ?? Number.NaN };
-    }).filter((p) => p.name || p.address);
-    // Keep each place's own Maps link when its name and address are unchanged
+      // checkPlaces() has refused the form unless the coordinates can be read
+      const c = parseCoordinates(val("coords"))!;
+      const place: Place = { name: val("name"), address: val("address"), lat: c.lat, lng: c.lng };
+      const link = mapsLinkOf(val("coords"));
+      if (link) place.mapsUrl = link;
+      return place;
+    });
+    // Keep each place's own Maps link when its name and address are unchanged and no new link was pasted
     places.forEach((p, i) => {
       const old = original?.places?.[i];
-      if (old?.mapsUrl && old.name === p.name && old.address === p.address) p.mapsUrl = old.mapsUrl;
+      if (!p.mapsUrl && old?.mapsUrl && old.name === p.name && old.address === p.address) p.mapsUrl = old.mapsUrl;
     });
     if (places.length) item.places = places;
     else delete item.places;
@@ -293,9 +330,9 @@ function renderEditor(ed: Editor): void {
   root.innerHTML = `
     <div class="row" style="justify-content:space-between"><a class="btn back" href="${here()}">${CHEVRON_BACK}${esc(t.myTrips)}</a><a class="btn" href="${viewerUrl(trip.id)}" target="_blank" rel="noopener">${esc(t.open)} ↗</a></div>
     <section class="panel form">
-      <label class="field">${esc(t.tripTitle)}<input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
-      <label class="field">${esc(t.tagline)}<input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
-      <label class="field">${esc(t.meetingPoint)}<select id="f-meeting">${meetingOptions(trip)}</select></label>
+      <label class="field"><span class="lbl">${esc(t.tripTitle)}</span><input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
+      <label class="field"><span class="lbl">${esc(t.tagline)}</span><input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
+      <label class="field"><span class="lbl">${esc(t.meetingPoint)}</span><select id="f-meeting">${meetingOptions(trip)}</select></label>
       <div class="shift">
         <label for="f-shift">${esc(t.shiftTrip)}</label><input type="number" id="f-shift" value="0" step="1"><span>${esc(t.shiftUnit)}</span>
         <button type="button" class="btn small edit" id="do-shift">${esc(t.apply)}</button>
@@ -313,8 +350,8 @@ function renderEditor(ed: Editor): void {
       ${((d: Day, di: number) => `<section class="panel day" data-day="${di}" aria-labelledby="day-h">
       <h2 id="day-h">${esc(dayTitle(d.date))}</h2>
       <div class="row">
-        <label class="field narrow">${esc(t.dayDate)}<input type="date" data-day-date="${di}" value="${esc(d.date)}"></label>
-        <label class="field">${esc(t.dayLabel)}<input data-day-label="${di}" value="${esc(d.label ?? "")}"></label>
+        <label class="field narrow"><span class="lbl">${esc(t.dayDate)}</span><input type="date" data-day-date="${di}" value="${esc(d.date)}"></label>
+        <label class="field"><span class="lbl">${esc(t.dayLabel)}</span><input data-day-label="${di}" value="${esc(d.label ?? "")}"></label>
       </div>
       ${d.sections.map((s, si) => `<div>
         <h3 class="section-h">${esc(sectionLabel(s.label))}</h3>
@@ -464,6 +501,7 @@ function wireEditor(ed: Editor): void {
     });
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (!checkPlaces(form)) return;
       ed.open = null;
       update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], readItemForm(form, original)));
     });

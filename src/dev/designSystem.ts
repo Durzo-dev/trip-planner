@@ -12,6 +12,7 @@ import themeTs from "../theme.ts?raw";
 import { DEFAULT_THEME, initTheme } from "../theme";
 import { mountSettingsButton } from "../ui/settings";
 import { CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
+import { enableLabelMarquee } from "../ui/marquee";
 import { LANG_CHANGE } from "../i18n";
 
 const tokens = (prefix: string) => [...new Set([...tokensCss.matchAll(new RegExp(`(--${prefix}[\\w-]*)\\s*:`, "g"))].map((m) => m[1]))];
@@ -46,9 +47,9 @@ function render(): void {
     ${section("Tags", `<div class="row"><span class="tag">OPTIONAL</span><span class="tag all">EVERYONE</span><span class="tag now">NOW</span><span class="tag vote">GROUP CHOICE · 2 VOTES</span><span class="tag tie">TIE</span></div>`)}
     ${section("Panel", `<div class="panel" style="max-width:360px"><h2>Weather</h2><p class="sub">Panel title and subtitle.</p><p>Content.</p></div>`)}
     ${section("Form", `<div class="form" style="max-width:640px"><div class="row">
-        <label class="field tiny">Start<input type="time" value="12:30"></label><label class="field narrow">Date<input type="date" value="2026-11-28"></label>
-        <label class="field">Title<input value="Lunch"></label></div>
-        <label class="field">Style<select><option>Everyone</option></select></label><label class="field">Description<textarea>Grilled meat.</textarea></label>
+        <label class="field tiny"><span class="lbl">Start</span><input type="time" value="12:30"></label><label class="field narrow"><span class="lbl">Date</span><input type="date" value="2026-11-28"></label>
+        <label class="field"><span class="lbl">Title</span><input value="Lunch"></label><label class="field narrow"><span class="lbl">Coordinates or Google Maps link</span><input placeholder="44.84, -0.57"></label></div>
+        <label class="field"><span class="lbl">Style</span><select><option>Everyone</option></select></label><label class="field"><span class="lbl">Description</span><textarea>Grilled meat.</textarea></label>
         <p class="hint">.hint text under a form.</p></div>`, ".form · .row · .field (.narrow, .tiny)")}
     ${section("Segmented choice", `<div class="seg" style="max-width:340px"><label><input type="radio" name="ds-seg" checked><span>Auto</span></label><label><input type="radio" name="ds-seg"><span>Light</span></label><label><input type="radio" name="ds-seg"><span>Dark</span></label></div>`)}
     ${section("Messages", `<div class="form" style="max-width:520px"><p class="msg">Link sent. Open it on this device.</p><p class="msg bad">Saving failed. Check your connection.</p></div>`)}
@@ -62,5 +63,6 @@ function render(): void {
 }
 
 initTheme(DEFAULT_THEME);
+enableLabelMarquee();
 render();
 document.addEventListener(LANG_CHANGE, render);

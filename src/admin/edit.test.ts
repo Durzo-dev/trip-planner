@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Item, Trip } from "../types";
 import {
-  addDay, addDays, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
+  addDay, addDays, isShortMapsLink, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
 } from "./edit";
 
 const LABELS: [string, string, string] = ["Morning", "Afternoon", "Evening"];
@@ -103,11 +103,26 @@ describe("parseCoordinates", () => {
     ["https://www.google.com/maps/place/X/@44.8412,-0.5800,17z/data=!3d44.8411!4d-0.5799", { lat: 44.8411, lng: -0.5799 }],
     ["https://www.google.com/maps/@44.8412,-0.58,15z", { lat: 44.8412, lng: -0.58 }],
     ["https://maps.google.com/?q=44.8412,-0.58", { lat: 44.8412, lng: -0.58 }],
+    ["https://www.google.com/maps/search/44.8412,+-0.58?entry=tts", { lat: 44.8412, lng: -0.58 }],
+    ["https://www.google.com/maps/search/?api=1&query=44.8412%2C-0.58", { lat: 44.8412, lng: -0.58 }],
+    ["https://www.google.com/maps/dir//44.8412,-0.58/@44.84,-0.6,15z", { lat: 44.8412, lng: -0.58 }],
+    ["https://www.google.fr/maps/place/Cit%C3%A9+du+Vin/@44.8625,-0.5508,17z/data=!4m6!3m5!1s0x0:0x0!8m2!3d44.8624!4d-0.5502", { lat: 44.8624, lng: -0.5502 }],
   ])("reads %s", (input, expected) => {
     expect(parseCoordinates(input)).toEqual(expected);
   });
-  it.each(["", "Place de la Bourse", "95, 10", "44.8, 200"])("refuses %j", (input) => {
+  it.each(["", "Place de la Bourse", "95, 10", "44.8, 200", "https://maps.app.goo.gl/AbCdEf123", "https://www.google.com/maps/place/Place+de+la+Bourse"])("refuses %j", (input) => {
     expect(parseCoordinates(input)).toBeNull();
+  });
+  it("recognises the short share links, which hold no coordinates", () => {
+    expect(isShortMapsLink("https://maps.app.goo.gl/AbCdEf123")).toBe(true);
+    expect(isShortMapsLink("https://goo.gl/maps/xyz")).toBe(true);
+    expect(isShortMapsLink("https://www.google.com/maps/@44.8,-0.5,15z")).toBe(false);
+  });
+  it("keeps a pasted Google Maps link as the place's link, not typed coordinates", () => {
+    expect(mapsLinkOf(" https://www.google.com/maps/@44.8,-0.5,15z ")).toBe("https://www.google.com/maps/@44.8,-0.5,15z");
+    expect(mapsLinkOf("https://maps.google.fr/?q=44.8,-0.5")).toBe("https://maps.google.fr/?q=44.8,-0.5");
+    expect(mapsLinkOf("44.8, -0.5")).toBeUndefined();
+    expect(mapsLinkOf("https://example.com/maps/@44.8,-0.5")).toBeUndefined();
   });
 });
 
