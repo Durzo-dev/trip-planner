@@ -42,6 +42,8 @@ export const en = {
   openAdmin: "Open the admin page",
   scrollBack: "Earlier days",
   scrollForward: "Later days",
+  previousDay: "Previous day",
+  nextDay: "Next day",
   themeLight: "Light",
   dayTabs: "Trip days",
   demoNote: "Example trip: sample participants and votes, schematic map.",

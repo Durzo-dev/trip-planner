@@ -6,11 +6,12 @@
 import "../styles/tokens.css";
 import "../styles/components.css";
 import "./admin.css";
-import type { Item, Place, Trip } from "../types";
+import type { Day, Item, Place, Trip } from "../types";
 import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t } from "../i18n";
 import { initTheme } from "../theme";
 import { $, esc } from "../ui/dom";
 import { mountSettingsButton } from "../ui/settings";
+import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
@@ -176,6 +177,8 @@ interface Editor {
   /** Activity whose form is open: [day, section, item], or [day, -1, null] for a new one. */
   open: [number, number, number | null] | null;
   saving: boolean;
+  /** The one day shown. */
+  day: number;
 }
 
 const isDirty = (e: Editor) => JSON.stringify(e.draft) !== JSON.stringify(e.stored.data);
@@ -276,10 +279,16 @@ function readItemForm(form: HTMLFormElement, original: Item | null): Item {
   return item;
 }
 
+/** Listeners of the day strip, removed before each redraw. */
+let stripListeners: AbortController | null = null;
+
 function renderEditor(ed: Editor): void {
   redraw = () => renderEditor(ed);
   const trip = ed.draft;
+  ed.day = Math.max(0, Math.min(ed.day, trip.days.length - 1));
   const y = scrollY;
+  const stripLeft = document.getElementById("strip")?.scrollLeft ?? 0;
+  stripListeners?.abort();
   root.innerHTML = `
     <div class="row" style="justify-content:space-between"><a class="link-btn" href="${here()}">← ${esc(t.myTrips)}</a><a class="btn" href="${viewerUrl(trip.id)}" target="_blank" rel="noopener">${esc(t.open)} ↗</a></div>
     <section class="panel form">
@@ -291,8 +300,16 @@ function renderEditor(ed: Editor): void {
         <button type="button" class="btn small edit" id="do-shift">${esc(t.apply)}</button>
       </div>
     </section>
-    ${trip.days.map((d, di) => `<section class="panel day" data-day="${di}">
-      <h2>${esc(dayTitle(d.date))}</h2>
+    <nav class="day-strip" aria-label="${esc(t.days)}">
+      <button type="button" class="arrow-btn" id="strip-back" aria-label="${esc(t.scrollBack)}" hidden>‹</button>
+      <div class="strip" id="strip">${trip.days.map((d, i) => `<button type="button" class="strip-day${i === ed.day ? " on" : ""}" data-day-pick="${i}" aria-current="${i === ed.day ? "date" : "false"}">${esc(capitalize(formatDate(d.date, { weekday: "short", day: "numeric", month: "short" })))}${d.label ? `<small>${esc(d.label)}</small>` : ""}</button>`).join("")}
+        <button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button></div>
+      <button type="button" class="arrow-btn" id="strip-forward" aria-label="${esc(t.scrollForward)}" hidden>›</button>
+    </nav>
+    <div class="day-view">
+      <button type="button" class="arrow-btn lg" id="day-prev" aria-label="${esc(t.previousDay)}" title="${esc(t.previousDay)}"${ed.day === 0 ? " disabled" : ""}>‹</button>
+      ${((d: Day, di: number) => `<section class="panel day" data-day="${di}" aria-labelledby="day-h">
+      <h2 id="day-h">${esc(dayTitle(d.date))}</h2>
       <div class="row">
         <label class="field narrow">${esc(t.dayDate)}<input type="date" data-day-date="${di}" value="${esc(d.date)}"></label>
         <label class="field">${esc(t.dayLabel)}<input data-day-label="${di}" value="${esc(d.label ?? "")}"></label>
@@ -316,14 +333,21 @@ function renderEditor(ed: Editor): void {
         <button type="button" class="btn small add" data-add="${di}">+ ${esc(t.addActivity)}</button>
         <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
       </div>
-    </section>`).join("")}
-    <div><button type="button" class="btn add" id="add-day">+ ${esc(t.addDay)}</button></div>
+    </section>`)(trip.days[ed.day], ed.day)}
+      <button type="button" class="arrow-btn lg" id="day-next" aria-label="${esc(t.nextDay)}" title="${esc(t.nextDay)}"${ed.day === trip.days.length - 1 ? " disabled" : ""}>›</button>
+    </div>
     <div class="save-bar"><div class="wrap">
       <div class="status" id="save-status"></div>
       <button type="button" class="btn danger" id="discard">${esc(t.discard)}</button>
       <button type="button" class="btn fill add" id="save">${esc(t.save)}</button>
     </div></div>`;
   window.scrollTo(0, y);
+  const strip = $("strip");
+  stripListeners = new AbortController();
+  enableDragScroll(strip, stripListeners.signal);
+  enableScrollArrows(strip, $<HTMLButtonElement>("strip-back"), $<HTMLButtonElement>("strip-forward"), ".strip-day, #add-day", stripListeners.signal);
+  strip.scrollLeft = stripLeft;
+  strip.querySelector<HTMLElement>(".strip-day.on")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   wireEditor(ed);
   refreshSaveBar(ed);
 }
@@ -369,7 +393,11 @@ function wireEditor(ed: Editor): void {
   });
   root.querySelectorAll<HTMLInputElement>("[data-day-date]").forEach((input) =>
     input.addEventListener("change", () => {
-      if (input.value) update(setDayDate(ed.draft, Number(input.dataset.dayDate), input.value));
+      if (!input.value) return;
+      const next = setDayDate(ed.draft, Number(input.dataset.dayDate), input.value);
+      // The day may move in the list (days stay in date order): keep showing it
+      ed.day = next.days.findIndex((d) => d.date === input.value);
+      update(next);
     }));
   root.querySelectorAll<HTMLInputElement>("[data-day-label]").forEach((input) =>
     input.addEventListener("input", () => {
@@ -380,8 +408,25 @@ function wireEditor(ed: Editor): void {
       update(next, false);
     }));
   root.querySelectorAll<HTMLButtonElement>("[data-remove-day]").forEach((b) =>
-    armable(b, () => update(removeDay(ed.draft, Number(b.dataset.removeDay)))));
-  $("add-day").addEventListener("click", () => update(addDay(ed.draft, t.sectionLabels)));
+    armable(b, () => {
+      ed.open = null;
+      update(removeDay(ed.draft, Number(b.dataset.removeDay)));
+    }));
+  $("add-day").addEventListener("click", () => {
+    const next = addDay(ed.draft, t.sectionLabels);
+    ed.day = next.days.length - 1;
+    ed.open = null;
+    update(next);
+  });
+  const show = (day: number) => {
+    if (day < 0 || day >= ed.draft.days.length || day === ed.day) return;
+    ed.day = day;
+    ed.open = null;
+    renderEditor(ed);
+  };
+  root.querySelectorAll<HTMLButtonElement>("[data-day-pick]").forEach((b) => b.addEventListener("click", () => show(Number(b.dataset.dayPick))));
+  $("day-prev").addEventListener("click", () => show(ed.day - 1));
+  $("day-next").addEventListener("click", () => show(ed.day + 1));
   root.querySelectorAll<HTMLButtonElement>("[data-edit]").forEach((b) =>
     b.addEventListener("click", () => {
       ed.open = at(b.dataset.edit!);
@@ -452,12 +497,15 @@ async function openEditor(id: string): Promise<void> {
     redraw();
     return;
   }
-  const ed: Editor = { stored, draft: structuredClone(stored.data), open: null, saving: false };
+  const ed: Editor = { stored, draft: structuredClone(stored.data), open: null, saving: false, day: 0 };
   // Preview page: ?edit=day,section,item opens that activity's form
   const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get("edit") : null;
   if (preview) {
     const [d, s, i] = preview.split(",").map(Number);
-    if (stored.data.days[d]?.sections[s]?.items[i]) ed.open = [d, s, i];
+    if (stored.data.days[d]?.sections[s]?.items[i]) {
+      ed.open = [d, s, i];
+      ed.day = d;
+    }
   }
   addEventListener("beforeunload", (e) => {
     if (isDirty(ed)) e.preventDefault();

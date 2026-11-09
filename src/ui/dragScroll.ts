@@ -18,10 +18,11 @@ export function arrowState(scrollLeft: number, clientWidth: number, scrollWidth:
 }
 
 /** Arrow buttons around the strip; a click scrolls by most of its visible width. */
-export function enableScrollArrows(el: HTMLElement, back: HTMLButtonElement, forward: HTMLButtonElement): void {
+/** `item` picks the strip's entries; `signal` removes every listener and observer when the strip is redrawn. */
+export function enableScrollArrows(el: HTMLElement, back: HTMLButtonElement, forward: HTMLButtonElement, item = ".tab", signal?: AbortSignal): void {
   // Measured to the last tab, not scrollWidth: the spacer that lets today reach the left edge is not content
   const contentEnd = () => {
-    const tabs = el.querySelectorAll<HTMLElement>(".tab");
+    const tabs = el.querySelectorAll<HTMLElement>(item);
     const last = tabs[tabs.length - 1];
     return last ? el.scrollLeft + last.getBoundingClientRect().right - el.getBoundingClientRect().left : el.scrollWidth;
   };
@@ -31,15 +32,15 @@ export function enableScrollArrows(el: HTMLElement, back: HTMLButtonElement, for
     forward.hidden = !s.forward;
   };
   const step = (dir: number) => el.scrollBy({ left: dir * Math.max(80, el.clientWidth * 0.7), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  back.addEventListener("click", () => step(-1));
-  forward.addEventListener("click", () => step(1));
-  el.addEventListener("scroll", update, { passive: true });
-  new ResizeObserver(update).observe(el);
-  new MutationObserver(update).observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ["style"] });
+  back.addEventListener("click", () => step(-1), { signal });
+  forward.addEventListener("click", () => step(1), { signal });
+  el.addEventListener("scroll", update, { passive: true, signal });
+  observe(new ResizeObserver(update), (o) => o.observe(el), signal);
+  observe(new MutationObserver(update), (o) => o.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ["style"] }), signal);
   update();
 }
 
-export function enableDragScroll(el: HTMLElement): void {
+export function enableDragScroll(el: HTMLElement, signal?: AbortSignal): void {
   let startX = 0;
   let startLeft = 0;
   let pressed = false;
@@ -52,26 +53,26 @@ export function enableDragScroll(el: HTMLElement): void {
     dragged = false;
     startX = e.clientX;
     startLeft = el.scrollLeft;
-  });
+  }, { signal });
   window.addEventListener("pointermove", (e) => {
     if (!pressed) return;
     if (!dragged && Math.abs(e.clientX - startX) < DRAG_THRESHOLD) return;
     dragged = true;
     el.classList.add("dragging");
     el.scrollLeft = dragScrollLeft(startLeft, startX, e.clientX, el.scrollWidth - el.clientWidth);
-  });
+  }, { signal });
   window.addEventListener("pointerup", () => {
     if (!pressed) return;
     pressed = false;
     el.classList.remove("dragging");
-  });
+  }, { signal });
   // The click that ends a drag must not select the tab under the pointer
   el.addEventListener("click", (e) => {
     if (!dragged) return;
     dragged = false;
     e.stopPropagation();
     e.preventDefault();
-  }, true);
+  }, { capture: true, signal });
   // A vertical wheel scrolls the strip sideways while the pointer is over it
   el.addEventListener("wheel", (e) => {
     if (!overflows() || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
@@ -80,9 +81,15 @@ export function enableDragScroll(el: HTMLElement): void {
     if (next === el.scrollLeft) return; // at an end: let the page scroll
     el.scrollLeft = next;
     e.preventDefault();
-  }, { passive: false });
+  }, { passive: false, signal });
   const mark = () => el.classList.toggle("can-drag", overflows());
-  new ResizeObserver(mark).observe(el);
-  new MutationObserver(mark).observe(el, { childList: true });
+  observe(new ResizeObserver(mark), (o) => o.observe(el), signal);
+  observe(new MutationObserver(mark), (o) => o.observe(el, { childList: true }), signal);
   mark();
+}
+
+/** Starts an observer and disconnects it when the signal aborts. */
+function observe<O extends { disconnect(): void }>(o: O, start: (o: O) => void, signal?: AbortSignal): void {
+  start(o);
+  signal?.addEventListener("abort", () => o.disconnect(), { once: true });
 }

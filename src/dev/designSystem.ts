@@ -38,6 +38,7 @@ function render(): void {
         <button class="btn danger">Delete</button><button class="btn danger" data-armed>Really delete?</button></div>
       <div class="row"><button class="btn small">Small</button><button class="btn small add">Small add</button><button class="btn small edit">Small edit</button><button class="btn small danger">Small delete</button><button class="btn fill add" disabled>Disabled</button></div></div>`,
       "Colour = what it does. Accent: navigation (.btn, .link-btn) · green: add or confirm (.add) · yellow: modify (.edit) · red: delete or discard (.danger; [data-armed] = second click confirms). .fill for the main action, .small inside lists.")}
+    ${section("Arrows", `<div class="row"><button class="arrow-btn">‹</button><button class="arrow-btn">›</button><button class="arrow-btn lg">‹</button><button class="arrow-btn lg" disabled>›</button></div>`, ".arrow-btn scrolls a strip · .arrow-btn.lg steps through panels · disabled at an end")}
     ${section("Chips and tooltip", `<div class="ds-banner"><div class="chips-demo">
         <span class="chip live">In 19 days</span><button class="chip">4 participants<span class="tip ds-show"><b>Participants</b>Camille<br>Hugo</span></button>
         <span class="chip">Meet at 12:30</span></div></div>`, "On the banner: .chip · .chip.live · .tip")}

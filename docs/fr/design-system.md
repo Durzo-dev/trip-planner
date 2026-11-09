@@ -39,7 +39,7 @@ de `tokens.css` ; les couleurs du thème sont recalculées par `theme.ts`.
 `components.css` documente chacun dans un commentaire au-dessus de ses règles : `.btn` (`.add`,
 `.edit`, `.danger`, `[data-armed]`, `.fill`, `.small`), `.link-btn`, `.chip` (`.live`), infobulles (`.tip`, `.who`),
 `.panel`, formulaire (`.form`, `.row`, `.field` avec `.narrow` / `.tiny`, `.hint`), `.seg`,
-`dialog.dialog`, `.msg` (`.bad`), `.tag` (`.all`, `.now`, `.vote`, `.tie`), `.settings-btn`, `.error`.
+`dialog.dialog`, `.msg` (`.bad`), `.tag` (`.all`, `.now`, `.vote`, `.tie`), `.arrow-btn` (`.lg`), `.settings-btn`, `.error`.
 
 ### Couleur des boutons
 

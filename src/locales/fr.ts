@@ -44,6 +44,8 @@ export const fr: Strings = {
   openAdmin: "Ouvrir la page d'administration",
   scrollBack: "Jours précédents",
   scrollForward: "Jours suivants",
+  previousDay: "Jour précédent",
+  nextDay: "Jour suivant",
   themeLight: "Clair",
   dayTabs: "Jours de la sortie",
   demoNote: "Sortie d'exemple : participants et votes fictifs, plan schématique.",

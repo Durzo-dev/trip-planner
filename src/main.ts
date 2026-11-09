@@ -38,9 +38,9 @@ const shell = () => `
   </div>
 </header>
 <nav class="tabs"><div class="wrap tabs-row">
-  <button type="button" class="tab-arrow" id="tabs-back" aria-label="${esc(t.scrollBack)}" title="${esc(t.scrollBack)}" hidden>‹</button>
+  <button type="button" class="arrow-btn" id="tabs-back" aria-label="${esc(t.scrollBack)}" title="${esc(t.scrollBack)}" hidden>‹</button>
   <div class="tab-list" id="tabs" role="tablist"></div>
-  <button type="button" class="tab-arrow" id="tabs-forward" aria-label="${esc(t.scrollForward)}" title="${esc(t.scrollForward)}" hidden>›</button>
+  <button type="button" class="arrow-btn" id="tabs-forward" aria-label="${esc(t.scrollForward)}" title="${esc(t.scrollForward)}" hidden>›</button>
 </div></nav>
 <main class="wrap main">
   <aside class="side">
