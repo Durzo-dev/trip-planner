@@ -35,8 +35,9 @@
 .day-view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; }
 @media (max-width: 560px) { .day-view { gap: 0; } .day-view > .arrow-btn.lg { width: 32px; height: 56px; } .day-view > .arrow-btn.lg svg { width: 24px; height: 24px; } }
 /* Same space above the buttons as the panel keeps below them: they sit centred under the line */
-.day-foot { display: flex; justify-content: flex-start; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
-.day-foot-gap { flex: 1; }
+.day-foot { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
+/* Bottom row of the trip panel: actions on the whole trip, on the left */
+.panel-foot { display: flex; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .section-h { margin: 6px 0 var(--space-2); font-size: var(--text-sm); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
 .items { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg); flex-wrap: wrap; }

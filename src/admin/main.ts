@@ -300,6 +300,7 @@ function renderEditor(ed: Editor): void {
         <label for="f-shift">${esc(t.shiftTrip)}</label><input type="number" id="f-shift" value="0" step="1"><span>${esc(t.shiftUnit)}</span>
         <button type="button" class="btn small edit" id="do-shift">${esc(t.apply)}</button>
       </div>
+      <div class="panel-foot"><button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button></div>
     </section>
     <nav class="day-strip" aria-label="${esc(t.days)}">
       <button type="button" class="arrow-btn" id="strip-back" aria-label="${esc(t.scrollBack)}" hidden>${CHEVRON_BACK}</button>
@@ -331,8 +332,6 @@ function renderEditor(ed: Editor): void {
       </div>`).join("")}
       ${ed.open && ed.open[0] === di && ed.open[1] === -1 ? itemForm(null) : ""}
       <div class="day-foot">
-        <button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button>
-        <span class="day-foot-gap"></span>
         <button type="button" class="btn small add" data-add="${di}">+ ${esc(t.addActivity)}</button>
         <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
       </div>
