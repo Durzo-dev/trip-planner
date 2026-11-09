@@ -45,6 +45,8 @@
 .item .what { flex: 1 1 160px; min-width: 0; }
 .item .item-tag { font-size: var(--text-2xs); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius-xs); padding: 1px 6px; margin-left: 6px; }
 .item-form { border: 1.5px solid var(--accent); border-radius: var(--radius-lg); padding: 14px; background: var(--surface); }
+/* Form buttons on the right: Back, then the main action last */
+.item-form .form-actions { justify-content: flex-end; }
 .places { display: grid; gap: var(--space-2); }
 #places:empty { display: none; }
 .place-row { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: flex-end; padding: var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-md); }

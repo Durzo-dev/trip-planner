@@ -314,7 +314,7 @@ function itemForm(it: Item | null): string {
     <label class="field"><span class="lbl">${esc(t.addressLine)}</span><input name="addressLine" value="${v(it?.addressLine)}"></label>
     ${it?.poll ? `<p class="note">${esc(t.pollNote)}</p>` : `<div class="places"><span class="field">${esc(t.places)}</span><div class="form" id="places">${(it?.places ?? []).map(placeRow).join("")}</div>
       <div><button type="button" class="btn small add" id="add-place">${esc(t.addPlace)}</button></div></div>`}
-    <div class="row"><button class="btn fill add" type="submit">${esc(t.done)}</button><button class="btn" type="button" id="cancel-item">${esc(t.back)}</button></div>
+    <div class="row form-actions"><button class="btn" type="button" id="cancel-item">${esc(t.back)}</button><button class="btn fill add" type="submit">${esc(t.done)}</button></div>
   </form>`;
 }
 
