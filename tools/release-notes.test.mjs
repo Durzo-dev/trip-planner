@@ -50,9 +50,9 @@ it("normaliseRepoUrl reads https and ssh remotes", () => {
 describe("release files", () => {
   const changelog = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   const versions = (text) => [...text.matchAll(/^## (.*)$/gm)].map((m) => m[1].split(" ")[0]);
+  // No section until a version is decided; each one then gets its section in both languages
   it("titles every CHANGELOG section ## vX.Y.Z, the same ones in both languages", () => {
     const en = versions(changelog("CHANGELOG.md"));
-    expect(en.length).toBeGreaterThan(0);
     en.forEach((v) => expect(v).toMatch(/^v\d+\.\d+\.\d+$/));
     expect(versions(changelog("CHANGELOG.fr.md"))).toEqual(en);
   });

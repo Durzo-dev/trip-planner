@@ -2,7 +2,7 @@
 
 > 🇬🇧 [English version](README.md)
 
-**Version 0.1.1**
+**Version 0.1.2**
 
 **Plannings interactifs pour les sorties entre amis** : une page à partager avec le programme, la météo en direct, le plan du trajet, des sondages sur les activités et l'avancement de la journée.
 

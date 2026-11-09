@@ -1,6 +1,6 @@
 {
   "name": "trip-planner",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "license": "CC-BY-NC-SA-4.0",
   "description": "Interactive, shareable trip plans for outings and holidays with friends: schedule, weather, map, polls.",

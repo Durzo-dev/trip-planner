@@ -2,7 +2,7 @@
 
 > 🇫🇷 [Version française](README.fr.md)
 
-**Version 0.1.1**
+**Version 0.1.2**
 
 **Interactive trip plans for outings with friends**: a shareable page with the schedule, live weather, a map of the route, polls on activities and the progress of the day.
 
