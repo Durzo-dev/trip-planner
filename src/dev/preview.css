@@ -1,0 +1,18 @@
+/* Preview page (development only): neutral chrome so the screens stand out. */
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #E9EAEE; color: #1D1F24; }
+.bar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 12px 20px; background: #1D1F24; color: #FFF; }
+.bar h1 { margin: 0; font-size: 16px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 13px; }
+.controls span { display: inline-flex; gap: 10px; }
+.controls input[type=search] { padding: 5px 8px; border-radius: 6px; border: 0; min-width: 180px; }
+.controls button { padding: 5px 10px; border-radius: 6px; border: 0; cursor: pointer; }
+section { padding: 8px 20px 20px; }
+section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #5A5F6B; margin: 16px 0 8px; }
+.screen { display: inline-block; vertical-align: top; margin: 0 16px 16px 0; padding: 12px; background: #FFF; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.screen h3 { margin: 0 0 8px; font-size: 13px; }
+.shots { display: flex; gap: 12px; align-items: flex-start; }
+.shot { margin: 0; }
+.viewport { position: relative; overflow: hidden; border: 1px solid #D5D7DD; border-radius: 6px; background: #FFF; }
+.viewport iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; }
+.shot figcaption { margin-top: 4px; font-size: 11px; color: #5A5F6B; }

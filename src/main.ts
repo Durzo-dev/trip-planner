@@ -5,7 +5,8 @@
  */
 import "./styles.css";
 import type { Trip } from "./types";
-import { lang, LANGS, setLang, t } from "./i18n";
+import { lang, LANG_CHANGE, t } from "./i18n";
+import { dataConfigured, loadDataSource, usingMock } from "./dataSource";
 import { resolveDay, type MyVotes, type ResolvedDay } from "./plan";
 import { load, save } from "./storage";
 import { initTheme } from "./theme";
@@ -15,12 +16,15 @@ import { $, esc, focusCard, highlightStops } from "./ui/dom";
 import { renderHeader } from "./ui/header";
 import { renderMap } from "./ui/map";
 import { applyProgress, liveSection, renderProgramme } from "./ui/programme";
+import { mountSettingsButton } from "./ui/settings";
+import { enableDragScroll, enableScrollArrows } from "./ui/dragScroll";
 import { renderTabs, selectTab, syncTabWithScroll } from "./ui/tabs";
 import { renderWeather } from "./ui/weatherPanel";
 
 const DEFAULT_TRIP = "bordeaux-2026-11-28";
 
-const SHELL = `
+/** Page skeleton, written in the current language (rebuilt when it changes). */
+const shell = () => `
 <header class="banner">
   <div class="wrap">
     <div>
@@ -31,7 +35,11 @@ const SHELL = `
     <div class="datebox"><div class="d" id="t-day"></div><div class="m" id="t-month"></div></div>
   </div>
 </header>
-<nav class="tabs"><div class="wrap tabs-row"><div class="tab-list" id="tabs" role="tablist"></div><a class="theme-btn" id="admin-link" hidden></a><select class="lang-select" id="lang"></select><button type="button" class="theme-btn" id="theme-btn"></button></div></nav>
+<nav class="tabs"><div class="wrap tabs-row">
+  <button type="button" class="tab-arrow" id="tabs-back" aria-label="${esc(t.scrollBack)}" title="${esc(t.scrollBack)}" hidden>‹</button>
+  <div class="tab-list" id="tabs" role="tablist"></div>
+  <button type="button" class="tab-arrow" id="tabs-forward" aria-label="${esc(t.scrollForward)}" title="${esc(t.scrollForward)}" hidden>›</button>
+</div></nav>
 <main class="wrap main">
   <aside class="side">
     <section class="panel" aria-labelledby="wx-h">
@@ -66,7 +74,6 @@ const override = parseNowOverride(params.get("now"));
 let simulated: TripClock | null = null;
 const clock = (trip: Trip): TripClock => simulated ?? override ?? tripClock(trip.timezone);
 
-const dbConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 
 /** Thrown when a stored trip exists for members only and the viewer cannot see it. */
 class PrivateTrip extends Error {}
@@ -78,19 +85,13 @@ async function loadTrip(id: string): Promise<{ trip: Trip; canEdit: boolean }> {
   // The dev server answers a missing file with the HTML page (status 200): only JSON counts as a trip file.
   const isFile = res.ok && (res.headers.get("content-type") ?? "").includes("json");
   if (isFile) return { trip: await res.json(), canEdit: false };
-  if ((!res.ok && res.status !== 404) || !dbConfigured) throw new Error(`HTTP ${res.status}`);
-  const { loadStoredTrip } = await import("./db");
+  if ((!res.ok && res.status !== 404) || !dataConfigured()) throw new Error(`HTTP ${res.status}`);
+  const { loadStoredTrip } = await loadDataSource();
   const stored = await loadStoredTrip(id);
   if (!stored) throw new PrivateTrip();
   return { trip: stored.data, canEdit: stored.role === "owner" || stored.role === "organiser" };
 }
 
-function initLanguage(): void {
-  const select = $<HTMLSelectElement>("lang");
-  select.setAttribute("aria-label", t.language);
-  select.innerHTML = LANGS.map((l) => `<option value="${l}"${l === lang ? " selected" : ""}>${l.toUpperCase()}</option>`).join("");
-  select.addEventListener("change", () => setLang(select.value as typeof lang));
-}
 
 function loadVotes(trip: Trip): MyVotes {
   const votes: MyVotes = {};
@@ -151,31 +152,18 @@ function showDay(s: State, i: number): void {
   void renderWeather(s.day, tripClock(s.trip.timezone).date, s.trip.timezone);
 }
 
-async function start(): Promise<void> {
-  document.documentElement.lang = lang;
-  const app = $("app");
-  let trip: Trip;
-  let canEdit: boolean;
-  try {
-    ({ trip, canEdit } = await loadTrip(params.get("trip") ?? DEFAULT_TRIP));
-  } catch (err) {
-    initTheme(undefined);
-    app.innerHTML = err instanceof PrivateTrip
-      ? `<p class="error">${esc(t.signInToSee)}<br><br><a class="btn fill" href="./admin.html">${esc(t.signInTitle)}</a></p>`
-      : `<p class="error">${esc(t.loadError)}</p>`;
-    return;
-  }
-  initTheme((trip.example && storedColours()) || trip.theme);
-  app.outerHTML = SHELL;
-  initLanguage();
-  if (canEdit) {
-    const link = $<HTMLAnchorElement>("admin-link");
-    link.href = `./admin.html?trip=${encodeURIComponent(trip.id)}`;
-    link.textContent = `⚙ ${t.admin}`;
-    link.hidden = false;
-  }
+/**
+ * Draws the whole page for the trip in the current language. Called once, then again when the language
+ * changes: the day shown and the votes are kept, the page scroll too.
+ */
+function mount(s: State, canEdit: boolean, first: boolean): void {
+  const { trip } = s;
+  const y = scrollY;
+  const inner = document.getElementById("scroll")?.scrollTop ?? 0;
+  const app = document.getElementById("app")!;
+  app.innerHTML = shell();
+  document.title = trip.title;
   const today = clock(trip).date;
-  const s: State = { trip, dayIndex: initialDay(trip, today), day: undefined as unknown as ResolvedDay, votes: loadVotes(trip) };
 
   renderHeader(trip, today, {
     onMeetingHover(active) {
@@ -190,6 +178,12 @@ async function start(): Promise<void> {
       if (r) focusCard(document.querySelector(`.card[data-i="${r.index}"]`));
     },
   });
+  const adminUrl = canEdit ? `./admin.html?trip=${encodeURIComponent(trip.id)}${usingMock() ? "&mock" : ""}` : null;
+  mountSettingsButton($("t-chips"), undefined, adminUrl);
+  enableDragScroll($("tabs"));
+  enableScrollArrows($("tabs"), $<HTMLButtonElement>("tabs-back"), $<HTMLButtonElement>("tabs-forward"));
+  // The test bar starts with the real clock: a simulation in progress ends with a redraw
+  if (!first) simulated = null;
   showDay(s, s.dayIndex);
   if (trip.days.length === 1) selectTab(0);
   if (trip.example) {
@@ -201,8 +195,37 @@ async function start(): Promise<void> {
       },
     });
   }
-
   $("scroll").addEventListener("scroll", () => syncTabWithScroll(trip), { passive: true });
+  if (!first) {
+    $("scroll").scrollTop = inner;
+    window.scrollTo(0, y);
+    syncTabWithScroll(trip);
+  }
+}
+
+async function start(): Promise<void> {
+  document.documentElement.lang = lang;
+  const app = $("app");
+  let loaded: { trip: Trip; canEdit: boolean };
+  try {
+    loaded = await loadTrip(params.get("trip") ?? DEFAULT_TRIP);
+  } catch (err) {
+    initTheme(undefined);
+    const show = () => {
+      app.innerHTML = err instanceof PrivateTrip
+        ? `<p class="error">${esc(t.signInToSee)}<br><br><a class="btn fill" href="./admin.html">${esc(t.signInTitle)}</a></p>`
+        : `<p class="error">${esc(t.loadError)}</p>`;
+      mountSettingsButton(app.querySelector(".error")!, "btn settings-btn error-settings");
+    };
+    show();
+    document.addEventListener(LANG_CHANGE, show);
+    return;
+  }
+  const { trip, canEdit } = loaded;
+  initTheme((trip.example && storedColours()) || trip.theme);
+  const s: State = { trip, dayIndex: initialDay(trip, clock(trip).date), day: undefined as unknown as ResolvedDay, votes: loadVotes(trip) };
+  mount(s, canEdit, true);
+  document.addEventListener(LANG_CHANGE, () => mount(s, canEdit, false));
   addEventListener("scroll", () => syncTabWithScroll(trip), { passive: true });
   if (!override) setInterval(() => { if (!simulated) tick(s); }, 30_000);
 }

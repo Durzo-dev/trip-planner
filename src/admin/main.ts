@@ -6,42 +6,50 @@
 import "../styles.css";
 import "./admin.css";
 import type { Item, Place, Trip } from "../types";
-import { capitalize, formatDate, formatTime, lang, LANGS, sectionLabel, setLang, t } from "../i18n";
-import { initTheme, toggleTheme } from "../theme";
+import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t } from "../i18n";
+import { initTheme } from "../theme";
 import { $, esc } from "../ui/dom";
-import { setThemeLabel } from "../ui/tabs";
+import { mountSettingsButton } from "../ui/settings";
 import type { StoredTrip } from "../db";
+import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
   addDay, newTrip, parseCoordinates, removeDay, removeItem, saveItem, setDayDate, shiftTrip, validateTrip, type TripError,
 } from "./edit";
 
-const configured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE === "true";
-const dbModule = () => import("../db");
+const dbModule = loadDataSource;
 
 const root = $("admin");
-const here = () => location.href.split("#")[0].split("?")[0];
-const viewerUrl = (id: string) => `./?trip=${encodeURIComponent(id)}`;
+/** Keeps ?mock (development preview) on the links between pages. */
+const keep = () => (usingMock() ? `&mock=${encodeURIComponent(new URLSearchParams(location.search).get("mock") ?? "")}` : "");
+const here = () => location.href.split("#")[0].split("?")[0] + (usingMock() ? `?${keep().slice(1)}` : "");
+const viewerUrl = (id: string) => `./?trip=${encodeURIComponent(id)}${keep()}`;
 
 // ---------- Page chrome: language, theme, signed-in user ----------
 
-function initChrome(): void {
+/** Redraws the current view in the current language (set by each view, run when the language changes). */
+let redraw: () => void = () => {};
+let signedInEmail: string | null = null;
+
+function chromeTexts(): void {
   document.documentElement.lang = lang;
   document.title = t.adminTitle;
   $("brand").textContent = t.adminTitle;
-  const select = $<HTMLSelectElement>("lang");
-  select.setAttribute("aria-label", t.language);
-  select.innerHTML = LANGS.map((l) => `<option value="${l}"${l === lang ? " selected" : ""}>${l.toUpperCase()}</option>`).join("");
-  select.addEventListener("change", () => setLang(select.value as typeof lang));
+}
+
+function initChrome(): void {
+  chromeTexts();
   initTheme(undefined);
-  setThemeLabel();
-  $("theme-btn").addEventListener("click", () => {
-    toggleTheme();
-    setThemeLabel();
+  mountSettingsButton(document.querySelector<HTMLElement>(".admin-tools")!, "settings-btn");
+  document.addEventListener(LANG_CHANGE, () => {
+    chromeTexts();
+    void showUser(signedInEmail);
+    redraw();
   });
 }
 
 async function showUser(email: string | null): Promise<void> {
+  signedInEmail = email;
   const el = $("user");
   if (!email) {
     el.textContent = "";
@@ -49,8 +57,8 @@ async function showUser(email: string | null): Promise<void> {
   }
   el.innerHTML = `${esc(t.signedInAs(email))}<button type="button" id="sign-out">${esc(t.signOut)}</button>`;
   $("sign-out").addEventListener("click", async () => {
-    const { db } = await dbModule();
-    await db().auth.signOut();
+    const { signOut } = await dbModule();
+    await signOut();
     location.href = here();
   });
 }
@@ -77,6 +85,7 @@ function armable(button: HTMLButtonElement, run: () => void): void {
 // ---------- Sign in ----------
 
 function renderSignIn(): void {
+  redraw = renderSignIn;
   root.innerHTML = `<section class="panel form">
     <h1>${esc(t.signInTitle)}</h1>
     <p class="hint">${esc(t.signInHint)}</p>
@@ -90,13 +99,13 @@ function renderSignIn(): void {
   $("otp").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = String(new FormData(e.target as HTMLFormElement).get("email")).trim();
-    const { db } = await dbModule();
-    const { error } = await db().auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
-    $("otp-msg").innerHTML = `<p class="msg${error ? " bad" : ""}">${esc(error ? error.message : t.linkSent(email))}</p>`;
+    const { sendSignInLink } = await dbModule();
+    const error = await sendSignInLink(email, location.href.split("#")[0]);
+    $("otp-msg").innerHTML = `<p class="msg${error ? " bad" : ""}">${esc(error ?? t.linkSent(email))}</p>`;
   });
   document.getElementById("google")?.addEventListener("click", async () => {
-    const { db } = await dbModule();
-    await db().auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.href.split("#")[0] } });
+    const { signInWithGoogle } = await dbModule();
+    await signInWithGoogle(location.href.split("#")[0]);
   });
 }
 
@@ -111,6 +120,7 @@ const dateRange = (trip: Trip) => {
 };
 
 async function renderList(): Promise<void> {
+  redraw = () => void renderList();
   const { listMyTrips } = await dbModule();
   const trips = await listMyTrips();
   const admin = trips.filter((s) => s.role === "owner" || s.role === "organiser");
@@ -120,7 +130,7 @@ async function renderList(): Promise<void> {
       <h2>${esc(t.myTrips)}</h2>
       ${admin.length ? `<div class="trip-list">${admin.map((s) => `<div class="trip-row">
           <div><b>${esc(s.data.title)}</b><small>${esc(dateRange(s.data))}</small></div>
-          <div class="row"><a class="btn" href="${viewerUrl(s.id)}">${esc(t.open)}</a><a class="btn fill" href="?trip=${encodeURIComponent(s.id)}">${esc(t.edit)}</a></div>
+          <div class="row"><a class="btn" href="${viewerUrl(s.id)}">${esc(t.open)}</a><a class="btn fill" href="?trip=${encodeURIComponent(s.id)}${keep()}">${esc(t.edit)}</a></div>
         </div>`).join("")}</div>` : `<p class="hint">${esc(t.noTrips)}</p>`}
     </section>
     <section class="panel">
@@ -150,7 +160,7 @@ async function renderList(): Promise<void> {
     const { createTrip, TripExists } = await dbModule();
     try {
       await createTrip(trip);
-      location.search = `?trip=${encodeURIComponent(trip.id)}`;
+      location.search = `?trip=${encodeURIComponent(trip.id)}${keep()}`;
     } catch (err) {
       $("create-msg").innerHTML = `<p class="msg bad">${esc(err instanceof TripExists ? t.tripExists : t.saveError)}</p>`;
     }
@@ -266,6 +276,7 @@ function readItemForm(form: HTMLFormElement, original: Item | null): Item {
 }
 
 function renderEditor(ed: Editor): void {
+  redraw = () => renderEditor(ed);
   const trip = ed.draft;
   const y = scrollY;
   root.innerHTML = `
@@ -434,10 +445,17 @@ async function openEditor(id: string): Promise<void> {
   const { loadStoredTrip } = await dbModule();
   const stored = await loadStoredTrip(id);
   if (!stored || (stored.role !== "owner" && stored.role !== "organiser")) {
-    root.innerHTML = `<p class="error">${esc(t.loadError)}</p><p><a class="link-btn" href="${here()}">← ${esc(t.myTrips)}</a></p>`;
+    redraw = () => (root.innerHTML = `<p class="error">${esc(t.loadError)}</p><p><a class="link-btn" href="${here()}">← ${esc(t.myTrips)}</a></p>`);
+    redraw();
     return;
   }
   const ed: Editor = { stored, draft: structuredClone(stored.data), open: null, saving: false };
+  // Preview page: ?edit=day,section,item opens that activity's form
+  const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get("edit") : null;
+  if (preview) {
+    const [d, s, i] = preview.split(",").map(Number);
+    if (stored.data.days[d]?.sections[s]?.items[i]) ed.open = [d, s, i];
+  }
   addEventListener("beforeunload", (e) => {
     if (isDirty(ed)) e.preventDefault();
   });
@@ -448,19 +466,17 @@ async function openEditor(id: string): Promise<void> {
 
 async function start(): Promise<void> {
   initChrome();
-  if (!configured) {
-    root.innerHTML = `<p class="msg bad">${esc(t.notConfigured)}</p>`;
+  if (!dataConfigured() || (usingMock() && new URLSearchParams(location.search).get("mock") === "unconfigured")) {
+    redraw = () => (root.innerHTML = `<p class="msg bad">${esc(t.notConfigured)}</p>`);
+    redraw();
     return;
   }
-  const { db } = await dbModule();
-  const { data } = await db().auth.getSession();
-  const email = data.session?.user.email ?? null;
+  const { currentEmail, onSignedIn } = await dbModule();
+  const email = await currentEmail();
   await showUser(email);
-  if (!data.session) {
+  if (!email) {
     renderSignIn();
-    db().auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") location.reload();
-    });
+    onSignedIn(() => location.reload());
     return;
   }
   const id = new URLSearchParams(location.search).get("trip");
@@ -468,7 +484,8 @@ async function start(): Promise<void> {
     if (id) await openEditor(id);
     else await renderList();
   } catch {
-    root.innerHTML = `<p class="msg bad">${esc(t.saveError)}</p>`;
+    redraw = () => (root.innerHTML = `<p class="msg bad">${esc(t.saveError)}</p>`);
+    redraw();
   }
 }
 

@@ -20,7 +20,7 @@ the illustrations off, switch to the multi-day example, or simulate the day to w
 ## ✨ Features
 
 ### Schedule
-- 🗓️ **Tabs under the banner**: Morning / Afternoon / Evening for a one-day trip, one tab per day for a longer one
+- 🗓️ **Tabs under the banner**: Morning / Afternoon / Evening for a one-day trip, one tab per day for a longer one; when they do not fit, arrows appear at the hidden end, and the tabs can also be dragged with the mouse or scrolled with the wheel
 - 📍 **Today first**: on a multi-day trip, today is always the first tab on the left; past days sit further left, greyed
 - ⏱️ **Live progress**: the time column fills up with the theme gradient, the current slot is marked, finished slots turn grey
 - 🔗 **Google Maps link** for every place, and for every alternative
@@ -43,7 +43,8 @@ the illustrations off, switch to the multi-day example, or simulate the day to w
 ### Page
 - 🌤️ **Live weather** from [Open-Meteo](https://open-meteo.com), from 16 days before the date
 - 🎨 **Theme from three colours** (gradient start, gradient end, accent), with **light and dark modes**
-- 🌍 **English and French interface**: a language picker, remembered on the device; otherwise the browser language (English if it is neither)
+- ⚙️ **Settings** (gear next to the trip information): language, and appearance (auto, light, dark), remembered on the device; the page switches language in place, without reloading; the trip's organisers also find the way to its admin page there
+- 🌍 **English and French interface**: the language chosen in the settings, otherwise the browser language (English if it is neither)
 - 📱 **Phone and desktop**: one column on phones; on desktop the weather and the map stay put while the schedule scrolls
 
 ### Admin page (`admin.html`)
@@ -100,6 +101,12 @@ The trip files work without it; the admin page and stored trips need it.
 4. In **Authentication → URL Configuration**, add `http://localhost:5173/**` to the redirect URLs
 5. For the published site, add the same values as repository variables `SUPABASE_URL` and `SUPABASE_ANON_KEY` (Settings → Secrets and variables → Actions → Variables)
 
+### Preview every screen
+With `npm run dev` running, open [`/trip-planner/preview.html`](http://localhost:5173/trip-planner/preview.html):
+every screen of the trip page and the admin page, with sample data, side by side in desktop and phone sizes,
+in the language and mode you pick. The admin screens use an in-memory stand-in for Supabase (`?mock` in the
+address), so no account is needed. This page and the stand-in exist only in development.
+
 ### Build
 ```bash
 npm run build
@@ -124,7 +131,9 @@ trip-planner/
 ├── supabase/migrations/    # Database tables and access rules (row-level security), with their tests
 ├── src/
 │   ├── main.ts             # Entry point: loads the trip, wires the page
-│   ├── db.ts               # Supabase access (stored trips)
+│   ├── db.ts               # Supabase access (stored trips, sign-in)
+│   ├── dataSource.ts       # Supabase, or the development stand-in with ?mock
+│   ├── dev/                # Development only: screen preview page and Supabase stand-in
 │   ├── admin/              # Admin page: pure edit functions and the page itself
 │   ├── types.ts            # Data model
 │   ├── plan.ts             # Poll results, resolved activities, map stops, directions
@@ -135,6 +144,7 @@ trip-planner/
 │   ├── locales/            # Interface strings, one file per language
 │   └── ui/                 # Header, tabs, map, schedule and weather panels
 ├── admin.html              # Admin page
+├── preview.html            # Screen preview (development only)
 ├── docs/mockup.html        # The validated mock-up the project starts from
 └── .github/workflows/      # Tests, build and GitHub Pages deployment
 ```

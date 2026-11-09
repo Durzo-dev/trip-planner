@@ -1,9 +1,8 @@
 /**
- * Tabs under the banner, and the light/dark switch next to them.
+ * Tabs under the banner. They scroll sideways by touch, mouse drag or wheel when they do not fit.
  */
 import type { Trip } from "../types";
 import { capitalize, formatDate, formatTime, sectionLabel, t } from "../i18n";
-import { isDark, toggleTheme } from "../theme";
 import { $, esc, reducedMotion } from "./dom";
 
 /**
@@ -16,7 +15,6 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
   const nav = wrap.closest("nav")!;
   const multi = trip.days.length > 1;
   const spacer = `<span class="spacer-end"></span>`;
-  setThemeLabel();
 
   if (multi) {
     nav.setAttribute("aria-label", t.dayTabs);
@@ -45,18 +43,6 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
       selectTab(i);
     }));
   }
-  $("theme-btn").onclick = () => {
-    toggleTheme();
-    setThemeLabel();
-  };
-}
-
-export function setThemeLabel(): void {
-  const label = isDark() ? t.themeLight : t.themeDark;
-  const btn = $("theme-btn");
-  btn.innerHTML = `<span aria-hidden="true">${isDark() ? "☀" : "☾"}</span><span class="lbl"> ${esc(label)}</span>`;
-  btn.setAttribute("aria-label", label);
-  btn.title = label;
 }
 
 function scrollTodayToStart(wrap: HTMLElement, trip: Trip, today: string): void {

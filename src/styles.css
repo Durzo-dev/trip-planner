@@ -44,6 +44,8 @@
 
 
 * { box-sizing: border-box; }
+/* The page is drawn inside #app; its children lay out as if they were the body's. */
+#app { display: contents; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; }
 a { color: var(--accent-ink); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
@@ -245,11 +247,34 @@ footer { font-size: 12px; color: var(--muted); padding-block: 28px 8px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tab-list .spacer-end { flex: none; }
 [hidden] { display: none !important; }
-.theme-btn { flex: none; align-self: center; font: inherit; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--tint); border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
-.theme-btn:hover { color: var(--fg); }
-a.theme-btn { text-decoration: none; }
-.lang-select { flex: none; align-self: center; font: inherit; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--tint); border: 0; border-radius: 999px; padding: 4px 8px; cursor: pointer; }
-@media (max-width: 560px) { .theme-btn .lbl { display: none; } .theme-btn { padding: 4px 9px; } }
+.tab-arrow { flex: none; align-self: center; width: 28px; height: 28px; display: grid; place-items: center; font: inherit; font-size: 20px; line-height: 1; color: var(--accent-ink); background: var(--tint); border: 0; border-radius: 50%; cursor: pointer; padding: 0 0 2px; }
+.tab-arrow:hover { background: var(--fill); }
+.tab-arrow[hidden] { display: none; }
+.error .settings-btn { margin-left: 8px; vertical-align: middle; }
+/* Day tabs that do not fit: drag them with the mouse */
+.tab-list.can-drag { cursor: grab; }
+.tab-list.dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.tab-list.dragging .tab { pointer-events: none; }
+
+/* Settings: gear button and panel */
+.settings-btn { display: inline-flex; align-items: center; justify-content: center; padding: 4px 8px; line-height: 0; }
+.settings-btn svg { display: block; }
+dialog.settings { border: 1px solid var(--line); border-radius: 14px; padding: 0; width: min(380px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+dialog.settings::backdrop { background: rgba(10,10,20,.45); }
+.settings-body { display: grid; gap: 16px; padding: 18px 20px 22px; margin: 0; }
+.settings-head { display: flex; align-items: center; justify-content: space-between; }
+.settings-head h2 { margin: 0; font-size: 17px; }
+.settings-close { font: inherit; font-size: 15px; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.settings-close:hover { color: var(--fg); background: var(--tint); }
+.settings fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+.settings fieldset > .btn { justify-content: center; }
+.settings legend { padding: 0; margin-bottom: 8px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
+.seg { display: flex; gap: 4px; padding: 4px; border-radius: 10px; background: var(--tint); }
+.seg label { flex: 1; position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; text-align: center; font-size: 13px; font-weight: 500; padding: 7px 6px; border-radius: 7px; color: var(--muted); }
+.seg input:checked + span { background: var(--surface); color: var(--accent-ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
 .wx-msg { font-size: 13px; color: var(--muted); padding: 10px 2px; }
 .cards .empty { margin: 0; padding: 12px 4px; color: var(--muted); font-style: italic; }
 .error { padding: 40px 16px; text-align: center; color: var(--muted); }

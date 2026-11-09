@@ -6,10 +6,9 @@
 import type { Theme, Trip } from "../types";
 import { capitalize, formatDate, formatTime, t } from "../i18n";
 import { load, save } from "../storage";
-import { applyTheme, DEFAULT_THEME, isDark, PRESETS, toggleTheme } from "../theme";
+import { applyTheme, DEFAULT_THEME, isDark, PRESETS, THEME_CHANGE, toggleTheme } from "../theme";
 import { toMinutes, type TripClock } from "../time";
 import { $, esc } from "./dom";
-import { setThemeLabel } from "./tabs";
 
 /** The two bundled examples the "multi-day" toggle switches between. */
 export const EXAMPLE_TRIPS = { oneDay: "bordeaux-2026-11-28", multiDay: "bordeaux-weekend-2026-11" };
@@ -89,7 +88,6 @@ export function renderDemoBar(trip: Trip, dayIndex: number, h: DemoHandlers): vo
     bar.querySelectorAll<HTMLElement>(".sw").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.preset === current.preset)));
     const dark = isDark();
     $("demo-theme").textContent = `${dark ? "☀" : "☾"} ${dark ? t.themeLight : t.themeDark}`;
-    setThemeLabel();
   };
   const use = (c: StoredColours) => {
     current = c;
@@ -105,8 +103,8 @@ export function renderDemoBar(trip: Trip, dayIndex: number, h: DemoHandlers): vo
     toggleTheme();
     sync();
   });
-  // The theme button in the tab bar changes the mode too: keep this label in step
-  $("theme-btn").addEventListener("click", sync);
+  // The settings panel changes the mode too: keep this label in step
+  document.addEventListener(THEME_CHANGE, sync);
   sync();
 
   // Illustrations

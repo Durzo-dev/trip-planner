@@ -21,7 +21,7 @@ voir se dérouler heure par heure.
 ## ✨ Fonctionnalités
 
 ### Programme
-- 🗓️ **Onglets sous le bandeau** : Matin / Après-midi / Soirée pour une sortie d'un jour, un onglet par jour pour une sortie plus longue
+- 🗓️ **Onglets sous le bandeau** : Matin / Après-midi / Soirée pour une sortie d'un jour, un onglet par jour pour une sortie plus longue ; quand ils ne tiennent pas, des flèches apparaissent du côté caché, et on peut aussi les faire glisser à la souris ou avec la molette
 - 📍 **Le jour actuel en premier** : sur plusieurs jours, le jour actuel est toujours le premier onglet à gauche ; les jours passés sont plus à gauche, grisés
 - ⏱️ **Avancement en direct** : la colonne d'horaire se remplit avec le dégradé du thème, le créneau en cours est signalé, les créneaux terminés se grisent
 - 🔗 **Lien Google Maps** pour chaque lieu, et pour chaque alternative
@@ -44,7 +44,8 @@ voir se dérouler heure par heure.
 ### Page
 - 🌤️ **Météo en direct** via [Open-Meteo](https://open-meteo.com), à partir de 16 jours avant la date
 - 🎨 **Thème à partir de trois couleurs** (début et fin du dégradé, accent), avec **modes clair et sombre**
-- 🌍 **Interface en anglais et en français** : un sélecteur de langue, mémorisé sur l'appareil ; sinon la langue du navigateur (anglais si ce n'est aucune des deux)
+- ⚙️ **Réglages** (engrenage à côté des informations de la sortie) : langue, et apparence (auto, clair, sombre), mémorisées sur l'appareil ; la page change de langue sur place, sans se recharger ; les organisateurs de la sortie y trouvent aussi l'accès à sa page d'administration
+- 🌍 **Interface en anglais et en français** : la langue choisie dans les réglages, sinon celle du navigateur (anglais si ce n'est aucune des deux)
 - 📱 **Téléphone et ordinateur** : une colonne sur téléphone ; sur ordinateur, la météo et le plan restent fixes pendant que le programme défile
 
 ### Page d'administration (`admin.html`)
@@ -101,6 +102,13 @@ Les fichiers de sortie s'en passent ; la page d'administration et les sorties en
 4. Dans **Authentication → URL Configuration**, ajouter `http://localhost:5173/**` aux adresses de redirection
 5. Pour le site publié, ajouter les mêmes valeurs en variables du dépôt `SUPABASE_URL` et `SUPABASE_ANON_KEY` (Settings → Secrets and variables → Actions → Variables)
 
+### Voir tous les écrans
+Avec `npm run dev` lancé, ouvrir [`/trip-planner/preview.html`](http://localhost:5173/trip-planner/preview.html) :
+tous les écrans du planning et de l'administration, avec des données d'exemple, côte à côte en taille ordinateur
+et téléphone, dans la langue et le mode choisis. Les écrans d'administration utilisent une doublure de Supabase
+en mémoire (`?mock` dans l'adresse) : aucun compte n'est nécessaire. Cette page et la doublure n'existent qu'en
+développement.
+
 ### Compiler
 ```bash
 npm run build
@@ -125,7 +133,9 @@ trip-planner/
 ├── supabase/migrations/    # Tables et règles d'accès de la base (sécurité par ligne), avec leurs tests
 ├── src/
 │   ├── main.ts             # Point d'entrée : charge la sortie, assemble la page
-│   ├── db.ts               # Accès à Supabase (sorties enregistrées)
+│   ├── db.ts               # Accès à Supabase (sorties enregistrées, connexion)
+│   ├── dataSource.ts       # Supabase, ou la doublure de développement avec ?mock
+│   ├── dev/                # Développement seulement : page d'aperçu des écrans et doublure de Supabase
 │   ├── admin/              # Page d'administration : fonctions de modification pures et la page elle-même
 │   ├── types.ts            # Modèle de données
 │   ├── plan.ts             # Résultats des sondages, activités résolues, étapes du plan, itinéraires
@@ -136,6 +146,7 @@ trip-planner/
 │   ├── locales/            # Textes de l'interface, un fichier par langue
 │   └── ui/                 # Bandeau, onglets, plan, programme et météo
 ├── admin.html              # Page d'administration
+├── preview.html            # Aperçu des écrans (développement seulement)
 ├── docs/mockup.html        # La maquette validée dont part le projet
 └── .github/workflows/      # Tests, compilation et déploiement GitHub Pages
 ```

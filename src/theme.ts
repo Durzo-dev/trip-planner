@@ -104,17 +104,41 @@ export function applyTheme(theme: Theme = current): void {
   }
 }
 
-/** Restores the viewer's light/dark choice and follows the system otherwise. */
-export function initTheme(theme: Theme | undefined): void {
-  const forced = load("theme");
-  if (forced === "dark" || forced === "light") document.documentElement.setAttribute("data-theme", forced);
-  applyTheme(theme ?? DEFAULT_THEME);
-  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => applyTheme());
+export type ThemeMode = "system" | "light" | "dark";
+export const THEME_MODES: ThemeMode[] = ["system", "light", "dark"];
+
+/** Fired on document whenever the light/dark mode changes, so every control showing it can follow. */
+export const THEME_CHANGE = "themechange";
+
+/** The viewer's saved choice; "system" follows the device. In development, ?theme= previews a mode without saving it. */
+export function themeMode(): ThemeMode {
+  const forced = document.documentElement.getAttribute("data-theme");
+  return forced === "dark" || forced === "light" ? forced : "system";
 }
 
-export function toggleTheme(): void {
-  const next = isDark() ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", next);
-  save("theme", next);
+function setMode(mode: ThemeMode, persist: boolean): void {
+  if (mode === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", mode);
+  if (persist) save("theme", mode === "system" ? null : mode);
   applyTheme();
+  document.dispatchEvent(new Event(THEME_CHANGE));
+}
+
+export const setThemeMode = (mode: ThemeMode) => setMode(mode, true);
+
+/** Restores the viewer's light/dark choice and follows the system otherwise. */
+export function initTheme(theme: Theme | undefined): void {
+  const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get("theme") : null;
+  const forced = preview ?? load("theme");
+  if (forced === "dark" || forced === "light") document.documentElement.setAttribute("data-theme", forced);
+  applyTheme(theme ?? DEFAULT_THEME);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
+    applyTheme();
+    document.dispatchEvent(new Event(THEME_CHANGE));
+  });
+}
+
+/** Switches to the opposite of what is shown now (test bar). */
+export function toggleTheme(): void {
+  setThemeMode(isDark() ? "light" : "dark");
 }

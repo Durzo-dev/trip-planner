@@ -1,5 +1,5 @@
 /** UI language: the viewer's saved choice first, else the browser language when it is French, else English.
- *  Strings live in src/locales (one file per language). Trip content (titles, descriptions) is written in
+ *  Strings live in src/locales (one file per language). Switching language does not reload the page. Trip content (titles, descriptions) is written in
  *  the trip file and is not translated. */
 import { en } from "./locales/en";
 import { fr } from "./locales/fr";
@@ -13,17 +13,30 @@ export function pickLang(saved: string | null, browser: string | undefined): Lan
   return (browser || "en").toLowerCase().startsWith("fr") ? "fr" : "en";
 }
 
-export const lang: Lang = pickLang(load("lang"), typeof navigator === "undefined" ? undefined : navigator.language);
+/** In development, ?lang= previews a language without saving it (used by the preview page). */
+const previewLang = import.meta.env.DEV && typeof location !== "undefined" ? new URLSearchParams(location.search).get("lang") : null;
 
-/** Saves the viewer's choice and reloads the page in that language. */
+/** Fired on document when the language changes: each page redraws itself in place, keeping its state. */
+export const LANG_CHANGE = "langchange";
+
+const STRINGS = { en, fr };
+const LOCALES = { en: "en-GB", fr: "fr-FR" };
+
+// Live bindings: modules that import them always read the current language.
+export let lang: Lang = pickLang(previewLang ?? load("lang"), typeof navigator === "undefined" ? undefined : navigator.language);
+export let locale = LOCALES[lang];
+export let t = STRINGS[lang];
+
+/** Saves the viewer's choice and switches the interface to it without reloading. */
 export function setLang(next: Lang): void {
   save("lang", next);
-  location.reload();
+  if (next === lang) return;
+  lang = next;
+  locale = LOCALES[next];
+  t = STRINGS[next];
+  document.documentElement.lang = next;
+  document.dispatchEvent(new Event(LANG_CHANGE));
 }
-
-export const locale = lang === "fr" ? "fr-FR" : "en-GB";
-
-export const t = lang === "fr" ? fr : en;
 
 /** "13:05" → "13 h 05" (fr) / "13:05" (en). */
 export function formatTime(hm: string): string {

@@ -66,3 +66,31 @@ export async function saveTrip(id: string, data: Trip, version: number): Promise
   if (!rows.length) throw new SaveConflict();
   return rows[0].version as number;
 }
+
+// ---------- Sign-in ----------
+
+/** E-mail of the signed-in user, or null. Also completes a sign-in when the page opens from the e-mail link. */
+export async function currentEmail(): Promise<string | null> {
+  const { data } = await db().auth.getSession();
+  return data.session?.user.email ?? null;
+}
+
+export async function sendSignInLink(email: string, redirectTo: string): Promise<string | null> {
+  const { error } = await db().auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+  return error?.message ?? null;
+}
+
+export async function signInWithGoogle(redirectTo: string): Promise<void> {
+  await db().auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+}
+
+export async function signOut(): Promise<void> {
+  await db().auth.signOut();
+}
+
+/** Runs once the user signs in (for instance from the e-mail link opened in another tab). */
+export function onSignedIn(run: () => void): void {
+  db().auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_IN") run();
+  });
+}
