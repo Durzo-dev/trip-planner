@@ -15,17 +15,24 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
 /* ---------- Button ----------
-   .btn            outlined, accent colour
-   .btn.fill       filled, the main action of a group
-   .btn.danger     destructive; [data-armed] = asks for the confirming second click
+   The colour says what the button does:
+   .btn            navigation (open, back, go to): accent colour
+   .btn.add        adds or confirms (add, create, save, done, send): green
+   .btn.edit       modifies (edit, apply a change): yellow
+   .btn.danger     deletes or discards: red; [data-armed] = asks for the confirming second click
+   .btn.fill       filled instead of outlined: the main action of a group, combines with the above
    .btn.small      compact, inside lists
-   .link-btn       an action that reads as a link */
+   .link-btn       a navigation that reads as a link */
 .btn { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: var(--text-md); font-weight: var(--weight-medium); text-decoration: none; padding: 7px 14px; border-radius: var(--radius-pill); border: 1.5px solid var(--accent); color: var(--accent-ink); background: transparent; cursor: pointer; }
 .btn.fill { background: var(--accent); color: var(--white); }
 .btn:hover { filter: brightness(1.08); }
 .btn:disabled { opacity: .5; cursor: default; filter: none; }
+.btn.add { border-color: var(--success); color: var(--success); }
+.btn.edit { border-color: var(--edit); color: var(--edit); }
 .btn.danger { border-color: var(--danger); color: var(--danger); }
-.btn.danger[data-armed] { background: var(--danger); color: var(--white); }
+.btn.add.fill { background: var(--success); color: var(--on-action); }
+.btn.edit.fill { background: var(--edit); color: var(--on-action); }
+.btn.danger.fill, .btn.danger[data-armed] { background: var(--danger); color: var(--on-action); }
 .btn.small { padding: var(--space-1) 10px; font-size: var(--text-sm); }
 .link-btn { font: inherit; font-size: var(--text-md); color: var(--accent-ink); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 
@@ -58,6 +65,8 @@ button.chip:hover, button.chip:focus-visible { filter: brightness(1.12); text-de
 .field.tiny { flex: 0 0 130px; }
 .field input, .field select, .field textarea { font: inherit; font-size: var(--text-base); font-weight: var(--weight-regular); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-2) 10px; width: 100%; }
 .field textarea { min-height: 70px; resize: vertical; }
+/* Drawn chevron, so it keeps a gap from the right edge like the text does from the left */
+.field select { appearance: none; padding-right: 36px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 19px) 50%, calc(100% - 14px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
 .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* ---------- Segmented choice (radio buttons that look like one control) ---------- */

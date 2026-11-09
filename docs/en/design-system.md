@@ -35,10 +35,23 @@ theme colours are recomputed by `theme.ts`.
 
 ## Components
 
-`components.css` documents each one in a comment above its rules: `.btn` (`.fill`, `.danger`,
-`[data-armed]`, `.small`), `.link-btn`, `.chip` (`.live`), tooltips (`.tip`, `.who`), `.panel`, form
+`components.css` documents each one in a comment above its rules: `.btn` (`.add`, `.edit`, `.danger`,
+`[data-armed]`, `.fill`, `.small`), `.link-btn`, `.chip` (`.live`), tooltips (`.tip`, `.who`), `.panel`, form
 (`.form`, `.row`, `.field` with `.narrow` / `.tiny`, `.hint`), `.seg`, `dialog.dialog`, `.msg` (`.bad`),
 `.tag` (`.all`, `.now`, `.vote`, `.tie`), `.settings-btn`, `.error`.
+
+### Button colours
+
+The colour of a button says what it does, on every page:
+
+| Action | Class | Colour |
+|---|---|---|
+| Navigate (open, back, go to) | `.btn`, `.link-btn` | Accent |
+| Add or confirm (add, create, save, done, send) | `.btn.add` | Green (`--success`) |
+| Modify (edit, apply a change) | `.btn.edit` | Yellow (`--edit`) |
+| Delete or discard | `.btn.danger` | Red (`--danger`) |
+
+`.fill` marks the main action of a group, in its colour.
 
 ## Extend
 

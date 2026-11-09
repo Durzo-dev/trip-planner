@@ -62,9 +62,13 @@
   --on-dark-fill: rgba(255,255,255,.14);
   --on-dark-line: rgba(255,255,255,.25);
   --on-dark-line-strong: rgba(255,255,255,.4);
+  /* Action colours: red deletes, yellow modifies, green adds or confirms; navigation keeps the accent */
   --danger: #C0392B;
   --danger-soft: #FBE3E0;
   --danger-ink: #8E2A1F;
+  --edit: #966000;
+  --success: #2A7E49;
+  --on-action: #FFFFFF;               /* text on a filled action button */
   /* Weather icons */
   --sky-sun: #E2A93B;
   --sky-cloud: #9AA6B2;
@@ -113,6 +117,7 @@
     --banner: #5E1229; --banner-ink: #430B1C; --gold: #D9B26A; --gold-soft: #3A2E18;
     --river: #1E3440; --ok: #6CC596; --fill: #5A2637; --done: #5E5458; --art-o: .2; color-scheme: dark;
     --danger: #E06A5C; --danger-soft: #3A1E1C; --danger-ink: #F2B3AA;
+    --edit: #EDB64F; --success: #63C08C; --on-action: #17120C;
   }
 }
 :root[data-theme="dark"] {
@@ -121,4 +126,5 @@
   --banner: #5E1229; --banner-ink: #430B1C; --gold: #D9B26A; --gold-soft: #3A2E18;
   --river: #1E3440; --ok: #6CC596; --fill: #5A2637; --done: #5E5458; --art-o: .2; color-scheme: dark;
   --danger: #E06A5C; --danger-soft: #3A1E1C; --danger-ink: #F2B3AA;
+  --edit: #EDB64F; --success: #63C08C; --on-action: #17120C;
 }

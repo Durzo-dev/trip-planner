@@ -92,7 +92,7 @@ function renderSignIn(): void {
     <p class="hint">${esc(t.signInHint)}</p>
     <form class="row" id="otp">
       <label class="field">${esc(t.email)}<input type="email" name="email" required autocomplete="email"></label>
-      <button class="btn fill" type="submit">${esc(t.sendLink)}</button>
+      <button class="btn fill add" type="submit">${esc(t.sendLink)}</button>
     </form>
     <div id="otp-msg"></div>
     ${googleEnabled ? `<div><button class="btn" type="button" id="google">${esc(t.signInWithGoogle)}</button></div>` : ""}
@@ -131,7 +131,7 @@ async function renderList(): Promise<void> {
       <h2>${esc(t.myTrips)}</h2>
       ${admin.length ? `<div class="trip-list">${admin.map((s) => `<div class="trip-row">
           <div><b>${esc(s.data.title)}</b><small>${esc(dateRange(s.data))}</small></div>
-          <div class="row"><a class="btn" href="${viewerUrl(s.id)}">${esc(t.open)}</a><a class="btn fill" href="?trip=${encodeURIComponent(s.id)}${keep()}">${esc(t.edit)}</a></div>
+          <div class="row"><a class="btn" href="${viewerUrl(s.id)}">${esc(t.open)}</a><a class="btn fill edit" href="?trip=${encodeURIComponent(s.id)}${keep()}">${esc(t.edit)}</a></div>
         </div>`).join("")}</div>` : `<p class="hint">${esc(t.noTrips)}</p>`}
     </section>
     <section class="panel">
@@ -143,7 +143,7 @@ async function renderList(): Promise<void> {
           <label class="field narrow">${esc(t.lastDay)}<input type="date" name="last" required min="${today}"></label>
           <label class="field">${esc(t.timezone)}<input name="zone" required value="${esc(zone)}"></label>
         </div>
-        <div><button class="btn fill" type="submit">${esc(t.create)}</button></div>
+        <div><button class="btn fill add" type="submit">${esc(t.create)}</button></div>
         <div id="create-msg"></div>
       </form>
     </section>`;
@@ -241,8 +241,8 @@ function itemForm(it: Item | null): string {
     <label class="field">${esc(t.description)}<textarea name="text">${v(it?.text)}</textarea></label>
     <label class="field">${esc(t.addressLine)}<input name="addressLine" value="${v(it?.addressLine)}"></label>
     ${it?.poll ? `<p class="note">${esc(t.pollNote)}</p>` : `<div class="form"><span class="field">${esc(t.places)}</span><div class="form" id="places">${(it?.places ?? []).map(placeRow).join("")}</div>
-      <div><button type="button" class="btn small" id="add-place">${esc(t.addPlace)}</button></div></div>`}
-    <div class="row"><button class="btn fill" type="submit">${esc(t.done)}</button><button class="btn" type="button" id="cancel-item">${esc(t.back)}</button></div>
+      <div><button type="button" class="btn small add" id="add-place">${esc(t.addPlace)}</button></div></div>`}
+    <div class="row"><button class="btn fill add" type="submit">${esc(t.done)}</button><button class="btn" type="button" id="cancel-item">${esc(t.back)}</button></div>
   </form>`;
 }
 
@@ -288,7 +288,7 @@ function renderEditor(ed: Editor): void {
       <label class="field">${esc(t.meetingPoint)}<select id="f-meeting">${meetingOptions(trip)}</select></label>
       <div class="shift">
         <label for="f-shift">${esc(t.shiftTrip)}</label><input type="number" id="f-shift" value="0" step="1"><span>${esc(t.shiftUnit)}</span>
-        <button type="button" class="btn small" id="do-shift">${esc(t.apply)}</button>
+        <button type="button" class="btn small edit" id="do-shift">${esc(t.apply)}</button>
       </div>
     </section>
     ${trip.days.map((d, di) => `<section class="panel day" data-day="${di}">
@@ -304,7 +304,7 @@ function renderEditor(ed: Editor): void {
           return isOpen ? `<li>${itemForm(it)}</li>` : `<li class="item">
             <span class="when">${esc(formatTime(it.start))} – ${esc(formatTime(it.end))}</span>
             <span class="what">${esc(it.title)}${it.tag ? `<span class="item-tag">${esc(it.tag)}</span>` : ""}</span>
-            <button type="button" class="btn small" data-edit="${di},${si},${ii}">${esc(t.edit)}</button>
+            <button type="button" class="btn small edit" data-edit="${di},${si},${ii}">${esc(t.edit)}</button>
             <button type="button" class="btn small danger" data-remove="${di},${si},${ii}">${esc(t.remove)}</button>
           </li>`;
         }).join("")}
@@ -313,15 +313,15 @@ function renderEditor(ed: Editor): void {
       </div>`).join("")}
       ${ed.open && ed.open[0] === di && ed.open[1] === -1 ? itemForm(null) : ""}
       <div class="day-foot">
-        <button type="button" class="btn small" data-add="${di}">+ ${esc(t.addActivity)}</button>
+        <button type="button" class="btn small add" data-add="${di}">+ ${esc(t.addActivity)}</button>
         <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
       </div>
     </section>`).join("")}
-    <div><button type="button" class="btn" id="add-day">+ ${esc(t.addDay)}</button></div>
+    <div><button type="button" class="btn add" id="add-day">+ ${esc(t.addDay)}</button></div>
     <div class="save-bar"><div class="wrap">
       <div class="status" id="save-status"></div>
-      <button type="button" class="btn" id="discard">${esc(t.discard)}</button>
-      <button type="button" class="btn fill" id="save">${esc(t.save)}</button>
+      <button type="button" class="btn danger" id="discard">${esc(t.discard)}</button>
+      <button type="button" class="btn fill add" id="save">${esc(t.save)}</button>
     </div></div>`;
   window.scrollTo(0, y);
   wireEditor(ed);

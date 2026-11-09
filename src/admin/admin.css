@@ -22,7 +22,8 @@
 
 .day { display: grid; gap: 12px; }
 .day h2 { margin: 0; }
-.day-foot { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-1); border-top: 1px solid var(--line); }
+/* Same space above the buttons as the panel keeps below them: they sit centred under the line */
+.day-foot { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .section-h { margin: 6px 0 0; font-size: var(--text-sm); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
 .items { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg); flex-wrap: wrap; }

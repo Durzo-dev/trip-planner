@@ -36,10 +36,23 @@ de `tokens.css` ; les couleurs du thème sont recalculées par `theme.ts`.
 
 ## Composants
 
-`components.css` documente chacun dans un commentaire au-dessus de ses règles : `.btn` (`.fill`,
-`.danger`, `[data-armed]`, `.small`), `.link-btn`, `.chip` (`.live`), infobulles (`.tip`, `.who`),
+`components.css` documente chacun dans un commentaire au-dessus de ses règles : `.btn` (`.add`,
+`.edit`, `.danger`, `[data-armed]`, `.fill`, `.small`), `.link-btn`, `.chip` (`.live`), infobulles (`.tip`, `.who`),
 `.panel`, formulaire (`.form`, `.row`, `.field` avec `.narrow` / `.tiny`, `.hint`), `.seg`,
 `dialog.dialog`, `.msg` (`.bad`), `.tag` (`.all`, `.now`, `.vote`, `.tie`), `.settings-btn`, `.error`.
+
+### Couleur des boutons
+
+La couleur d'un bouton dit ce qu'il fait, sur toutes les pages :
+
+| Action | Classe | Couleur |
+|---|---|---|
+| Naviguer (ouvrir, revenir, aller à) | `.btn`, `.link-btn` | Accent |
+| Ajouter ou valider (ajouter, créer, enregistrer, terminer, envoyer) | `.btn.add` | Vert (`--success`) |
+| Modifier (modifier, appliquer un changement) | `.btn.edit` | Jaune (`--edit`) |
+| Supprimer ou abandonner | `.btn.danger` | Rouge (`--danger`) |
+
+`.fill` signale l'action principale d'un groupe, dans sa couleur.
 
 ## Étendre
 

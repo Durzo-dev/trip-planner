@@ -31,10 +31,13 @@ function render(): void {
     ${section("Space", tokens("space-").map((n) => `<p class="ds-row"><code>${n}</code><span class="bar" style="width:var(${n})"></span></p>`).join(""))}
     ${section("Radii", `<div class="sws">${tokens("radius-").map((n) => `<figure class="sw"><span class="box" style="border-radius:var(${n})"></span><figcaption>${n}</figcaption></figure>`).join("")}</div>`)}
     ${section("Shadows", `<div class="sws">${["--shadow-sm", "--shadow-pop", "--shadow-bar", "--shadow-dialog"].map((n) => `<figure class="sw"><span class="box" style="box-shadow:var(${n})"></span><figcaption>${n}</figcaption></figure>`).join("")}</div>`)}
-    ${section("Buttons", `<div class="row">
-        <button class="btn fill">Primary</button><button class="btn">Secondary</button><button class="btn danger">Delete</button>
-        <button class="btn danger" data-armed>Really delete?</button><button class="btn small">Small</button><button class="btn fill" disabled>Disabled</button>
-        <button class="link-btn">Link button</button></div>`, ".btn · .btn.fill · .btn.danger ([data-armed] = second click confirms) · .btn.small · .link-btn")}
+    ${section("Buttons", `<div class="form"><div class="row">
+        <button class="btn fill">Open</button><button class="btn">Back</button><button class="link-btn">Link</button></div>
+      <div class="row"><button class="btn fill add">Save</button><button class="btn add">+ Add an activity</button>
+        <button class="btn fill edit">Edit</button><button class="btn edit">Apply</button>
+        <button class="btn danger">Delete</button><button class="btn danger" data-armed>Really delete?</button></div>
+      <div class="row"><button class="btn small">Small</button><button class="btn small add">Small add</button><button class="btn small edit">Small edit</button><button class="btn small danger">Small delete</button><button class="btn fill add" disabled>Disabled</button></div></div>`,
+      "Colour = what it does. Accent: navigation (.btn, .link-btn) · green: add or confirm (.add) · yellow: modify (.edit) · red: delete or discard (.danger; [data-armed] = second click confirms). .fill for the main action, .small inside lists.")}
     ${section("Chips and tooltip", `<div class="ds-banner"><div class="chips-demo">
         <span class="chip live">In 19 days</span><button class="chip">4 participants<span class="tip ds-show"><b>Participants</b>Camille<br>Hugo</span></button>
         <span class="chip">Meet at 12:30</span></div></div>`, "On the banner: .chip · .chip.live · .tip")}
