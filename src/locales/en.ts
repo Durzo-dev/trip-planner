@@ -37,6 +37,7 @@ export const en = {
   settings: "Settings",
   appearance: "Appearance",
   close: "Close",
+  loading: "Loading…",
   organisation: "Organisation",
   openAdmin: "Open the admin page",
   scrollBack: "Earlier days",

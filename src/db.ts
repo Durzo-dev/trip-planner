@@ -30,26 +30,41 @@ export interface StoredTrip {
 export class SaveConflict extends Error {}
 export class TripExists extends Error {}
 
-async function myRoles(): Promise<Map<string, Role>> {
-  const { data: user } = await db().auth.getUser();
-  if (!user.user) return new Map();
-  const { data, error } = await db().from("trip_members").select("trip_id, role").eq("user_id", user.user.id).eq("status", "active");
-  if (error) throw error;
-  return new Map(data.map((m) => [m.trip_id as string, m.role as Role]));
+/**
+ * Signed-in user's id, read from the session kept in the browser (no network request). It only narrows
+ * the query to the user's own membership: what may be read is still decided by the database's rules.
+ */
+async function myId(): Promise<string | null> {
+  const { data } = await db().auth.getSession();
+  return data.session?.user.id ?? null;
 }
+
+/** Each trip comes with the user's own membership row, so trips and roles arrive in one request. */
+const TRIP_WITH_ROLE = "id, data, status, version, trip_members!inner(role)";
+
+interface Row extends Omit<StoredTrip, "role"> {
+  trip_members: { role: Role }[];
+}
+const toStored = ({ trip_members, ...r }: Row): StoredTrip => ({ ...r, role: trip_members[0]?.role ?? null });
 
 /** Trips the signed-in user is an active member of, newest first. */
 export async function listMyTrips(): Promise<StoredTrip[]> {
-  const [roles, res] = await Promise.all([myRoles(), db().from("trips").select("id, data, status, version").order("created_at", { ascending: false })]);
-  if (res.error) throw res.error;
-  return res.data.map((r) => ({ ...(r as Omit<StoredTrip, "role">), role: roles.get(r.id as string) ?? null }));
+  const me = await myId();
+  if (!me) return [];
+  const { data, error } = await db().from("trips").select(TRIP_WITH_ROLE)
+    .eq("trip_members.user_id", me).eq("trip_members.status", "active").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as unknown as Row[]).map(toStored);
 }
 
 /** A stored trip, or null when it does not exist or the user may not see it (the two look the same). */
 export async function loadStoredTrip(id: string): Promise<StoredTrip | null> {
-  const [roles, res] = await Promise.all([myRoles(), db().from("trips").select("id, data, status, version").eq("id", id).maybeSingle()]);
-  if (res.error) throw res.error;
-  return res.data ? { ...(res.data as Omit<StoredTrip, "role">), role: roles.get(id) ?? null } : null;
+  const me = await myId();
+  if (!me) return null;
+  const { data, error } = await db().from("trips").select(TRIP_WITH_ROLE)
+    .eq("id", id).eq("trip_members.user_id", me).eq("trip_members.status", "active").maybeSingle();
+  if (error) throw error;
+  return data ? toStored(data as unknown as Row) : null;
 }
 
 export async function createTrip(trip: Trip): Promise<void> {

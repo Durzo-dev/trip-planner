@@ -14,7 +14,7 @@ import { mountSettingsButton } from "../ui/settings";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
-  addDay, newTrip, parseCoordinates, removeDay, removeItem, saveItem, setDayDate, shiftTrip, validateTrip, type TripError,
+  addDay, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
 } from "./edit";
 
 const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE === "true";
@@ -173,7 +173,7 @@ async function renderList(): Promise<void> {
 interface Editor {
   stored: StoredTrip;
   draft: Trip;
-  /** Activity whose form is open: [day, section, item or null for a new one]. */
+  /** Activity whose form is open: [day, section, item], or [day, -1, null] for a new one. */
   open: [number, number, number | null] | null;
   saving: boolean;
 }
@@ -292,10 +292,7 @@ function renderEditor(ed: Editor): void {
       </div>
     </section>
     ${trip.days.map((d, di) => `<section class="panel day" data-day="${di}">
-      <div class="day-head">
-        <h2>${esc(dayTitle(d.date))}</h2>
-        <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
-      </div>
+      <h2>${esc(dayTitle(d.date))}</h2>
       <div class="row">
         <label class="field narrow">${esc(t.dayDate)}<input type="date" data-day-date="${di}" value="${esc(d.date)}"></label>
         <label class="field">${esc(t.dayLabel)}<input data-day-label="${di}" value="${esc(d.label ?? "")}"></label>
@@ -311,9 +308,14 @@ function renderEditor(ed: Editor): void {
             <button type="button" class="btn small danger" data-remove="${di},${si},${ii}">${esc(t.remove)}</button>
           </li>`;
         }).join("")}
-        ${ed.open && ed.open[0] === di && ed.open[1] === si && ed.open[2] === null ? `<li>${itemForm(null)}</li>` : ""}</ul>
-        <button type="button" class="link-btn" data-add="${di},${si}">+ ${esc(t.addActivity)}</button>
+        </ul>
+        ${s.items.length ? "" : `<p class="note">${esc(t.nothingPlanned)}</p>`}
       </div>`).join("")}
+      ${ed.open && ed.open[0] === di && ed.open[1] === -1 ? itemForm(null) : ""}
+      <div class="day-foot">
+        <button type="button" class="btn small" data-add="${di}">+ ${esc(t.addActivity)}</button>
+        <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
+      </div>
     </section>`).join("")}
     <div><button type="button" class="btn" id="add-day">+ ${esc(t.addDay)}</button></div>
     <div class="save-bar"><div class="wrap">
@@ -387,8 +389,8 @@ function wireEditor(ed: Editor): void {
     }));
   root.querySelectorAll<HTMLButtonElement>("[data-add]").forEach((b) =>
     b.addEventListener("click", () => {
-      const [d, s] = at(b.dataset.add!);
-      ed.open = [d, s, null];
+      // A new activity: its start time decides the part of the day it goes in
+      ed.open = [Number(b.dataset.add), -1, null];
       renderEditor(ed);
     }));
   root.querySelectorAll<HTMLButtonElement>("[data-remove]").forEach((b) =>
@@ -401,7 +403,7 @@ function wireEditor(ed: Editor): void {
   const form = document.getElementById("item-form") as HTMLFormElement | null;
   if (form && ed.open) {
     const [d, s, i] = ed.open;
-    const original = i === null ? null : ed.draft.days[d].sections[s].items[i];
+    const original = i === null || s < 0 ? null : ed.draft.days[d].sections[s].items[i];
     form.querySelector<HTMLInputElement>("input[name=title]")?.focus({ preventScroll: true });
     const wirePlace = (row: Element) => row.querySelector("[data-remove-place]")?.addEventListener("click", () => row.remove());
     form.querySelectorAll(".place-row").forEach(wirePlace);
@@ -416,7 +418,7 @@ function wireEditor(ed: Editor): void {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       ed.open = null;
-      update(saveItem(ed.draft, d, s, i, readItemForm(form, original)));
+      update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], readItemForm(form, original)));
     });
   }
 
@@ -472,6 +474,7 @@ async function start(): Promise<void> {
     redraw();
     return;
   }
+  root.innerHTML = `<p class="hint">${esc(t.loading)}</p>`;
   const { currentEmail, onSignedIn } = await dbModule();
   const email = await currentEmail();
   await showUser(email);

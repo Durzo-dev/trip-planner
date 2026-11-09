@@ -50,7 +50,7 @@ the illustrations off, switch to the multi-day example, or simulate the day to w
 ### Admin page (`admin.html`)
 - 🔐 **Sign in with an e-mail link**, no password (Google sign-in optional)
 - 🆕 **Create a trip**: title, first and last day, time zone; the days come with Morning / Afternoon / Evening
-- ✏️ **Add, edit and delete activities**: times, title, label, description, places (coordinates or a Google Maps link)
+- ✏️ **Add, edit and delete activities**: times, title, label, description, places (coordinates or a Google Maps link); each activity goes in the morning, afternoon or evening by its start time (noon and 6 pm)
 - 📅 **Change the dates**: move the whole trip by a number of days, change one day's date, add or remove a day; the meeting point follows
 - 💾 **Safe saving**: nothing is saved while something is wrong (each problem is listed), and two organisers saving at once cannot overwrite each other
 - 🛡️ **Access enforced by the database**: only members see a stored trip, only its organisers edit it

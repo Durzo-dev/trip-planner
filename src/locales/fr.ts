@@ -39,6 +39,7 @@ export const fr: Strings = {
   settings: "Réglages",
   appearance: "Apparence",
   close: "Fermer",
+  loading: "Chargement…",
   organisation: "Organisation",
   openAdmin: "Ouvrir la page d'administration",
   scrollBack: "Jours précédents",

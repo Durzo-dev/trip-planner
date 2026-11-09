@@ -51,7 +51,7 @@ voir se dérouler heure par heure.
 ### Page d'administration (`admin.html`)
 - 🔐 **Connexion par lien envoyé par e-mail**, sans mot de passe (connexion Google en option)
 - 🆕 **Créer une sortie** : titre, premier et dernier jour, fuseau horaire ; chaque jour arrive avec Matin / Après-midi / Soirée
-- ✏️ **Ajouter, modifier et supprimer des activités** : horaires, titre, étiquette, description, lieux (coordonnées ou lien Google Maps)
+- ✏️ **Ajouter, modifier et supprimer des activités** : horaires, titre, étiquette, description, lieux (coordonnées ou lien Google Maps) ; chaque activité se range dans le matin, l'après-midi ou la soirée selon son heure de début (midi et 18 h)
 - 📅 **Changer les dates** : décaler toute la sortie de quelques jours, changer la date d'un jour, ajouter ou retirer un jour ; le rendez-vous suit
 - 💾 **Enregistrement sûr** : rien n'est enregistré tant qu'il reste un problème (chacun est listé), et deux organisateurs qui enregistrent en même temps ne s'écrasent pas
 - 🛡️ **Accès contrôlé par la base** : seuls les membres voient une sortie enregistrée, seuls ses organisateurs la modifient

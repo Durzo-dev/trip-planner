@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Item, Trip } from "../types";
 import {
-  addDay, addDays, newTrip, parseCoordinates, removeDay, removeItem, saveItem, setDayDate, shiftTrip, tripId, validateTrip,
+  addDay, addDays, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
 } from "./edit";
 
 const LABELS: [string, string, string] = ["Morning", "Afternoon", "Evening"];
@@ -41,7 +41,7 @@ describe("dates", () => {
   });
 
   it("shifts every day and the meeting point, without touching the original", () => {
-    const t = saveItem(base(), 1, 1, null, item("12:30", "14:00"));
+    const t = placeItem(base(), 1, null, item("12:30", "14:00"));
     t.meetingPoint = { date: "2026-11-28", time: "12:30" };
     const s = shiftTrip(t, 7);
     expect(s.days.map((d) => d.date)).toEqual(["2026-12-04", "2026-12-05", "2026-12-06"]);
@@ -51,7 +51,7 @@ describe("dates", () => {
   });
 
   it("moving one day keeps days in date order and takes the meeting point along", () => {
-    const t = saveItem(base(), 0, 0, null, item("10:00", "11:00"));
+    const t = placeItem(base(), 0, null, item("10:00", "11:00"));
     t.meetingPoint = { date: "2026-11-27", time: "10:00" };
     const s = setDayDate(t, 0, "2026-11-30");
     expect(s.days.map((d) => d.date)).toEqual(["2026-11-28", "2026-11-29", "2026-11-30"]);
@@ -73,21 +73,21 @@ describe("dates", () => {
 describe("activities", () => {
   it("keeps activities sorted by start time, after-midnight ones last", () => {
     let t = base();
-    t = saveItem(t, 0, 2, null, item("00:30", "01:30", "Last drink"));
-    t = saveItem(t, 0, 2, null, item("21:00", "23:00", "Games"));
-    t = saveItem(t, 0, 2, null, item("19:00", "20:30", "Dinner"));
+    t = placeItem(t, 0, null, item("00:30", "01:30", "Last drink"));
+    t = placeItem(t, 0, null, item("21:00", "23:00", "Games"));
+    t = placeItem(t, 0, null, item("19:00", "20:30", "Dinner"));
     expect(t.days[0].sections[2].items.map((i) => i.title)).toEqual(["Dinner", "Games", "Last drink"]);
   });
 
   it("editing an activity's start moves the meeting point with it", () => {
-    let t = saveItem(base(), 0, 1, null, item("12:30", "14:00"));
+    let t = placeItem(base(), 0, null, item("12:30", "14:00"));
     t.meetingPoint = { date: "2026-11-27", time: "12:30" };
-    t = saveItem(t, 0, 1, 0, item("13:00", "14:30"));
+    t = placeItem(t, 0, [1, 0], item("13:00", "14:30"));
     expect(t.meetingPoint?.time).toBe("13:00");
   });
 
   it("removing the meeting activity removes the meeting point; removing a poll's last activity removes the poll", () => {
-    let t = saveItem(base(), 0, 1, null, { ...item("12:30", "14:00"), poll: "lunch", choices: [{ title: "A" }] });
+    let t = placeItem(base(), 0, null, { ...item("12:30", "14:00"), poll: "lunch", choices: [{ title: "A" }] });
     t.polls = { lunch: { question: "Where?", options: [{ label: "A", voters: [] }] } };
     t.meetingPoint = { date: "2026-11-27", time: "12:30" };
     t = removeItem(t, 0, 1, 0);
@@ -139,12 +139,29 @@ describe("validateTrip", () => {
   });
 
   it("accepts an activity that runs past midnight", () => {
-    expect(validateTrip(saveItem(base(), 0, 2, null, item("23:00", "01:00")))).toEqual([]);
+    expect(validateTrip(placeItem(base(), 0, null, item("23:00", "01:00")))).toEqual([]);
   });
 
   it("refuses an impossible date", () => {
     const t = base();
     t.days[0].date = "2026-02-30";
     expect(validateTrip(t)).toContainEqual({ code: "date", day: 0 });
+  });
+});
+
+describe("parts of the day", () => {
+  it("files an activity by its start time: before noon, until 6 pm, then evening", () => {
+    expect(["06:00", "11:59", "12:00", "17:59", "18:00", "23:30", "00:30", "05:59"].map((s) => sectionForTime(s, 3))).toEqual([0, 0, 1, 1, 2, 2, 2, 2]);
+  });
+  it("puts later activities in the last part of a day with fewer parts", () => {
+    expect(sectionForTime("20:00", 2)).toBe(1);
+    expect(sectionForTime("20:00", 1)).toBe(0);
+  });
+  it("moves an edited activity to the part its new time belongs to, meeting point included", () => {
+    let t = placeItem(base(), 0, null, item("10:00", "11:00", "Coffee"));
+    t.meetingPoint = { date: "2026-11-27", time: "10:00" };
+    t = placeItem(t, 0, [0, 0], item("19:00", "20:00", "Coffee"));
+    expect(t.days[0].sections.map((s) => s.items.map((i) => i.title))).toEqual([[], [], ["Coffee"]]);
+    expect(t.meetingPoint?.time).toBe("19:00");
   });
 });

@@ -85,17 +85,33 @@ export function removeDay(trip: Trip, dayIndex: number): Trip {
 
 const byStart = (a: Item, b: Item) => toMinutes(a.start) - toMinutes(b.start);
 
-/** Adds an activity (itemIndex null) or replaces one; activities stay sorted by start time. */
-export function saveItem(trip: Trip, dayIndex: number, sectionIndex: number, itemIndex: number | null, item: Item): Trip {
+/** Start times from which an activity belongs to the afternoon, then to the evening. */
+export const AFTERNOON_FROM = "12:00";
+export const EVENING_FROM = "18:00";
+
+/**
+ * The part of the day an activity goes in, from its start time: morning before noon, afternoon until
+ * 6 pm, evening after (a start after midnight belongs to the evening before). Days with fewer parts put
+ * the later ones in their last part.
+ */
+export function sectionForTime(start: string, sectionCount: number): number {
+  const m = toMinutes(start);
+  const i = m < toMinutes(AFTERNOON_FROM) ? 0 : m < toMinutes(EVENING_FROM) ? 1 : 2;
+  return Math.max(0, Math.min(i, sectionCount - 1));
+}
+
+/**
+ * Adds an activity (from null) or replaces the one at [section, item], filing it in the part of the day
+ * its start time belongs to. The meeting point follows an edited activity.
+ */
+export function placeItem(trip: Trip, dayIndex: number, from: [number, number] | null, item: Item): Trip {
   const t = clone(trip);
-  const items = t.days[dayIndex].sections[sectionIndex].items;
-  const old = itemIndex === null ? null : items[itemIndex];
-  if (itemIndex === null) items.push(clone(item));
-  else items[itemIndex] = clone(item);
-  if (old && t.meetingPoint && t.meetingPoint.date === t.days[dayIndex].date && t.meetingPoint.time === old.start) {
-    t.meetingPoint.time = item.start;
-  }
-  items.sort(byStart);
+  const day = t.days[dayIndex];
+  const old = from ? day.sections[from[0]].items.splice(from[1], 1)[0] : null;
+  const target = day.sections[sectionForTime(item.start, day.sections.length)].items;
+  target.push(clone(item));
+  target.sort(byStart);
+  if (old && t.meetingPoint && t.meetingPoint.date === day.date && t.meetingPoint.time === old.start) t.meetingPoint.time = item.start;
   return t;
 }
 
