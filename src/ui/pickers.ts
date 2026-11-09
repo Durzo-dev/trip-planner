@@ -70,8 +70,15 @@ function enhanceDate(input: HTMLInputElement, today: string, signal?: AbortSigna
   btn.type = "button";
   btn.className = "date-btn";
   wrap.append(input, btn);
+  btn.innerHTML = `<span></span>${CALENDAR}`;
+  const text = btn.firstElementChild as HTMLElement;
+  let shown: string | null = null;
+  // Touches only the text, and only when the value changed: rewriting the button under a click eats it
   const refresh = () => {
-    btn.innerHTML = `<span${input.value ? "" : ' class="placeholder"'}>${esc(dateText(input.value))}</span>${CALENDAR}`;
+    if (input.value === shown) return;
+    shown = input.value;
+    text.textContent = dateText(input.value);
+    text.classList.toggle("placeholder", !input.value);
     if (input.value) btn.classList.remove("invalid");
   };
   refresh();

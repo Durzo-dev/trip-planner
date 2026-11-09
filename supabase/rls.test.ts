@@ -116,8 +116,14 @@ describe("trips", () => {
     ).rejects.toThrow(/row-level security|permission denied/);
   });
 
-  it("lets a co-organiser edit, but not a guest", async () => {
+  it("hides a trip nobody has published yet from its guests", async () => {
     await db.query("insert into public.trip_members (trip_id, user_id, role, status) values ('alice-trip', $1, 'guest', 'active')", [BOB]);
+    await as(BOB, async () => expect((await db.query("select id from public.trips")).rows).toHaveLength(0));
+    await as(ALICE, async () => expect((await db.query("select id from public.trips")).rows).toHaveLength(1));
+    await db.query("update public.trips set published_at = now() where id = 'alice-trip'");
+  });
+
+  it("lets a co-organiser edit, but not a guest", async () => {
     await as(BOB, async () => {
       expect((await db.query("select id from public.trips")).rows).toHaveLength(1);
       expect((await db.query("update public.trips set data = data where id = 'alice-trip'")).affectedRows).toBe(0);
@@ -133,6 +139,53 @@ describe("trips", () => {
     await as(BOB, async () => {
       expect((await db.query("select id from public.trips")).rows).toHaveLength(0);
       expect((await db.query("select status from public.trip_members")).rows).toEqual([{ status: "pending" }]);
+    });
+  });
+});
+
+describe("drafts and publishing", () => {
+  const draft = (title: string) => JSON.stringify({ id: "draft-trip", title, timezone: "Europe/Paris", participants: [], days: [] });
+  const publish = (version: number) => db.query<{ v: number }>("select public.publish_trip('draft-trip', $1) as v", [version]);
+
+  beforeAll(async () => {
+    await as(ALICE, () => db.query("insert into public.trips (id, data) values ($1, $2)", ["draft-trip", draft("First")]));
+    await db.query("insert into public.trip_members (trip_id, user_id, role, status) values ('draft-trip', $1, 'guest', 'active')", [BOB]);
+  });
+
+  it("lets an organiser keep a draft and bumps its version on each save", async () => {
+    await as(ALICE, async () => {
+      await db.query("insert into public.trip_drafts (trip_id, data) values ('draft-trip', $1)", [draft("Second")]);
+      const upd = await db.query<{ version: number }>("update public.trip_drafts set data = $1 where trip_id = 'draft-trip' and version = 1 returning version", [draft("Third")]);
+      expect(upd.rows).toEqual([{ version: 2 }]);
+      expect((await db.query("update public.trip_drafts set data = data where trip_id = 'draft-trip' and version = 1")).affectedRows).toBe(0);
+    });
+  });
+
+  it("keeps the draft from guests, who cannot write one either", async () => {
+    await as(BOB, async () => {
+      expect((await db.query("select * from public.trip_drafts")).rows).toHaveLength(0);
+      expect((await db.query("update public.trip_drafts set data = data")).affectedRows).toBe(0);
+      expect((await db.query("delete from public.trip_drafts")).affectedRows).toBe(0);
+    });
+    await expect(as(BOB, () => db.query("insert into public.trip_drafts (trip_id, data) values ('alice-trip', $1)", [trip("alice-trip")]))).rejects.toThrow(/row-level security/);
+    await expect(as(null, () => db.query("select * from public.trip_drafts"))).rejects.toThrow(/permission denied/);
+  });
+
+  it("refuses to publish a draft that changed since, and lets no guest publish", async () => {
+    await expect(as(ALICE, () => publish(1))).rejects.toThrow(/draft changed/);
+    await expect(as(BOB, () => publish(2))).rejects.toThrow(/draft changed/);
+    await expect(as(null, () => publish(2))).rejects.toThrow(/permission denied/);
+  });
+
+  it("publishes: the draft becomes the trip, guests see it, the draft is gone", async () => {
+    await as(BOB, async () => expect((await db.query("select id from public.trips where id = 'draft-trip'")).rows).toHaveLength(0));
+    await as(ALICE, async () => {
+      expect((await publish(2)).rows[0].v).toBe(2);
+      expect((await db.query("select * from public.trip_drafts")).rows).toHaveLength(0);
+    });
+    await as(BOB, async () => {
+      const r = await db.query<{ title: string }>("select data ->> 'title' as title from public.trips where id = 'draft-trip'");
+      expect(r.rows).toEqual([{ title: "Third" }]);
     });
   });
 });

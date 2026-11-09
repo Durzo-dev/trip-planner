@@ -1,8 +1,9 @@
 /**
  * Admin page (admin.html): sign in, list the trips you organise, create one, and edit it (title,
- * dates, days, activities, meeting point). An activity is saved as soon as its form is done; other
- * edits stay in a draft until "Save"; the draft is checked by
- * validateTrip and saved over the version that was loaded, so two organisers cannot overwrite each other.
+ * dates, days, activities, labels). Every change is saved as it is made into a draft shared by the
+ * organisers; participants keep seeing the published trip until "Publish" in the bar at the bottom.
+ * Drafts and publications are saved over the version this page has, so organisers never overwrite each
+ * other unawares. validateTrip only blocks publishing: a draft may be incomplete.
  */
 import { CALENDAR, CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
 import "../styles/tokens.css";
@@ -140,7 +141,7 @@ async function renderList(): Promise<void> {
   root.innerHTML = `<section class="panel">
       <h2>${esc(t.myTrips)}</h2>
       ${admin.length ? `<div class="trip-list">${admin.map((s) => `<div class="trip-row">
-          <div><b>${esc(s.data.title)}</b><small>${esc(dateRange(s.data))}</small></div>
+          <div><b>${esc((s.draft?.data ?? s.data).title)}${!s.published ? `<span class="tag state">${esc(t.stateUnpublished)}</span>` : s.draft ? `<span class="tag state">${esc(t.stateDraft)}</span>` : ""}</b><small>${esc(dateRange(s.draft?.data ?? s.data))}</small></div>
           <div class="row"><a class="btn" href="${viewerUrl(s.id)}">${esc(t.open)}</a><a class="btn fill edit" href="?trip=${encodeURIComponent(s.id)}${keep()}">${esc(t.edit)}</a></div>
         </div>`).join("")}</div>` : `<p class="hint">${esc(t.noTrips)}</p>`}
     </section>
@@ -182,16 +183,30 @@ async function renderList(): Promise<void> {
 // ---------- Trip editor ----------
 
 interface Editor {
+  /** stored.data is the trip as published. */
   stored: StoredTrip;
+  /** The trip being edited. */
   draft: Trip;
+  /** Version of the saved draft, null while there is none. */
+  draftVersion: number | null;
+  /** The draft as last saved (or as published when there is no draft): what is not saved yet differs. */
+  savedJson: string;
+  /** Pending automatic save. */
+  timer: number | null;
+  busy: "saving" | "publishing" | "discarding" | null;
+  /** conflict: another organiser saved in between, editing stops until a reload. */
+  failed: "conflict" | "error" | null;
+  justPublished: boolean;
   /** Activity whose form is open: [day, section, item], or [day, -1, null] for a new one. */
   open: [number, number, number | null] | null;
-  saving: boolean;
   /** The one day shown. */
   day: number;
 }
 
-const isDirty = (e: Editor) => JSON.stringify(e.draft) !== JSON.stringify(e.stored.data);
+/** Changes not saved into the draft yet. */
+const isUnsaved = (e: Editor) => JSON.stringify(e.draft) !== e.savedJson;
+/** Something participants do not see yet: changes, or a trip never published. */
+const isUnpublished = (e: Editor) => !e.stored.published || JSON.stringify(e.draft) !== JSON.stringify(e.stored.data);
 
 function activityName(trip: Trip, d: number, s: number, i: number): string {
   const it = trip.days[d]?.sections[s]?.items[i];
@@ -374,7 +389,7 @@ function renderEditor(ed: Editor): void {
   const stripLeft = document.getElementById("strip")?.scrollLeft ?? 0;
   stripListeners?.abort();
   root.innerHTML = `
-    <div class="row" style="justify-content:space-between"><a class="btn back" href="${here()}">${CHEVRON_BACK}${esc(t.myTrips)}</a><a class="btn" href="${viewerUrl(trip.id)}" target="_blank" rel="noopener">${esc(t.open)} ↗</a></div>
+    <div class="row" style="justify-content:space-between"><a class="btn back" href="${here()}">${CHEVRON_BACK}${esc(t.myTrips)}</a><a class="btn" href="${viewerUrl(trip.id)}&draft" target="_blank" rel="noopener" title="${esc(t.draftPreview)}">${esc(t.open)} ↗</a></div>
     <section class="panel form">
       <label class="field"><span class="lbl">${esc(t.tripTitle)}</span><input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
       <label class="field"><span class="lbl">${esc(t.tagline)}</span><input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
@@ -424,7 +439,7 @@ function renderEditor(ed: Editor): void {
     <div class="save-bar"><div class="wrap">
       <div class="status" id="save-status"></div>
       <button type="button" class="btn danger" id="discard">${esc(t.discard)}</button>
-      <button type="button" class="btn fill add" id="save">${esc(t.save)}</button>
+      <button type="button" class="btn fill add" id="publish">${esc(t.publish)}</button>
     </div></div>`;
   window.scrollTo(0, y);
   const strip = $("strip");
@@ -438,17 +453,105 @@ function renderEditor(ed: Editor): void {
   refreshSaveBar(ed);
 }
 
-function refreshSaveBar(ed: Editor, message?: { text: string; bad?: boolean; reload?: boolean }): void {
-  const dirty = isDirty(ed);
+function refreshSaveBar(ed: Editor): void {
+  const unpublished = isUnpublished(ed);
+  const changed = JSON.stringify(ed.draft) !== JSON.stringify(ed.stored.data);
   const errors = validateTrip(ed.draft);
   const status = $("save-status");
-  status.className = `status${dirty ? " dirty" : ""}`;
-  status.innerHTML = message
-    ? `<span class="${message.bad ? "msg bad" : ""}">${esc(message.text)}</span>${message.reload ? ` <button type="button" class="link-btn" id="reload">${esc(t.reload)}</button>` : ""}`
-    : esc(dirty ? t.unsaved : t.saved) + (dirty && errors.length ? `<ul class="errors">${errors.map((e) => `<li>${esc(describe(e, ed.draft))}</li>`).join("")}</ul>` : "");
-  document.getElementById("reload")?.addEventListener("click", () => location.reload());
-  $<HTMLButtonElement>("save").disabled = !dirty || errors.length > 0 || ed.saving;
-  $<HTMLButtonElement>("discard").disabled = !dirty || ed.saving;
+  status.className = `status${unpublished ? " dirty" : ""}`;
+  if (ed.failed) {
+    const conflict = ed.failed === "conflict";
+    status.innerHTML = `<span class="msg bad">${esc(conflict ? t.conflict : t.saveError)}</span> <button type="button" class="link-btn" id="bar-retry">${esc(conflict ? t.reload : t.retry)}</button>`;
+    $("bar-retry").addEventListener("click", () => (conflict ? location.reload() : void saveNow(ed)));
+  } else {
+    const text = ed.busy === "saving" || isUnsaved(ed) ? t.draftSaving
+      : ed.justPublished && !unpublished ? t.justPublished
+      : !ed.stored.published ? t.neverPublished
+      : unpublished ? t.draftSaved : t.allPublished;
+    status.innerHTML = esc(text) + (unpublished && errors.length
+      ? `<span class="errors-h">${esc(t.toFix)}</span><ul class="errors">${errors.map((e) => `<li>${esc(describe(e, ed.draft))}</li>`).join("")}</ul>` : "");
+  }
+  $<HTMLButtonElement>("publish").disabled = !unpublished || errors.length > 0 || ed.busy !== null || ed.failed === "conflict";
+  $<HTMLButtonElement>("discard").disabled = !changed || ed.busy !== null || ed.failed === "conflict";
+}
+
+/** Saves the draft about a second after the last change, so typing does not send a request per key. */
+function scheduleSave(ed: Editor): void {
+  if (ed.timer !== null) clearTimeout(ed.timer);
+  ed.timer = window.setTimeout(() => void saveNow(ed), 800);
+}
+
+/** Saves the draft now if it changed (or `force`, to have one to publish). Returns false when it failed. */
+async function saveNow(ed: Editor, force = false): Promise<boolean> {
+  if (ed.timer !== null) clearTimeout(ed.timer);
+  ed.timer = null;
+  if (ed.failed === "conflict") return false;
+  if (ed.busy === "saving") {
+    scheduleSave(ed); // the save under way will be followed by this one
+    return true;
+  }
+  if (!isUnsaved(ed) && !(force && ed.draftVersion === null)) return true;
+  const json = JSON.stringify(ed.draft);
+  ed.busy = "saving";
+  ed.failed = null;
+  refreshSaveBar(ed);
+  const { saveDraft, SaveConflict } = await dbModule();
+  try {
+    ed.draftVersion = await saveDraft(ed.stored.id, JSON.parse(json) as Trip, ed.draftVersion);
+    ed.savedJson = json;
+    return true;
+  } catch (err) {
+    ed.failed = err instanceof SaveConflict ? "conflict" : "error";
+    return false;
+  } finally {
+    ed.busy = null;
+    if (isUnsaved(ed) && !ed.failed) scheduleSave(ed);
+    refreshSaveBar(ed);
+  }
+}
+
+/** Publishes the draft: participants see it from now on (and will be notified). */
+async function publish(ed: Editor): Promise<void> {
+  if (!(await saveNow(ed, true)) || ed.draftVersion === null) return;
+  ed.busy = "publishing";
+  refreshSaveBar(ed);
+  const { publishDraft, SaveConflict } = await dbModule();
+  try {
+    const version = await publishDraft(ed.stored.id, ed.draftVersion);
+    ed.stored = { ...ed.stored, data: JSON.parse(ed.savedJson) as Trip, version, published: true, draft: null };
+    ed.draftVersion = null;
+    ed.justPublished = true;
+  } catch (err) {
+    ed.failed = err instanceof SaveConflict ? "conflict" : "error";
+  } finally {
+    ed.busy = null;
+    refreshSaveBar(ed);
+  }
+}
+
+/** Drops the draft: back to the published trip. */
+async function discard(ed: Editor): Promise<void> {
+  if (ed.timer !== null) clearTimeout(ed.timer);
+  ed.timer = null;
+  if (ed.draftVersion !== null) {
+    ed.busy = "discarding";
+    refreshSaveBar(ed);
+    const { discardDraft, SaveConflict } = await dbModule();
+    try {
+      await discardDraft(ed.stored.id, ed.draftVersion);
+    } catch (err) {
+      ed.busy = null;
+      ed.failed = err instanceof SaveConflict ? "conflict" : "error";
+      refreshSaveBar(ed);
+      return;
+    }
+    ed.busy = null;
+    ed.draftVersion = null;
+  }
+  ed.draft = structuredClone(ed.stored.data);
+  ed.savedJson = JSON.stringify(ed.draft);
+  ed.open = null;
+  renderEditor(ed);
 }
 
 function wireEditor(ed: Editor): void {
@@ -458,6 +561,8 @@ function wireEditor(ed: Editor): void {
     ed.draft = applyLabelRules(next, chosen);
     // Activities that just became optional (or stopped being) must show it
     if (JSON.stringify(ed.draft.days) !== before) rerender = true;
+    ed.justPublished = false;
+    scheduleSave(ed);
     if (rerender) renderEditor(ed);
     else refreshSaveBar(ed);
   };
@@ -590,37 +695,26 @@ function wireEditor(ed: Editor): void {
       const item = readItemForm(form, original);
       const madeMeeting = hasLabel(item, "meeting") && !(original && hasLabel(original, "meeting"));
       update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], item), true, madeMeeting ? { day: d, item } : undefined);
-      // "Done" also saves: the activity reaches the trip page without a second step
-      void save(ed);
+      // "Done" saves the draft at once rather than in a second
+      void saveNow(ed);
     });
   }
 
-  $("discard").addEventListener("click", () => {
-    ed.draft = structuredClone(ed.stored.data);
-    ed.open = null;
-    renderEditor(ed);
+  // Discarding asks for a second click
+  const discardBtn = $<HTMLButtonElement>("discard");
+  discardBtn.addEventListener("click", () => {
+    if (!discardBtn.hasAttribute("data-armed")) {
+      discardBtn.setAttribute("data-armed", "");
+      discardBtn.textContent = t.confirmDiscard;
+      return;
+    }
+    void discard(ed);
   });
-  $("save").addEventListener("click", () => void save(ed));
-}
-
-/**
- * Saves the draft over the version that was loaded. Called by the save button, and on its own after
- * "Done" in an activity form. Does nothing while something blocks saving: the bar then lists it.
- */
-async function save(ed: Editor): Promise<void> {
-  if (ed.saving || !isDirty(ed) || validateTrip(ed.draft).length) return;
-  ed.saving = true;
-  refreshSaveBar(ed);
-  const { saveTrip, SaveConflict } = await dbModule();
-  try {
-    const version = await saveTrip(ed.stored.id, ed.draft, ed.stored.version);
-    ed.stored = { ...ed.stored, data: structuredClone(ed.draft), version };
-    ed.saving = false;
-    refreshSaveBar(ed);
-  } catch (err) {
-    ed.saving = false;
-    refreshSaveBar(ed, err instanceof SaveConflict ? { text: t.conflict, bad: true, reload: true } : { text: t.saveError, bad: true });
-  }
+  discardBtn.addEventListener("blur", () => {
+    discardBtn.removeAttribute("data-armed");
+    discardBtn.textContent = t.discard;
+  });
+  $("publish").addEventListener("click", () => void publish(ed));
 }
 
 async function openEditor(id: string): Promise<void> {
@@ -633,18 +727,26 @@ async function openEditor(id: string): Promise<void> {
   }
   // A trip saved in an older format (or before the label rules) is shown up to date; it is saved with the next change
   stored.data = migrateTrip(stored.data);
-  const ed: Editor = { stored, draft: structuredClone(stored.data), open: null, saving: false, day: 0 };
+  const draft = stored.draft ? migrateTrip(stored.draft.data) : structuredClone(stored.data);
+  const ed: Editor = {
+    stored, draft, draftVersion: stored.draft?.version ?? null, savedJson: JSON.stringify(draft),
+    timer: null, busy: null, failed: null, justPublished: false, open: null, day: 0,
+  };
   // Preview page: ?edit=day,section,item opens that activity's form
   const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get("edit") : null;
   if (preview) {
     const [d, s, i] = preview.split(",").map(Number);
-    if (stored.data.days[d]?.sections[s]?.items[i]) {
+    if (ed.draft.days[d]?.sections[s]?.items[i]) {
       ed.open = [d, s, i];
       ed.day = d;
     }
   }
+  // Only a change typed in the last second may not be saved yet
   addEventListener("beforeunload", (e) => {
-    if (isDirty(ed)) e.preventDefault();
+    if (isUnsaved(ed) || ed.busy === "saving") {
+      void saveNow(ed);
+      e.preventDefault();
+    }
   });
   renderEditor(ed);
 }

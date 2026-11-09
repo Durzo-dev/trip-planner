@@ -83,7 +83,8 @@ const clock = (trip: Trip): TripClock => simulated ?? override ?? tripClock(trip
 class PrivateTrip extends Error {}
 
 /** A trip file first; otherwise a trip stored in Supabase (members only), with the viewer's role in it. */
-async function loadTrip(id: string): Promise<{ trip: Trip; canEdit: boolean }> {
+/** draft: an organiser looks at the unpublished draft (from the admin page, or a trip never published). */
+async function loadTrip(id: string): Promise<{ trip: Trip; canEdit: boolean; draft?: boolean }> {
   if (!/^[a-z0-9-]+$/.test(id)) throw new Error("Invalid trip id");
   const res = await fetch(`${import.meta.env.BASE_URL}trips/${id}.json`);
   // The dev server answers a missing file with the HTML page (status 200): only JSON counts as a trip file.
@@ -93,7 +94,11 @@ async function loadTrip(id: string): Promise<{ trip: Trip; canEdit: boolean }> {
   const { loadStoredTrip } = await loadDataSource();
   const stored = await loadStoredTrip(id);
   if (!stored) throw new PrivateTrip();
-  return { trip: migrateTrip(stored.data), canEdit: stored.role === "owner" || stored.role === "organiser" };
+  const canEdit = stored.role === "owner" || stored.role === "organiser";
+  if (canEdit && stored.draft && (new URLSearchParams(location.search).has("draft") || !stored.published)) {
+    return { trip: migrateTrip(stored.draft.data), canEdit, draft: true };
+  }
+  return { trip: migrateTrip(stored.data), canEdit };
 }
 
 
@@ -158,6 +163,9 @@ function showDay(s: State, i: number): void {
  * Draws the whole page for the trip in the current language. Called once, then again when the language
  * changes: the day shown and the votes are kept, the page scroll too.
  */
+/** The page shows an organiser's unpublished draft: said by a chip on the banner. */
+let draftPreview = false;
+
 function mount(s: State, canEdit: boolean, first: boolean): void {
   const { trip } = s;
   const y = scrollY;
@@ -182,6 +190,7 @@ function mount(s: State, canEdit: boolean, first: boolean): void {
     },
   });
   const adminUrl = canEdit ? `./admin.html?trip=${encodeURIComponent(trip.id)}${usingMock() ? "&mock" : ""}` : null;
+  if (draftPreview) $("t-chips").insertAdjacentHTML("afterbegin", `<span class="chip live">${esc(t.draftPreview)}</span>`);
   mountSettingsButton($("t-chips"), undefined, adminUrl);
   enableDragScroll($("tabs"));
   enableScrollArrows($("tabs"), $<HTMLButtonElement>("tabs-back"), $<HTMLButtonElement>("tabs-forward"));
@@ -209,7 +218,7 @@ function mount(s: State, canEdit: boolean, first: boolean): void {
 async function start(): Promise<void> {
   document.documentElement.lang = lang;
   const app = $("app");
-  let loaded: { trip: Trip; canEdit: boolean };
+  let loaded: { trip: Trip; canEdit: boolean; draft?: boolean };
   try {
     loaded = await loadTrip(params.get("trip") ?? DEFAULT_TRIP);
   } catch (err) {
@@ -225,6 +234,7 @@ async function start(): Promise<void> {
     return;
   }
   const { trip, canEdit } = loaded;
+  draftPreview = loaded.draft ?? false;
   initTheme((trip.example && storedColours()) || trip.theme);
   const s: State = { trip, dayIndex: initialDay(trip, clock(trip).date), day: undefined as unknown as ResolvedDay, votes: loadVotes(trip) };
   mount(s, canEdit, true);

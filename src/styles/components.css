@@ -166,11 +166,12 @@ dialog.dialog::backdrop { background: var(--backdrop); }
 /* ---------- Tag (small uppercase label) ----------
    Activity labels:  .meeting accent, .optional gold, .paid outlined grey, .booking outlined accent,
                      .poll-label yellow while the viewer has not answered, outlined green once .answered
-   Others:           .now success (under way), .vote / .tie outlined (poll result) */
+   Others:           .now success (under way), .vote / .tie outlined (poll result), .state outlined grey
+                     (a trip's state on the admin list) */
 .tag { font-size: var(--text-2xs); font-weight: var(--weight-bold); letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--radius-xs); color: var(--white); background: var(--gold); border: 1px solid transparent; }
 .tag.meeting { background: var(--accent); }
 .tag.optional { background: var(--gold); }
-.tag.paid { background: transparent; color: var(--muted); border-color: var(--line); }
+.tag.paid, .tag.state { background: transparent; color: var(--muted); border-color: var(--line); }
 .tag.booking { background: transparent; color: var(--accent-ink); border-color: var(--accent); }
 .tag.poll-label { background: var(--edit); color: var(--on-action); }
 .tag.poll-label.answered { background: transparent; color: var(--success); border-color: var(--success); }

@@ -60,4 +60,6 @@
 .save-bar .wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 10px; max-width: 860px; }
 .save-bar .status { flex: 1 1 200px; font-size: var(--text-md); color: var(--muted); }
 .save-bar .status.dirty { color: var(--accent-ink); font-weight: 600; }
+.errors-h { display: block; margin-top: 4px; color: var(--danger); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.trip-row .tag { margin-left: var(--space-2); vertical-align: middle; }
 .errors { margin: 4px 0 0; padding-left: 18px; color: var(--danger); font-size: var(--text-sm); font-weight: 400; }
