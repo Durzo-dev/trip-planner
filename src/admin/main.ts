@@ -1,6 +1,7 @@
 /**
  * Admin page (admin.html): sign in, list the trips you organise, create one, and edit it (title,
- * dates, days, activities, meeting point). Edits stay in a draft until "Save"; the draft is checked by
+ * dates, days, activities, meeting point). An activity is saved as soon as its form is done; other
+ * edits stay in a draft until "Save"; the draft is checked by
  * validateTrip and saved over the version that was loaded, so two organisers cannot overwrite each other.
  */
 import { CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
@@ -549,6 +550,8 @@ function wireEditor(ed: Editor): void {
       if (!ok) return;
       ed.open = null;
       update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], readItemForm(form, original)));
+      // "Done" also saves: the activity reaches the trip page without a second step
+      void save(ed);
     });
   }
 
@@ -557,21 +560,27 @@ function wireEditor(ed: Editor): void {
     ed.open = null;
     renderEditor(ed);
   });
-  $("save").addEventListener("click", async () => {
-    if (validateTrip(ed.draft).length) return;
-    ed.saving = true;
+  $("save").addEventListener("click", () => void save(ed));
+}
+
+/**
+ * Saves the draft over the version that was loaded. Called by the save button, and on its own after
+ * "Done" in an activity form. Does nothing while something blocks saving: the bar then lists it.
+ */
+async function save(ed: Editor): Promise<void> {
+  if (ed.saving || !isDirty(ed) || validateTrip(ed.draft).length) return;
+  ed.saving = true;
+  refreshSaveBar(ed);
+  const { saveTrip, SaveConflict } = await dbModule();
+  try {
+    const version = await saveTrip(ed.stored.id, ed.draft, ed.stored.version);
+    ed.stored = { ...ed.stored, data: structuredClone(ed.draft), version };
+    ed.saving = false;
     refreshSaveBar(ed);
-    const { saveTrip, SaveConflict } = await dbModule();
-    try {
-      const version = await saveTrip(ed.stored.id, ed.draft, ed.stored.version);
-      ed.stored = { ...ed.stored, data: structuredClone(ed.draft), version };
-      ed.saving = false;
-      refreshSaveBar(ed);
-    } catch (err) {
-      ed.saving = false;
-      refreshSaveBar(ed, err instanceof SaveConflict ? { text: t.conflict, bad: true, reload: true } : { text: t.saveError, bad: true });
-    }
-  });
+  } catch (err) {
+    ed.saving = false;
+    refreshSaveBar(ed, err instanceof SaveConflict ? { text: t.conflict, bad: true, reload: true } : { text: t.saveError, bad: true });
+  }
 }
 
 async function openEditor(id: string): Promise<void> {
