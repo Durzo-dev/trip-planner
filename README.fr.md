@@ -44,14 +44,22 @@ voir se dérouler heure par heure.
 ### Page
 - 🌤️ **Météo en direct** via [Open-Meteo](https://open-meteo.com), à partir de 16 jours avant la date
 - 🎨 **Thème à partir de trois couleurs** (début et fin du dégradé, accent), avec **modes clair et sombre**
-- 🌍 **Interface en anglais et en français**, selon la langue du navigateur (anglais sinon)
+- 🌍 **Interface en anglais et en français** : un sélecteur de langue, mémorisé sur l'appareil ; sinon la langue du navigateur (anglais si ce n'est aucune des deux)
 - 📱 **Téléphone et ordinateur** : une colonne sur téléphone ; sur ordinateur, la météo et le plan restent fixes pendant que le programme défile
+
+### Page d'administration (`admin.html`)
+- 🔐 **Connexion par lien envoyé par e-mail**, sans mot de passe (connexion Google en option)
+- 🆕 **Créer une sortie** : titre, premier et dernier jour, fuseau horaire ; chaque jour arrive avec Matin / Après-midi / Soirée
+- ✏️ **Ajouter, modifier et supprimer des activités** : horaires, titre, étiquette, description, lieux (coordonnées ou lien Google Maps)
+- 📅 **Changer les dates** : décaler toute la sortie de quelques jours, changer la date d'un jour, ajouter ou retirer un jour ; le rendez-vous suit
+- 💾 **Enregistrement sûr** : rien n'est enregistré tant qu'il reste un problème (chacun est listé), et deux organisateurs qui enregistrent en même temps ne s'écrasent pas
+- 🛡️ **Accès contrôlé par la base** : seuls les membres voient une sortie enregistrée, seuls ses organisateurs la modifient
 
 ---
 
 ## 🧭 Écrire une sortie
 
-Chaque sortie est un fichier, `public/trips/<id>.json`, ouvert avec `?trip=<id>`. Il suit
+Une sortie se crée sur la page d'administration (enregistrée dans Supabase), ou s'écrit dans un fichier, `public/trips/<id>.json` ; les deux s'ouvrent avec `?trip=<id>`. Il suit
 [`schema/trip.schema.json`](schema/trip.schema.json), que les éditeurs comme VS Code vérifient pendant la saisie.
 Partez d'un des exemples :
 
@@ -85,6 +93,14 @@ npm run dev
 | `trip` | `?trip=bordeaux-weekend-2026-11` | Charge `public/trips/<trip>.json` (par défaut : `bordeaux-2026-11-28`) |
 | `now` | `?now=2026-11-28T14:45` | Simule cette date et cette heure locales, pour voir l'avancement de la journée |
 
+### Connecter le serveur des sorties (Supabase)
+Les fichiers de sortie s'en passent ; la page d'administration et les sorties enregistrées en ont besoin.
+1. Créer un projet gratuit sur [Supabase](https://supabase.com)
+2. Dans son **SQL Editor**, exécuter les fichiers de `supabase/migrations/` dans l'ordre
+3. Copier `.env.example` en `.env.local` et y mettre l'URL du projet et la clé **anon** (Project Settings → API) ; jamais la clé `service_role`
+4. Dans **Authentication → URL Configuration**, ajouter `http://localhost:5173/**` aux adresses de redirection
+5. Pour le site publié, ajouter les mêmes valeurs en variables du dépôt `SUPABASE_URL` et `SUPABASE_ANON_KEY` (Settings → Secrets and variables → Actions → Variables)
+
 ### Compiler
 ```bash
 npm run build
@@ -96,7 +112,7 @@ Chaque push sur `main` est testé, compilé et publié sur GitHub Pages par GitH
 ```bash
 npm test
 ```
-[Vitest](https://vitest.dev) couvre l'horloge du jour de sortie, les résultats des sondages et la résolution des activités.
+[Vitest](https://vitest.dev) couvre l'horloge du jour de sortie, les résultats des sondages, la résolution des activités et les modifications de l'admin ; les règles d'accès de la base sont testées sur les vraies migrations dans un Postgres embarqué ([PGlite](https://pglite.dev)).
 
 ---
 
@@ -106,15 +122,20 @@ npm test
 trip-planner/
 ├── public/trips/           # Fichiers des sorties, un JSON par sortie
 ├── schema/                 # Schéma JSON d'une sortie
+├── supabase/migrations/    # Tables et règles d'accès de la base (sécurité par ligne), avec leurs tests
 ├── src/
 │   ├── main.ts             # Point d'entrée : charge la sortie, assemble la page
+│   ├── db.ts               # Accès à Supabase (sorties enregistrées)
+│   ├── admin/              # Page d'administration : fonctions de modification pures et la page elle-même
 │   ├── types.ts            # Modèle de données
 │   ├── plan.ts             # Résultats des sondages, activités résolues, étapes du plan, itinéraires
 │   ├── time.ts             # Horloge du jour de sortie (une soirée appartient à son jour)
 │   ├── weather.ts          # Client Open-Meteo
 │   ├── theme.ts            # Couleurs dérivées du thème de la sortie
-│   ├── i18n.ts             # Textes de l'interface en anglais et en français
+│   ├── i18n.ts             # Langue de l'interface
+│   ├── locales/            # Textes de l'interface, un fichier par langue
 │   └── ui/                 # Bandeau, onglets, plan, programme et météo
+├── admin.html              # Page d'administration
 ├── docs/mockup.html        # La maquette validée dont part le projet
 └── .github/workflows/      # Tests, compilation et déploiement GitHub Pages
 ```
@@ -131,6 +152,7 @@ Chaque module s'ouvre sur un commentaire qui dit ce qu'il fait et pourquoi.
 | [TypeScript](https://www.typescriptlang.org) | Modèle de données et interface typés |
 | [Open-Meteo](https://open-meteo.com) | Prévisions météo, gratuites, sans clé |
 | [Vitest](https://vitest.dev) | Tests unitaires |
+| [Supabase](https://supabase.com) | Base de données, connexion et règles d'accès des sorties enregistrées |
 | GitHub Pages | Hébergement |
 
 Pas de framework front-end.
@@ -160,4 +182,4 @@ Vous pouvez librement utiliser, modifier et redistribuer ce projet, **à conditi
 
 ## 👤 Auteur
 
-**Valentin**, [@Durzo-dev](https://github.com/Durzo-dev)
+**Durzo**, [@Durzo-dev](https://github.com/Durzo-dev)

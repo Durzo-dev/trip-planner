@@ -5,7 +5,7 @@
  */
 import "./styles.css";
 import type { Trip } from "./types";
-import { lang, t } from "./i18n";
+import { lang, LANGS, setLang, t } from "./i18n";
 import { resolveDay, type MyVotes, type ResolvedDay } from "./plan";
 import { load, save } from "./storage";
 import { initTheme } from "./theme";
@@ -31,7 +31,7 @@ const SHELL = `
     <div class="datebox"><div class="d" id="t-day"></div><div class="m" id="t-month"></div></div>
   </div>
 </header>
-<nav class="tabs"><div class="wrap tabs-row"><div class="tab-list" id="tabs" role="tablist"></div><button type="button" class="theme-btn" id="theme-btn"></button></div></nav>
+<nav class="tabs"><div class="wrap tabs-row"><div class="tab-list" id="tabs" role="tablist"></div><a class="theme-btn" id="admin-link" hidden></a><select class="lang-select" id="lang"></select><button type="button" class="theme-btn" id="theme-btn"></button></div></nav>
 <main class="wrap main">
   <aside class="side">
     <section class="panel" aria-labelledby="wx-h">
@@ -66,11 +66,30 @@ const override = parseNowOverride(params.get("now"));
 let simulated: TripClock | null = null;
 const clock = (trip: Trip): TripClock => simulated ?? override ?? tripClock(trip.timezone);
 
-async function loadTrip(id: string): Promise<Trip> {
+const dbConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+/** Thrown when a stored trip exists for members only and the viewer cannot see it. */
+class PrivateTrip extends Error {}
+
+/** A trip file first; otherwise a trip stored in Supabase (members only), with the viewer's role in it. */
+async function loadTrip(id: string): Promise<{ trip: Trip; canEdit: boolean }> {
   if (!/^[a-z0-9-]+$/.test(id)) throw new Error("Invalid trip id");
   const res = await fetch(`${import.meta.env.BASE_URL}trips/${id}.json`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  // The dev server answers a missing file with the HTML page (status 200): only JSON counts as a trip file.
+  const isFile = res.ok && (res.headers.get("content-type") ?? "").includes("json");
+  if (isFile) return { trip: await res.json(), canEdit: false };
+  if ((!res.ok && res.status !== 404) || !dbConfigured) throw new Error(`HTTP ${res.status}`);
+  const { loadStoredTrip } = await import("./db");
+  const stored = await loadStoredTrip(id);
+  if (!stored) throw new PrivateTrip();
+  return { trip: stored.data, canEdit: stored.role === "owner" || stored.role === "organiser" };
+}
+
+function initLanguage(): void {
+  const select = $<HTMLSelectElement>("lang");
+  select.setAttribute("aria-label", t.language);
+  select.innerHTML = LANGS.map((l) => `<option value="${l}"${l === lang ? " selected" : ""}>${l.toUpperCase()}</option>`).join("");
+  select.addEventListener("change", () => setLang(select.value as typeof lang));
 }
 
 function loadVotes(trip: Trip): MyVotes {
@@ -136,15 +155,25 @@ async function start(): Promise<void> {
   document.documentElement.lang = lang;
   const app = $("app");
   let trip: Trip;
+  let canEdit: boolean;
   try {
-    trip = await loadTrip(params.get("trip") ?? DEFAULT_TRIP);
-  } catch {
+    ({ trip, canEdit } = await loadTrip(params.get("trip") ?? DEFAULT_TRIP));
+  } catch (err) {
     initTheme(undefined);
-    app.innerHTML = `<p class="error">${esc(t.loadError)}</p>`;
+    app.innerHTML = err instanceof PrivateTrip
+      ? `<p class="error">${esc(t.signInToSee)}<br><br><a class="btn fill" href="./admin.html">${esc(t.signInTitle)}</a></p>`
+      : `<p class="error">${esc(t.loadError)}</p>`;
     return;
   }
   initTheme((trip.example && storedColours()) || trip.theme);
   app.outerHTML = SHELL;
+  initLanguage();
+  if (canEdit) {
+    const link = $<HTMLAnchorElement>("admin-link");
+    link.href = `./admin.html?trip=${encodeURIComponent(trip.id)}`;
+    link.textContent = `⚙ ${t.admin}`;
+    link.hidden = false;
+  }
   const today = clock(trip).date;
   const s: State = { trip, dayIndex: initialDay(trip, today), day: undefined as unknown as ResolvedDay, votes: loadVotes(trip) };
 

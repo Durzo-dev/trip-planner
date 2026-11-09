@@ -2,7 +2,7 @@
  * Tabs under the banner, and the light/dark switch next to them.
  */
 import type { Trip } from "../types";
-import { capitalize, formatDate, formatTime, t } from "../i18n";
+import { capitalize, formatDate, formatTime, sectionLabel, t } from "../i18n";
 import { isDark, toggleTheme } from "../theme";
 import { $, esc, reducedMotion } from "./dom";
 
@@ -36,9 +36,9 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
     const sections = trip.days[0].sections;
     wrap.innerHTML =
       sections.map((s, i) => {
-        const range = `${formatTime(s.items[0].start)} – ${formatTime(s.items[s.items.length - 1].end)}`;
+        const range = s.items.length ? `${formatTime(s.items[0].start)} – ${formatTime(s.items[s.items.length - 1].end)}` : "";
         return `<button type="button" class="tab" role="tab" id="tab-${i}" aria-controls="sec-${i}" aria-selected="${i === 0}">` +
-          `<span class="dot" hidden></span>${esc(s.label)}<small>${esc(range)}</small></button>`;
+          `<span class="dot" hidden></span>${esc(sectionLabel(s.label))}${range ? `<small>${esc(range)}</small>` : ""}</button>`;
       }).join("") + spacer;
     wrap.querySelectorAll<HTMLButtonElement>(".tab").forEach((b, i) => b.addEventListener("click", () => {
       document.getElementById(`sec-${i}`)?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });

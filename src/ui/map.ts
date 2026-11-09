@@ -19,10 +19,14 @@ const PAD = 22;
 export function renderMap(day: ResolvedDay, decor: MapDecor | undefined, meetingStop: number | null): void {
   const map = $("map") as unknown as SVGSVGElement;
   const stops = day.stops;
+  $("route-all").hidden = !stops.length;
   if (!stops.length) {
     map.innerHTML = "";
+    $("route-meet").hidden = true;
+    $("map-legend").textContent = t.noPlacesYet;
     return;
   }
+  $("map-legend").textContent = "";
   const lats = stops.map((s) => s.place.lat);
   const lngs = stops.map((s) => s.place.lng);
   const k = Math.cos(((Math.min(...lats) + Math.max(...lats)) / 2) * (Math.PI / 180));

@@ -21,6 +21,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # Repository variables (Settings → Secrets and variables → Actions → Variables). The anon key is
+          # public by design; without these the site still shows trip files, and the admin page says so.
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          VITE_AUTH_GOOGLE: ${{ vars.AUTH_GOOGLE }}
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:

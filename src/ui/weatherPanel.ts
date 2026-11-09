@@ -22,8 +22,8 @@ export async function renderWeather(day: ResolvedDay, today: string, timezone: s
   const box = $("wx-box");
   const foot = $("wx-foot");
   const place = day.stops[0]?.place;
-  if (!place) {
-    box.innerHTML = "";
+  if (!place || !day.items.length) {
+    box.innerHTML = `<p class="wx-msg">${esc(t.weatherNoPlace)}</p>`;
     foot.innerHTML = "";
     return;
   }

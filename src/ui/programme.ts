@@ -5,7 +5,7 @@
 import type { Trip } from "../types";
 import type { MyVotes, ResolvedDay, ResolvedItem } from "../plan";
 import { mapsUrl, pollVoters } from "../plan";
-import { formatTime, t } from "../i18n";
+import { formatTime, sectionLabel, t } from "../i18n";
 import { ILLUSTRATIONS } from "../illustrations";
 import { progress, toMinutes } from "../time";
 import { $, esc, extLink, highlightStops } from "./dom";
@@ -18,7 +18,8 @@ export function renderProgramme(trip: Trip, day: ResolvedDay, votes: MyVotes, h:
   let i = 0;
   const html = day.day.sections.map((sec, s) => {
     const cards = sec.items.map(() => card(trip, day.items[i++], votes)).join("");
-    return `<section id="sec-${s}"><div class="sec-h"><h2>${esc(sec.label)}</h2>${sec.note ? `<span>${esc(sec.note)}</span>` : ""}</div><div class="cards">${cards}</div></section>`;
+    return `<section id="sec-${s}"><div class="sec-h"><h2>${esc(sectionLabel(sec.label))}</h2>${sec.note ? `<span>${esc(sec.note)}</span>` : ""}</div>` +
+      `<div class="cards">${cards || `<p class="empty">${esc(t.nothingPlanned)}</p>`}</div></section>`;
   }).join("");
   $("prog").innerHTML = html;
 
@@ -112,6 +113,6 @@ export function applyProgress(day: ResolvedDay, now: number, liveTabIndex: (now:
 
 /** Index of the section running at `now` (one-day trips). */
 export function liveSection(day: ResolvedDay, now: number): number | null {
-  const i = day.day.sections.findIndex((s) => now >= toMinutes(s.items[0].start) && now < toMinutes(s.items[s.items.length - 1].end));
+  const i = day.day.sections.findIndex((s) => s.items.length > 0 && now >= toMinutes(s.items[0].start) && now < toMinutes(s.items[s.items.length - 1].end));
   return i < 0 ? null : i;
 }
