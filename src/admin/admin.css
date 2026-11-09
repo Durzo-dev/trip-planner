@@ -12,9 +12,8 @@
 .admin-main h1 { margin: 0; font-size: var(--text-3xl); }
 .admin-main h2 { margin: 0 0 10px; }
 .admin-main p { margin: 0 0 10px; }
-/* Trip start: the period shows as text at the height of the date field */
-.move-trip .period { margin: 0; padding: var(--space-2) 0; font-size: var(--text-base); font-weight: var(--weight-regular); color: var(--fg); }
-.move-trip .btn { margin-bottom: 3px; }
+.move-trip .picker { flex: 0 1 auto; }
+.move-trip .btn { margin-bottom: 5px; }
 
 .trip-list { display: grid; gap: 10px; }
 .trip-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

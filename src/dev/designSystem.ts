@@ -11,7 +11,8 @@ import tokensCss from "../styles/tokens.css?raw";
 import themeTs from "../theme.ts?raw";
 import { DEFAULT_THEME, initTheme } from "../theme";
 import { mountSettingsButton } from "../ui/settings";
-import { CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
+import { CALENDAR, CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
+import { attachPeriodPicker } from "../ui/calendar";
 import { enableLabelMarquee } from "../ui/marquee";
 import { LANG_CHANGE } from "../i18n";
 
@@ -46,6 +47,8 @@ function render(): void {
         <span class="chip">Meet at 12:30</span></div></div>`, "On the banner: .chip · .chip.live · .tip")}
     ${section("Tags", `<div class="row"><span class="tag meeting">Meeting point</span><span class="tag optional">Optional</span><span class="tag paid">Paid</span><span class="tag booking">Book ahead</span><span class="tag poll-label">Poll</span><span class="tag poll-label answered">✓ Poll</span><span class="tag now">Now</span><span class="tag vote">Group choice · 2 votes</span><span class="tag tie">Tie</span></div>`)}
     ${section("Picks", `<div class="picks"><label class="pick"><input type="checkbox" checked><span>Meeting point</span></label><label class="pick"><input type="checkbox" disabled aria-describedby="ds-help"><span>Optional</span><span class="tip" role="tooltip" id="ds-help">Explains the rule on hover</span></label><label class="pick"><input type="checkbox"><span>Paid</span></label><label class="pick"><input type="checkbox" checked><span>Book ahead</span></label><span class="pick fixed"><span>Poll</span></span></div>`)}
+    ${section("Date button and calendar", `<div class="picker" style="max-width:440px"><button type="button" class="date-btn" id="ds-period"><span id="ds-period-text">Saturday 19 December → Friday 1 January 2027 · 14 days</span>${CALENDAR}</button></div><div style="height:330px"></div>`,
+      "Click to open: two months, the period drawn on them, hovering a day previews the period starting there. .picker · .date-btn · .calendar")}
     ${section("Panel", `<div class="panel" style="max-width:360px"><h2>Weather</h2><p class="sub">Panel title and subtitle.</p><p>Content.</p></div>`)}
     ${section("Form", `<div class="form" style="max-width:640px"><div class="row">
         <label class="field tiny"><span class="lbl">Start</span><input type="time" value="12:30"></label><label class="field narrow"><span class="lbl">Date</span><input type="date" value="2026-11-28"></label>
@@ -61,6 +64,8 @@ function render(): void {
   const gear = document.getElementById("gear")!;
   mountSettingsButton(gear, "btn small settings-btn");
   mountSettingsButton(document.querySelector<HTMLElement>(".chips-demo")!);
+  let start = "2026-12-19";
+  attachPeriodPicker(document.querySelector<HTMLButtonElement>("#ds-period")!, { start: () => start, length: () => 14, today: "2026-12-10", onPick: (d) => (start = d) });
 }
 
 if (import.meta.env.DEV) void import("./freeze").then((m) => m.freezeIfAsked());

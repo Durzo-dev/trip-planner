@@ -38,7 +38,7 @@ theme colours are recomputed by `theme.ts`.
 `components.css` documents each one in a comment above its rules: `.btn` (`.add`, `.edit`, `.danger`,
 `[data-armed]`, `.fill`, `.small`), `.link-btn`, `.chip` (`.live`), tooltips (`.tip`, `.who`), `.panel`, form
 (`.form`, `.row`, `.field` with `.narrow` / `.tiny`, `.hint`), `.seg`, `dialog.dialog`, `.msg` (`.bad`),
-`.tag` (`.meeting`, `.optional`, `.paid`, `.booking`, `.poll-label` + `.answered`, `.now`, `.vote`, `.tie`), `.picks` + `.pick` (`.fixed`), `.arrow-btn` (`.lg`), `.settings-btn`, `.error`.
+`.tag` (`.meeting`, `.optional`, `.paid`, `.booking`, `.poll-label` + `.answered`, `.now`, `.vote`, `.tie`), `.picks` + `.pick` (`.fixed`), `.picker` + `.date-btn` + `.calendar`, `.arrow-btn` (`.lg`), `.settings-btn`, `.error`.
 
 ### Button colours
 

@@ -62,6 +62,13 @@ export function minutesForDay(clock: TripClock, dayDate: string): number {
 }
 
 /** Whole days between two ISO dates (b - a). */
+/** The ISO date n days later (earlier when negative). */
+export function addDays(iso: string, n: number): string {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 export function daysBetween(a: string, b: string): number {
   return Math.round((Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86_400_000);
 }

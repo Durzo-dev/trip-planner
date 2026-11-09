@@ -4,7 +4,7 @@
  * edits stay in a draft until "Save"; the draft is checked by
  * validateTrip and saved over the version that was loaded, so two organisers cannot overwrite each other.
  */
-import { CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
+import { CALENDAR, CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
 import "../styles/tokens.css";
 import "../styles/components.css";
 import "./admin.css";
@@ -17,6 +17,7 @@ import { mountSettingsButton } from "../ui/settings";
 import { geocodeAddress } from "../geocode";
 import { enableLabelMarquee } from "../ui/marquee";
 import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
+import { attachPeriodPicker } from "../ui/calendar";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
@@ -206,13 +207,17 @@ function describe(err: TripError, trip: Trip): string {
   }
 }
 
-/** "From Sat 19 Dec to Sun 20 Dec 2026 · 2 days", the trip's days moved by `offset` days. */
-function periodText(trip: Trip, offset: number): string {
-  const first = addDays(trip.days[0].date, offset);
-  const last = addDays(trip.days[trip.days.length - 1].date, offset);
-  const short = (d: string) => formatDate(d, { weekday: "short", day: "numeric", month: "short" });
-  return t.period(short(first), `${short(last)} ${last.slice(0, 4)}`, daysBetween(first, last) + 1);
+/** "Saturday 19 December → Sunday 20 December 2026 · 2 days" for the trip's days starting on `first`. */
+function periodText(trip: Trip, first: string): string {
+  const last = addDays(first, daysBetween(trip.days[0].date, trip.days[trip.days.length - 1].date));
+  const n = daysBetween(first, last) + 1;
+  const long = (d: string, year: boolean) => capitalize(formatDate(d, { weekday: "long", day: "numeric", month: "long", ...(year ? { year: "numeric" } : {}) }));
+  // The year once at the end, unless the trip spans two years
+  return t.period(long(first, n === 1 || first.slice(0, 4) !== last.slice(0, 4)), long(last, true), n);
 }
+
+/** Number of days of a trip, from its first to its last day. */
+const tripLength = (trip: Trip) => daysBetween(trip.days[0].date, trip.days[trip.days.length - 1].date) + 1;
 
 function dayTitle(date: string): string {
   return capitalize(formatDate(date, { weekday: "long", day: "numeric", month: "long" }));
@@ -364,8 +369,8 @@ function renderEditor(ed: Editor): void {
       <label class="field"><span class="lbl">${esc(t.tripTitle)}</span><input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
       <label class="field"><span class="lbl">${esc(t.tagline)}</span><input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
       ${trip.days.length ? `<div class="row move-trip">
-        <label class="field narrow"><span class="lbl">${esc(t.tripStart)}</span><input type="date" id="f-start" value="${esc(trip.days[0].date)}"></label>
-        <div class="field"><span class="lbl">${esc(t.tripPeriod)}</span><p class="period" id="f-period">${esc(periodText(trip, 0))}</p></div>
+        <div class="field picker"><span class="lbl" id="period-lbl">${esc(t.tripPeriod)}</span>
+          <button type="button" class="date-btn" id="f-period" aria-labelledby="period-lbl f-period"><span id="period-text">${esc(periodText(trip, trip.days[0].date))}</span>${CALENDAR}</button></div>
         <button type="button" class="btn small edit" id="do-shift" hidden>${esc(t.moveTrip)}</button>
       </div>` : ""}
       <div class="panel-foot"><button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button></div>
@@ -454,23 +459,23 @@ function wireEditor(ed: Editor): void {
     if (!tagline.trim()) delete next.tagline;
     update(next, false);
   });
-  // Picking a new first day previews the whole period moved; "Move the trip" applies it
-  const start = document.getElementById("f-start") as HTMLInputElement | null;
-  if (start) {
-    const offset = () => (start.value ? daysBetween(ed.draft.days[0].date, start.value) : 0);
-    start.addEventListener("click", () => {
-      try {
-        start.showPicker(); // open the calendar on a click anywhere in the field
-      } catch {
-        // not supported, or already open
-      }
-    });
-    start.addEventListener("input", () => {
-      $("f-period").textContent = periodText(ed.draft, offset());
-      $("do-shift").hidden = offset() === 0;
-    });
+  // Picking a new first day in the calendar shows the whole period moved; "Move the trip" applies it
+  const periodBtn = document.getElementById("f-period") as HTMLButtonElement | null;
+  if (periodBtn) {
+    let picked = ed.draft.days[0].date;
+    attachPeriodPicker(periodBtn, {
+      start: () => picked,
+      length: () => tripLength(ed.draft),
+      today: new Date().toISOString().slice(0, 10),
+      onPick(date) {
+        picked = date;
+        $("period-text").textContent = periodText(ed.draft, date);
+        $("do-shift").hidden = date === ed.draft.days[0].date;
+      },
+    }, stripListeners?.signal);
     $("do-shift").addEventListener("click", () => {
-      if (offset()) update(shiftTrip(ed.draft, offset()));
+      const n = daysBetween(ed.draft.days[0].date, picked);
+      if (n) update(shiftTrip(ed.draft, n));
     });
   }
   root.querySelectorAll<HTMLInputElement>("[data-day-date]").forEach((input) =>
