@@ -111,6 +111,8 @@ export const fr: Strings = {
   tagStyleNone: "Simple",
   tagStyleAll: "Tout le monde",
   tagStyleOptional: "Facultatif",
+  /** Label given to the activities before the meeting point. */
+  optionalTag: "FACULTATIF",
   description: "Description",
   addressLine: "Adresse affichée",
   places: "Lieux",

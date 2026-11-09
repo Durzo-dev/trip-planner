@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Item, Trip } from "../types";
 import {
-  addDay, addDays, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
+  addDay, addDays, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip, withMeetingPoint,
 } from "./edit";
 
 const LABELS: [string, string, string] = ["Morning", "Afternoon", "Evening"];
@@ -174,5 +174,52 @@ describe("parts of the day", () => {
     t = placeItem(t, 0, [0, 0], item("19:00", "20:00", "Coffee"));
     expect(t.days[0].sections.map((s) => s.items.map((i) => i.title))).toEqual([[], [], ["Coffee"]]);
     expect(t.meetingPoint?.time).toBe("19:00");
+  });
+});
+
+describe("meeting point", () => {
+  const OPT = "OPTIONAL";
+  const planned = () => {
+    let t = base();
+    t = placeItem(t, 0, null, item("10:00", "11:00", "Market"));
+    t = placeItem(t, 0, null, item("12:30", "14:00", "Lunch"));
+    t = placeItem(t, 1, null, item("09:00", "10:00", "Museum"));
+    return t;
+  };
+  const titles = (t: Trip) => t.days.flatMap((d) => d.sections.flatMap((s) => s.items.filter((i) => i.tagStyle === "optional").map((i) => i.title)));
+
+  it("defaults to the earliest activity, and to none without activities", () => {
+    expect(withMeetingPoint(planned(), OPT).meetingPoint).toEqual({ date: "2026-11-27", time: "10:00" });
+    expect(withMeetingPoint({ ...base(), meetingPoint: { date: "2026-11-27", time: "10:00" } }, OPT).meetingPoint).toBeUndefined();
+  });
+
+  it("makes every activity before the chosen one optional, across days", () => {
+    const t = withMeetingPoint({ ...planned(), meetingPoint: { date: "2026-11-28", time: "09:00" } }, OPT);
+    expect(titles(t)).toEqual(["Market", "Lunch"]);
+    expect(t.days[0].sections[0].items[0]).toMatchObject({ tag: OPT, tagStyle: "optional" });
+  });
+
+  it("gives back the activities it made optional when the meeting point moves earlier, not the ones marked by hand", () => {
+    const p = planned();
+    p.days[0].sections[0].items[0] = { ...p.days[0].sections[0].items[0], tag: "IF YOU WANT", tagStyle: "optional" };
+    let t = withMeetingPoint({ ...p, meetingPoint: { date: "2026-11-28", time: "09:00" } }, OPT);
+    t = withMeetingPoint({ ...t, meetingPoint: { date: "2026-11-27", time: "10:00" } }, OPT);
+    expect(titles(t)).toEqual(["Market"]);
+    expect(t.days[0].sections[1].items[0].tag).toBeUndefined();
+  });
+
+  it("falls back to the earliest activity when the meeting activity is removed", () => {
+    let t = withMeetingPoint({ ...planned(), meetingPoint: { date: "2026-11-27", time: "12:30" } }, OPT);
+    t = withMeetingPoint(removeItem(t, 0, 1, 0), OPT);
+    expect(t.meetingPoint).toEqual({ date: "2026-11-27", time: "10:00" });
+    expect(titles(t)).toEqual([]);
+  });
+
+  it("is already followed by every bundled trip", () => {
+    const dir = join(__dirname, "../../public/trips");
+    for (const f of readdirSync(dir)) {
+      const trip = JSON.parse(readFileSync(join(dir, f), "utf8")) as Trip;
+      expect(withMeetingPoint(trip, "OPTIONNEL").meetingPoint, f).toEqual(trip.meetingPoint);
+    }
   });
 });

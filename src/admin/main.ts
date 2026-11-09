@@ -19,7 +19,7 @@ import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
-  addDay, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
+  addDay, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, withMeetingPoint, type TripError,
 } from "./edit";
 
 const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE === "true";
@@ -216,7 +216,8 @@ function meetingOptions(trip: Trip): string {
     const sel = mp && mp.date === d.date && mp.time === it.start ? " selected" : "";
     return `<option value="${esc(value)}"${sel}>${esc(`${dayTitle(d.date)} · ${formatTime(it.start)} · ${it.title}`)}</option>`;
   })));
-  return `<option value="">${esc(t.meetingNone)}</option>${opts.join("")}`;
+  // With activities there is always a meeting point (the earliest one by default)
+  return opts.length ? opts.join("") : `<option value="">${esc(t.meetingNone)}</option>`;
 }
 
 /** A place row. The position found for the place is kept on the row (data-lat / data-lng) until its link or address changes. */
@@ -440,7 +441,10 @@ function refreshSaveBar(ed: Editor, message?: { text: string; bad?: boolean; rel
 
 function wireEditor(ed: Editor): void {
   const update = (next: Trip, rerender = true) => {
-    ed.draft = next;
+    const before = JSON.stringify(next.days);
+    ed.draft = withMeetingPoint(next, t.optionalTag);
+    // Activities that just became optional (or stopped being) must show it
+    if (JSON.stringify(ed.draft.days) !== before) rerender = true;
     if (rerender) renderEditor(ed);
     else refreshSaveBar(ed);
   };
@@ -591,6 +595,8 @@ async function openEditor(id: string): Promise<void> {
     redraw();
     return;
   }
+  // A trip saved before the meeting-point rule follows it as soon as it is opened; it is saved with the next change
+  stored.data = withMeetingPoint(stored.data, t.optionalTag);
   const ed: Editor = { stored, draft: structuredClone(stored.data), open: null, saving: false, day: 0 };
   // Preview page: ?edit=day,section,item opens that activity's form
   const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get("edit") : null;

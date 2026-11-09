@@ -123,6 +123,47 @@ export function removeItem(trip: Trip, dayIndex: number, sectionIndex: number, i
   return t;
 }
 
+/** Every activity of the trip in schedule order (day, part of the day, start), with where it is. */
+function scheduled(trip: Trip): { item: Item; date: string }[] {
+  return trip.days.flatMap((d) => d.sections.flatMap((s) => s.items.map((item) => ({ item, date: d.date }))));
+}
+
+/**
+ * Keeps the meeting point consistent with the schedule:
+ * - with at least one activity there is always a meeting point, the earliest activity by default
+ *   (also when the chosen one was removed or no longer matches an activity);
+ * - activities before the meeting point are optional: they get the optional style and, unless they
+ *   already had it, `optionalTag` as their label;
+ * - an activity that was made optional this way and is no longer before the meeting point (the meeting
+ *   point was moved earlier) goes back to having no label.
+ */
+export function withMeetingPoint(trip: Trip, optionalTag: string): Trip {
+  const t = clone(trip);
+  const all = scheduled(t);
+  if (!all.length) {
+    delete t.meetingPoint;
+    return t;
+  }
+  const mp = t.meetingPoint;
+  let at = mp ? all.findIndex((a) => a.date === mp.date && a.item.start === mp.time) : -1;
+  if (at < 0) {
+    at = 0;
+    t.meetingPoint = { date: all[0].date, time: all[0].item.start };
+  }
+  all.forEach(({ item }, i) => {
+    if (i < at) {
+      if (item.tagStyle !== "optional") {
+        item.tagStyle = "optional";
+        item.tag = optionalTag;
+      }
+    } else if (item.tagStyle === "optional" && item.tag === optionalTag) {
+      delete item.tagStyle;
+      delete item.tag;
+    }
+  });
+  return t;
+}
+
 /**
  * Reads coordinates typed by hand ("43.61, 3.87") or found in a Google Maps link
  * (".../@43.61,3.87,15z", "...!3d43.61!4d3.87", "?q=43.61,3.87").

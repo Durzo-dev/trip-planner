@@ -109,6 +109,8 @@ export const en = {
   tagStyleNone: "Plain",
   tagStyleAll: "Everyone",
   tagStyleOptional: "Optional",
+  /** Label given to the activities before the meeting point. */
+  optionalTag: "OPTIONAL",
   description: "Description",
   addressLine: "Address shown",
   places: "Places",
