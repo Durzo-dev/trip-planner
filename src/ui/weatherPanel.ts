@@ -32,7 +32,11 @@ export async function renderWeather(day: ResolvedDay, today: string, timezone: s
   const items = day.items.map((r) => r.item);
   const first = Math.floor(toMinutes(items[0].start) / 60);
   const last = Math.ceil(toMinutes(items[items.length - 1].end) / 60);
-  const state = await fetchWeather(place.lat, place.lng, day.day.date, today, timezone, slotHours(first, last));
+  const hours = slotHours(first, last);
+  // Preview page: a fixed forecast instead of calling Open-Meteo from every frame
+  const state = import.meta.env.DEV && new URLSearchParams(location.search).has("sampleWeather")
+    ? (await import("../dev/sampleWeather")).sampleWeather(hours)
+    : await fetchWeather(place.lat, place.lng, day.day.date, today, timezone, hours);
   if (id !== requestId) return; // a newer day was selected meanwhile
 
   if (state.kind === "ok") {

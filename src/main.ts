@@ -233,4 +233,5 @@ async function start(): Promise<void> {
   if (!override) setInterval(() => { if (!simulated) tick(s); }, 30_000);
 }
 
+if (import.meta.env.DEV) void import("./dev/freeze").then((m) => m.freezeIfAsked());
 void start();

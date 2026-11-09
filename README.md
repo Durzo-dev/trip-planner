@@ -106,7 +106,9 @@ The trip files work without it; the admin page and stored trips need it.
 With `npm run dev` running, open [`/trip-planner/preview.html`](http://localhost:5173/trip-planner/preview.html):
 every screen of the trip page and the admin page, with sample data, side by side in desktop and phone sizes,
 in the language and mode you pick. The admin screens use an in-memory stand-in for Supabase (`?mock` in the
-address), so no account is needed. This page and the stand-in exist only in development.
+address), so no account is needed. To stay light, a screen loads only when it is on screen, one at a
+time, with a sample forecast; after a save the screens wait for "Reload", unless "Live reload" is on.
+This page and the stand-in exist only in development.
 
 ### Design system
 Colours, text sizes, spacing, radii and shadows are tokens in `src/styles/tokens.css`; shared components

@@ -635,4 +635,5 @@ async function start(): Promise<void> {
   }
 }
 
+if (import.meta.env.DEV) void import("../dev/freeze").then((m) => m.freezeIfAsked());
 void start();

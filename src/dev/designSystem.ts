@@ -62,6 +62,7 @@ function render(): void {
   mountSettingsButton(document.querySelector<HTMLElement>(".chips-demo")!);
 }
 
+if (import.meta.env.DEV) void import("./freeze").then((m) => m.freezeIfAsked());
 initTheme(DEFAULT_THEME);
 enableLabelMarquee();
 render();

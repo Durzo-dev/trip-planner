@@ -16,3 +16,4 @@ section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; 
 .viewport { position: relative; overflow: hidden; border: 1px solid #D5D7DD; border-radius: 6px; background: #FFF; }
 .viewport iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; }
 .shot figcaption { margin-top: 4px; font-size: 11px; color: #5A5F6B; }
+.waiting { padding: 3px 8px; border-radius: 6px; background: #F2CD78; color: #2A1E06; font-weight: 600; }

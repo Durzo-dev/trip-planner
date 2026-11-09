@@ -107,7 +107,9 @@ Les fichiers de sortie s'en passent ; la page d'administration et les sorties en
 Avec `npm run dev` lancé, ouvrir [`/trip-planner/preview.html`](http://localhost:5173/trip-planner/preview.html) :
 tous les écrans du planning et de l'administration, avec des données d'exemple, côte à côte en taille ordinateur
 et téléphone, dans la langue et le mode choisis. Les écrans d'administration utilisent une doublure de Supabase
-en mémoire (`?mock` dans l'adresse) : aucun compte n'est nécessaire. Cette page et la doublure n'existent qu'en
+en mémoire (`?mock` dans l'adresse) : aucun compte n'est nécessaire. Pour rester légère, la page ne charge un
+écran que lorsqu'il est visible, un à la fois, avec une météo d'exemple ; après un enregistrement, les écrans
+attendent « Reload », sauf si « Live reload » est coché. Cette page et la doublure n'existent qu'en
 développement.
 
 ### Design system
