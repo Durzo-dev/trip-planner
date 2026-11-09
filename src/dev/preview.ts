@@ -26,6 +26,7 @@ const SCREENS: Screen[] = [
   { group: "Admin", name: "Editor", url: "./admin.html?mock&trip=bordeaux-weekend-2026-11" },
   { group: "Admin", name: "Editor, activity form open", url: "./admin.html?mock&trip=bordeaux-2026-11-28&edit=0,1,0" },
   { group: "Admin", name: "Server not set up", url: "./admin.html?mock=unconfigured" },
+  { group: "Design system", name: "Tokens and components", url: "./design-system.html" },
 ];
 
 const DEVICES = {

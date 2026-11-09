@@ -3,7 +3,8 @@
  * dates, days, activities, meeting point). Edits stay in a draft until "Save"; the draft is checked by
  * validateTrip and saved over the version that was loaded, so two organisers cannot overwrite each other.
  */
-import "../styles.css";
+import "../styles/tokens.css";
+import "../styles/components.css";
 import "./admin.css";
 import type { Item, Place, Trip } from "../types";
 import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t } from "../i18n";

@@ -63,7 +63,8 @@ function card(trip: Trip, r: ResolvedItem, votes: MyVotes): string {
     `<div class="time">${formatTime(item.start)}<small>${formatTime(item.end)}</small></div><div class="body">${body}</div></article>`;
 }
 
-const FACE_COLORS = ["#B8872E", "#3E7C8C", "#7D5BA6", "#4F8A4B", "#C0634A", "#5C6C8A"];
+/** Initials colours, from the design tokens (--face-1 … --face-6). */
+const FACE_COLORS = [1, 2, 3, 4, 5, 6].map((n) => `var(--face-${n})`);
 const faceColor = (name: string) => FACE_COLORS[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % FACE_COLORS.length];
 
 function poll(trip: Trip, key: string, myVote: number | undefined): string {
@@ -76,7 +77,7 @@ function poll(trip: Trip, key: string, myVote: number | undefined): string {
   const options = p.options.map((o, i) => {
     const v = voters[i];
     const faces = v.slice(0, 4).map((n) => `<span class="face${n === t.you ? " me" : ""}" style="background:${faceColor(n)}">${esc(n[0])}</span>`).join("") +
-      (v.length > 4 ? `<span class="face" style="background:#8A7F83">+${v.length - 4}</span>` : "");
+      (v.length > 4 ? `<span class="face" style="background:var(--face-more)">+${v.length - 4}</span>` : "");
     const who = v.length ? `<b>${esc(t.votes(v.length))}</b>${v.map(esc).join(", ")}` : `<b>${esc(t.noVotes)}</b>`;
     return `<button type="button" class="opt" id="opt-${key}-${i}" data-poll="${key}" data-i="${i}" aria-pressed="${myVote === i}" aria-describedby="who-${key}-${i}">` +
       `<span class="fillbar" style="width:${total ? Math.round((v.length / total) * 100) : 0}%"></span>` +

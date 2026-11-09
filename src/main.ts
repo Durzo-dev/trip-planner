@@ -3,6 +3,8 @@
  * (selected day, votes, live progress). ?now= freezes the clock to preview a day; on example trips the
  * test bar can simulate the clock too.
  */
+import "./styles/tokens.css";
+import "./styles/components.css";
 import "./styles.css";
 import type { Trip } from "./types";
 import { lang, LANG_CHANGE, t } from "./i18n";

@@ -10,7 +10,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "setup-hooks": "node tools/setup-hooks.mjs",
+    "postinstall": "node tools/check-hooks.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.11",

@@ -8,10 +8,10 @@ import { toMinutes } from "../time";
 import { $, esc } from "./dom";
 
 const SKY: Record<Sky, string> = {
-  sun: '<circle cx="13" cy="13" r="5" fill="#E2A93B"/><g stroke="#E2A93B" stroke-width="1.6" stroke-linecap="round"><path d="M13 2v3M13 21v3M2 13h3M21 13h3M5 5l2 2M19 19l2 2M5 21l2-2M19 7l2-2"/></g>',
-  partly: '<circle cx="10" cy="10" r="4.5" fill="#E2A93B"/><path d="M8 20h11a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.4 1.6A3.3 3.3 0 0 0 8 20z" fill="#9AA6B2"/>',
-  cloud: '<path d="M7 19h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4 1.8A3.6 3.6 0 0 0 7 19z" fill="#9AA6B2"/>',
-  rain: '<path d="M7 15h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4 1.8A3.6 3.6 0 0 0 7 15z" fill="#8792A0"/><g stroke="#4F8FC0" stroke-width="1.6" stroke-linecap="round"><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3"/></g>',
+  sun: '<circle cx="13" cy="13" r="5" style="fill:var(--sky-sun)"/><g style="stroke:var(--sky-sun)" stroke-width="1.6" stroke-linecap="round"><path d="M13 2v3M13 21v3M2 13h3M21 13h3M5 5l2 2M19 19l2 2M5 21l2-2M19 7l2-2"/></g>',
+  partly: '<circle cx="10" cy="10" r="4.5" style="fill:var(--sky-sun)"/><path d="M8 20h11a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.4 1.6A3.3 3.3 0 0 0 8 20z" style="fill:var(--sky-cloud)"/>',
+  cloud: '<path d="M7 19h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4 1.8A3.6 3.6 0 0 0 7 19z" style="fill:var(--sky-cloud)"/>',
+  rain: '<path d="M7 15h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4 1.8A3.6 3.6 0 0 0 7 15z" style="fill:var(--sky-cloud-dark)"/><g style="stroke:var(--sky-rain)" stroke-width="1.6" stroke-linecap="round"><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3"/></g>',
 };
 
 let requestId = 0;

@@ -109,6 +109,20 @@ et téléphone, dans la langue et le mode choisis. Les écrans d'administration 
 en mémoire (`?mock` dans l'adresse) : aucun compte n'est nécessaire. Cette page et la doublure n'existent qu'en
 développement.
 
+### Design system
+Couleurs, tailles de texte, espacements, rayons et ombres sont des jetons dans `src/styles/tokens.css` ;
+les composants partagés (boutons, pastilles, champs, fenêtre…) sont dans `src/styles/components.css`.
+Les tests refusent les valeurs brutes ailleurs.
+Page de référence : [`/trip-planner/design-system.html`](http://localhost:5173/trip-planner/design-system.html).
+Détails : [docs/fr/design-system.md](docs/fr/design-system.md).
+
+### Hooks git
+```bash
+npm run setup-hooks
+```
+Installe un hook de pre-commit qui lance la vérification de types et les tests avant chaque commit
+(contourner : `git commit --no-verify`).
+
 ### Compiler
 ```bash
 npm run build
@@ -131,6 +145,8 @@ trip-planner/
 ├── public/trips/           # Fichiers des sorties, un JSON par sortie
 ├── schema/                 # Schéma JSON d'une sortie
 ├── supabase/migrations/    # Tables et règles d'accès de la base (sécurité par ligne), avec leurs tests
+├── tools/                  # Installation du hook git
+├── docs/en, docs/fr/       # Notes de contributeur, un dossier par langue (design system)
 ├── src/
 │   ├── main.ts             # Point d'entrée : charge la sortie, assemble la page
 │   ├── db.ts               # Accès à Supabase (sorties enregistrées, connexion)
@@ -144,9 +160,11 @@ trip-planner/
 │   ├── theme.ts            # Couleurs dérivées du thème de la sortie
 │   ├── i18n.ts             # Langue de l'interface
 │   ├── locales/            # Textes de l'interface, un fichier par langue
+│   ├── styles/             # Design system : jetons et composants partagés
 │   └── ui/                 # Bandeau, onglets, plan, programme et météo
 ├── admin.html              # Page d'administration
 ├── preview.html            # Aperçu des écrans (développement seulement)
+├── design-system.html      # Référence du design system (développement seulement)
 ├── docs/mockup.html        # La maquette validée dont part le projet
 └── .github/workflows/      # Tests, compilation et déploiement GitHub Pages
 ```

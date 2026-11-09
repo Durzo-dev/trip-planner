@@ -1,0 +1,124 @@
+/* Design tokens: the only place where raw colours, text sizes, radii and shadows are written.
+   Every other stylesheet uses these variables (a test enforces it). The colours that follow a trip's
+   theme (accent, banner, surfaces…) are recomputed at runtime by src/theme.ts from three trip colours;
+   the values below are their fallbacks before the theme applies. */
+
+:root {
+  /* ---------- Type ---------- */
+  --font: "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --text-2xs: 10px;   /* badges, tags, avatar initials */
+  --text-xs: 11px;    /* captions, secondary times */
+  --text-sm: 12px;    /* chips, hints, legends */
+  --text-md: 13px;    /* buttons, secondary text */
+  --text-base: 14px;  /* body text, tabs, inputs */
+  --text-lg: 15px;    /* times in cards, lead text */
+  --text-xl: 17px;    /* card titles, dialog titles, section titles */
+  --text-2xl: 20px;   /* page brand */
+  --text-3xl: 24px;   /* page titles */
+  --text-title: clamp(28px, 5vw, 42px); /* trip title in the banner */
+  --text-date: 56px;  /* date in the banner */
+  --text-date-sm: 40px;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---------- Space (multiples of 4) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  /* ---------- Radii ---------- */
+  --radius-xs: 4px;   /* tags, small badges */
+  --radius-sm: 6px;   /* inner items, colour inputs */
+  --radius-md: 8px;   /* inputs, list rows, tooltips */
+  --radius-lg: 12px;  /* panels, cards */
+  --radius-xl: 14px;  /* dialogs */
+  --radius-pill: 999px;
+  --radius-round: 50%;
+
+  /* ---------- Shadows ---------- */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.12);
+  --shadow-pop: 0 6px 18px rgba(0,0,0,.2);
+  --shadow-bar: 0 -4px 16px rgba(0,0,0,.08);
+  --shadow-dialog: 0 20px 50px rgba(0,0,0,.25);
+  --backdrop: rgba(10,10,20,.45);
+  --photo-shade: rgba(0,0,0,.35);
+  --swatch-edge: inset 0 0 0 1px rgba(0,0,0,.2);
+
+  /* ---------- Fixed colours (same for every trip) ---------- */
+  --white: #FFFFFF;
+  --black: #000000;
+  --ink: #1F1A1C;                     /* text on light native menus (select options) */
+  --highlight: #F2CD78;               /* pressed state on dark bars, test bar */
+  --highlight-ink: #2A1E06;
+  --on-dark: rgba(255,255,255,.86);   /* text on the dark test bar */
+  --on-dark-fill: rgba(255,255,255,.14);
+  --on-dark-line: rgba(255,255,255,.25);
+  --on-dark-line-strong: rgba(255,255,255,.4);
+  --danger: #C0392B;
+  --danger-soft: #FBE3E0;
+  --danger-ink: #8E2A1F;
+  /* Weather icons */
+  --sky-sun: #E2A93B;
+  --sky-cloud: #9AA6B2;
+  --sky-cloud-dark: #8792A0;
+  --sky-rain: #4F8FC0;
+  /* Participants' initials in polls */
+  --face-1: #B8872E;
+  --face-2: #3E7C8C;
+  --face-3: #7D5BA6;
+  --face-4: #4F8A4B;
+  --face-5: #C0634A;
+  --face-6: #5C6C8A;
+  --face-more: #8A7F83;              /* the "+N" badge after four initials */
+
+  /* ---------- Theme colours (fallbacks; src/theme.ts sets the real ones) ---------- */
+  --bg: #FCFAFB;
+  --surface: #FFFFFF;
+  --tint: #F6ECEF;
+  --line: #EADBE0;
+  --fg: #1F1A1C;
+  --muted: #6E6266;
+  --accent: #7A1734;
+  --accent-ink: #7A1734;
+  --banner: #7A1734;
+  --banner-ink: #5A0F25;
+  --gold: #B8872E;
+  --gold-soft: #F4E7CC;
+  --river: #CFE0EA;
+  --ok: #2F7D4F;
+  --fill: #E8C7D1;
+  --done: #B8AEB1;
+  --art-o: .13;
+  --banner-fg: #FFFFFF;
+  --banner-soft: #F2D9E1;
+  --chip: rgba(255,255,255,.13);
+  --chip-live-bg: #FFFFFF;
+  --chip-live-fg: #7A1734;
+  --date: #E2BC6A;
+  --halo: rgba(255,255,255,.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141012; --surface: #1D171A; --tint: #2A1E22; --line: #3A2C31;
+    --fg: #F3ECEE; --muted: #B5A6AB; --accent: #C24A6C; --accent-ink: #E7A3B6;
+    --banner: #5E1229; --banner-ink: #430B1C; --gold: #D9B26A; --gold-soft: #3A2E18;
+    --river: #1E3440; --ok: #6CC596; --fill: #5A2637; --done: #5E5458; --art-o: .2; color-scheme: dark;
+    --danger: #E06A5C; --danger-soft: #3A1E1C; --danger-ink: #F2B3AA;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141012; --surface: #1D171A; --tint: #2A1E22; --line: #3A2C31;
+  --fg: #F3ECEE; --muted: #B5A6AB; --accent: #C24A6C; --accent-ink: #E7A3B6;
+  --banner: #5E1229; --banner-ink: #430B1C; --gold: #D9B26A; --gold-soft: #3A2E18;
+  --river: #1E3440; --ok: #6CC596; --fill: #5A2637; --done: #5E5458; --art-o: .2; color-scheme: dark;
+  --danger: #E06A5C; --danger-soft: #3A1E1C; --danger-ink: #F2B3AA;
+}

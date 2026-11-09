@@ -107,6 +107,19 @@ every screen of the trip page and the admin page, with sample data, side by side
 in the language and mode you pick. The admin screens use an in-memory stand-in for Supabase (`?mock` in the
 address), so no account is needed. This page and the stand-in exist only in development.
 
+### Design system
+Colours, text sizes, spacing, radii and shadows are tokens in `src/styles/tokens.css`; shared components
+(buttons, chips, fields, dialog…) are in `src/styles/components.css`. Tests refuse raw values elsewhere.
+Reference page: [`/trip-planner/design-system.html`](http://localhost:5173/trip-planner/design-system.html).
+Details: [docs/en/design-system.md](docs/en/design-system.md).
+
+### Git hooks
+```bash
+npm run setup-hooks
+```
+Installs a pre-commit hook that runs the type check and the tests before each commit (bypass:
+`git commit --no-verify`).
+
 ### Build
 ```bash
 npm run build
@@ -129,6 +142,8 @@ trip-planner/
 ├── public/trips/           # Trip files, one JSON per trip
 ├── schema/                 # JSON schema of a trip
 ├── supabase/migrations/    # Database tables and access rules (row-level security), with their tests
+├── tools/                  # Git hook installer
+├── docs/en, docs/fr/       # Contributor notes, one folder per language (design system)
 ├── src/
 │   ├── main.ts             # Entry point: loads the trip, wires the page
 │   ├── db.ts               # Supabase access (stored trips, sign-in)
@@ -142,9 +157,11 @@ trip-planner/
 │   ├── theme.ts            # Colour tokens derived from the trip theme
 │   ├── i18n.ts             # Interface language
 │   ├── locales/            # Interface strings, one file per language
+│   ├── styles/             # Design system: tokens and shared components
 │   └── ui/                 # Header, tabs, map, schedule and weather panels
 ├── admin.html              # Admin page
 ├── preview.html            # Screen preview (development only)
+├── design-system.html      # Design system reference (development only)
 ├── docs/mockup.html        # The validated mock-up the project starts from
 └── .github/workflows/      # Tests, build and GitHub Pages deployment
 ```

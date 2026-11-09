@@ -1,0 +1,102 @@
+/* Shared components, used by every page: base rules, buttons, chips, tooltips, panels, form fields,
+   segmented choice, dialog, messages, tags. Page stylesheets (styles.css, admin/admin.css) only lay
+   pages out and style what exists on that page alone. Values come from tokens.css.
+   The reference page (design-system.html, development only) shows each component in every state. */
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: var(--text-base); line-height: 1.5; }
+a { color: var(--accent-ink); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(var(--space-4), env(safe-area-inset-left, 0px)); padding-right: max(var(--space-4), env(safe-area-inset-right, 0px)); }
+/* Visually hidden, still read by screen readers */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- Button ----------
+   .btn            outlined, accent colour
+   .btn.fill       filled, the main action of a group
+   .btn.danger     destructive; [data-armed] = asks for the confirming second click
+   .btn.small      compact, inside lists
+   .link-btn       an action that reads as a link */
+.btn { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: var(--text-md); font-weight: var(--weight-medium); text-decoration: none; padding: 7px 14px; border-radius: var(--radius-pill); border: 1.5px solid var(--accent); color: var(--accent-ink); background: transparent; cursor: pointer; }
+.btn.fill { background: var(--accent); color: var(--white); }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .5; cursor: default; filter: none; }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.danger[data-armed] { background: var(--danger); color: var(--white); }
+.btn.small { padding: var(--space-1) 10px; font-size: var(--text-sm); }
+.link-btn { font: inherit; font-size: var(--text-md); color: var(--accent-ink); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+
+/* ---------- Chip (on the banner) ----------
+   .chip.live      the highlighted one (countdown) */
+.chip { font-size: var(--text-sm); font-weight: var(--weight-medium); padding: var(--space-1) 10px; border-radius: var(--radius-pill); background: var(--chip); color: var(--banner-fg); }
+.chip.live { background: var(--chip-live-bg); color: var(--chip-live-fg); }
+button.chip { font-family: inherit; border: 0; cursor: pointer; position: relative; }
+button.chip:hover, button.chip:focus-visible { filter: brightness(1.12); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Tooltip ----------
+   .chip .tip shows below its chip; .who shows above its poll option. */
+.tip, .who { position: absolute; z-index: 20; padding: 7px 10px; border-radius: var(--radius-md); background: var(--fg); color: var(--bg); font-size: var(--text-sm); font-weight: var(--weight-regular); line-height: 1.5; text-align: left; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; }
+.tip b, .who b { display: block; font-weight: var(--weight-semibold); font-size: var(--text-xs); opacity: .75; margin-bottom: 2px; }
+.tip::before, .who::after { content: ""; position: absolute; left: var(--space-4); border: 6px solid transparent; }
+
+/* ---------- Panel ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); min-width: 0; }
+.panel h2 { margin: 0 0 2px; font-size: var(--text-md); font-weight: var(--weight-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+.panel .sub { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--muted); }
+
+/* ---------- Form ----------
+   .field          label above its input, select or textarea; .narrow / .tiny for dates and times
+   .row            fields side by side, wrapping on small screens */
+.form { display: grid; gap: var(--space-3); }
+.row { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-end; }
+.hint { color: var(--muted); font-size: var(--text-md); }
+.field { display: grid; gap: var(--space-1); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--muted); flex: 1 1 160px; min-width: 0; }
+.field.narrow { flex: 0 0 170px; }
+.field.tiny { flex: 0 0 130px; }
+.field input, .field select, .field textarea { font: inherit; font-size: var(--text-base); font-weight: var(--weight-regular); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-2) 10px; width: 100%; }
+.field textarea { min-height: 70px; resize: vertical; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ---------- Segmented choice (radio buttons that look like one control) ---------- */
+.seg { display: flex; gap: var(--space-1); padding: var(--space-1); border-radius: var(--radius-lg); background: var(--tint); }
+.seg label { flex: 1; position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; text-align: center; font-size: var(--text-md); font-weight: var(--weight-medium); padding: 7px 6px; border-radius: var(--radius-sm); color: var(--muted); }
+.seg input:checked + span { background: var(--surface); color: var(--accent-ink); font-weight: var(--weight-semibold); box-shadow: var(--shadow-sm); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ---------- Dialog ---------- */
+dialog.dialog { border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 0; width: min(380px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); box-shadow: var(--shadow-dialog); }
+dialog.dialog::backdrop { background: var(--backdrop); }
+.dialog-body { display: grid; gap: var(--space-4); padding: 18px var(--space-5) 22px; margin: 0; }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; }
+.dialog-head h2 { margin: 0; font-size: var(--text-xl); }
+.dialog-close { font: inherit; font-size: var(--text-lg); color: var(--muted); background: none; border: 0; cursor: pointer; padding: var(--space-1) 6px; border-radius: var(--radius-sm); }
+.dialog-close:hover { color: var(--fg); background: var(--tint); }
+.dialog fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.dialog fieldset > .btn { justify-content: center; }
+.dialog legend { padding: 0; margin-bottom: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-semibold); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
+
+/* ---------- Message ----------
+   .msg.bad        an error */
+.msg { padding: 10px var(--space-3); border-radius: var(--radius-md); background: var(--tint); font-size: var(--text-md); }
+.msg.bad { background: var(--danger-soft); color: var(--danger-ink); }
+
+/* ---------- Tag (small uppercase label) ----------
+   .tag            gold (default), .all accent, .now success, .vote / .tie outlined */
+.tag { font-size: var(--text-2xs); font-weight: var(--weight-bold); letter-spacing: .06em; padding: 2px 7px; border-radius: var(--radius-xs); color: var(--white); background: var(--gold); }
+.tag.all { background: var(--accent); }
+.tag.now { background: var(--ok); }
+.tag.vote { background: transparent; color: var(--accent-ink); border: 1px solid var(--accent); }
+.tag.tie { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+
+/* ---------- Gear button (opens the settings dialog) ---------- */
+.settings-btn { display: inline-flex; align-items: center; justify-content: center; padding: var(--space-1) var(--space-2); line-height: 0; }
+.settings-btn svg { display: block; }
+
+/* ---------- Empty and error states ---------- */
+.error { padding: 40px var(--space-4); text-align: center; color: var(--muted); }
+.error .settings-btn { margin-left: var(--space-2); vertical-align: middle; }

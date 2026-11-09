@@ -22,11 +22,11 @@ let adminUrl: string | null = null;
 function panel(): HTMLDialogElement {
   if (dialog) return dialog;
   dialog = document.createElement("dialog");
-  dialog.className = "settings";
+  dialog.className = "dialog settings";
   dialog.setAttribute("aria-labelledby", "settings-h");
-  dialog.innerHTML = `<form method="dialog" class="settings-body">
-    <div class="settings-head"><h2 id="settings-h">${esc(t.settings)}</h2>
-      <button type="submit" class="settings-close" aria-label="${esc(t.close)}">✕</button></div>
+  dialog.innerHTML = `<form method="dialog" class="dialog-body">
+    <div class="dialog-head"><h2 id="settings-h">${esc(t.settings)}</h2>
+      <button type="submit" class="dialog-close" aria-label="${esc(t.close)}">✕</button></div>
     <fieldset><legend>${esc(t.language)}</legend>
       <div class="seg">${LANGS.map((l) => `<label><input type="radio" name="lang" value="${l}"><span>${esc(LANG_NAMES[l])}</span></label>`).join("")}</div>
     </fieldset>

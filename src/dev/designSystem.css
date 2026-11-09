@@ -1,0 +1,20 @@
+/* Layout of the design system reference page (development only). */
+body { margin: 0; }
+.ds { padding-block: 24px 64px; display: grid; gap: 28px; }
+.ds-head { display: flex; align-items: center; justify-content: space-between; }
+.ds-head h1 { margin: 0; }
+.ds-sec > h2 { margin: 0 0 8px; font-size: var(--text-sm); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+.ds-sec .row { align-items: center; }
+.sws { display: flex; flex-wrap: wrap; gap: 14px; }
+.sw { margin: 0; width: 120px; font-size: var(--text-xs); color: var(--muted); }
+.sw span { display: block; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--line); margin-bottom: 4px; }
+.sw .box { background: var(--surface); }
+.ds-row { display: flex; align-items: baseline; gap: 16px; margin: 4px 0; }
+.ds-row code { width: 150px; flex: none; font-size: var(--text-xs); color: var(--muted); }
+.bar { display: inline-block; height: 12px; background: var(--accent); border-radius: var(--radius-xs); }
+.ds-banner { background: var(--banner-grad, var(--banner)); padding: var(--space-4) var(--space-4) 80px; border-radius: var(--radius-lg); }
+.chips-demo { display: flex; gap: 8px; flex-wrap: wrap; position: relative; }
+.chips-demo .tip { top: calc(100% + 8px); left: 0; min-width: 160px; white-space: nowrap; }
+.chips-demo .tip::before { bottom: 100%; border-bottom-color: var(--fg); }
+.tip.ds-show { opacity: 1; }
+.ds-dialog { position: static; margin: 0; }
