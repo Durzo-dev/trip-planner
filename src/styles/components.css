@@ -102,7 +102,7 @@ fieldset.field > legend.lbl { padding: 0; margin-bottom: var(--space-1); }
 /* ---------- Date button and calendar (ui/calendar.ts) ----------
    .picker         wraps the button; the calendar opens under it
    .date-btn       a field that shows a date or a period and opens the calendar
-   .calendar       two months; .cal-day.in = in the period, .first / .last its ends, .preview = while
+   .calendar       one month, two when the period spans them; .cal-day.in = in the period, .first / .last its ends, .preview = while
                    hovering another start, .today */
 .picker { position: relative; }
 .date-btn { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; font: inherit; font-size: var(--text-base); font-weight: var(--weight-regular); text-align: left; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-2) 10px; cursor: pointer; }

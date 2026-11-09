@@ -1,5 +1,6 @@
 /**
- * Period calendar: a button that opens two months under it (one on a narrow screen), with a period of fixed length drawn on
+ * Period calendar: a button that opens the month of the period under it, and the next one beside it
+ * when the period runs into it (on a wide screen), with a period of fixed length drawn on
  * them. Hovering (or moving the keyboard focus to) a day previews the period starting that day; a
  * click picks it. Escape, a click outside or a pick closes it. Styles: .calendar in components.css.
  */
@@ -72,7 +73,11 @@ export function attachPeriodPicker(trigger: HTMLButtonElement, p: PeriodPicker, 
     return `<div class="cal-month">${head}<div class="cal-grid">${names.map((n) => `<span class="cal-wd" aria-hidden="true">${esc(n)}</span>`).join("")}${cells}</div></div>`;
   };
 
-  const shown = () => (matchMedia("(min-width: 640px)").matches ? 2 : 1);
+  /** Two months only when the chosen period spans them and the screen is wide enough. */
+  const shown = () => {
+    const spans = monthOf(p.start()) !== monthOf(addDays(p.start(), p.length() - 1));
+    return spans && matchMedia("(min-width: 640px)").matches ? 2 : 1;
+  };
   const draw = (focusDate?: string) => {
     if (!pop) return;
     const n = shown();
