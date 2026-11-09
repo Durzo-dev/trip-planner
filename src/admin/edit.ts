@@ -152,9 +152,6 @@ export function parseCoordinates(input: string): { lat: number; lng: number } | 
   return null;
 }
 
-/** A Google Maps link that holds no coordinates: the short share links (maps.app.goo.gl, goo.gl/maps). */
-export const isShortMapsLink = (input: string) => /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(input.trim());
-
 /** Keeps a pasted Google Maps link as the place's own link (the "Maps" button then opens exactly it). */
 export const mapsLinkOf = (input: string) => (/^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(input.trim()) ? input.trim() : undefined);
 

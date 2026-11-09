@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Item, Trip } from "../types";
 import {
-  addDay, addDays, isShortMapsLink, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
+  addDay, addDays, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
 } from "./edit";
 
 const LABELS: [string, string, string] = ["Morning", "Afternoon", "Evening"];
@@ -113,14 +113,10 @@ describe("parseCoordinates", () => {
   it.each(["", "Place de la Bourse", "95, 10", "44.8, 200", "https://maps.app.goo.gl/AbCdEf123", "https://www.google.com/maps/place/Place+de+la+Bourse"])("refuses %j", (input) => {
     expect(parseCoordinates(input)).toBeNull();
   });
-  it("recognises the short share links, which hold no coordinates", () => {
-    expect(isShortMapsLink("https://maps.app.goo.gl/AbCdEf123")).toBe(true);
-    expect(isShortMapsLink("https://goo.gl/maps/xyz")).toBe(true);
-    expect(isShortMapsLink("https://www.google.com/maps/@44.8,-0.5,15z")).toBe(false);
-  });
   it("keeps a pasted Google Maps link as the place's link, not typed coordinates", () => {
     expect(mapsLinkOf(" https://www.google.com/maps/@44.8,-0.5,15z ")).toBe("https://www.google.com/maps/@44.8,-0.5,15z");
     expect(mapsLinkOf("https://maps.google.fr/?q=44.8,-0.5")).toBe("https://maps.google.fr/?q=44.8,-0.5");
+    expect(mapsLinkOf("https://maps.app.goo.gl/9rxEU5DzW29hXVRj7")).toBe("https://maps.app.goo.gl/9rxEU5DzW29hXVRj7");
     expect(mapsLinkOf("44.8, -0.5")).toBeUndefined();
     expect(mapsLinkOf("https://example.com/maps/@44.8,-0.5")).toBeUndefined();
   });

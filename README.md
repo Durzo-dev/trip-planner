@@ -50,7 +50,7 @@ the illustrations off, switch to the multi-day example, or simulate the day to w
 ### Admin page (`admin.html`)
 - 🔐 **Sign in with an e-mail link**, no password (Google sign-in optional)
 - 🆕 **Create a trip**: title, first and last day, time zone; the days come with Morning / Afternoon / Evening
-- ✏️ **Add, edit and delete activities**: times, title, label, description, places (coordinates or a Google Maps link); each activity goes in the morning, afternoon or evening by its start time (noon and 6 pm)
+- ✏️ **Add, edit and delete activities**: times, title, label, description, places (a Google Maps link, the Share one works, or coordinates; when the link holds no position, it is found from the address); each activity goes in the morning, afternoon or evening by its start time (noon and 6 pm)
 - 🗂️ **One day at a time**: a scrolling strip of the days to pick one, arrows on both sides to step through them
 - 📅 **Change the dates**: move the whole trip by a number of days, change one day's date, add or remove a day; the meeting point follows
 - 💾 **Safe saving**: nothing is saved while something is wrong (each problem is listed), and two organisers saving at once cannot overwrite each other
@@ -179,6 +179,7 @@ Each module opens with a comment saying what it does and why.
 | [TypeScript](https://www.typescriptlang.org) | Typed data model and interface |
 | [Open-Meteo](https://open-meteo.com) | Weather forecast, free, no key |
 | [Supabase](https://supabase.com) | Database, sign-in and access rules for stored trips |
+| [Nominatim](https://nominatim.org) (OpenStreetMap) | Position of a place from its address, when its link holds none; the address is sent to OpenStreetMap |
 | [Vitest](https://vitest.dev) | Unit tests |
 | GitHub Pages | Hosting |
 

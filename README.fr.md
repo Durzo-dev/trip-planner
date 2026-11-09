@@ -51,7 +51,7 @@ voir se dérouler heure par heure.
 ### Page d'administration (`admin.html`)
 - 🔐 **Connexion par lien envoyé par e-mail**, sans mot de passe (connexion Google en option)
 - 🆕 **Créer une sortie** : titre, premier et dernier jour, fuseau horaire ; chaque jour arrive avec Matin / Après-midi / Soirée
-- ✏️ **Ajouter, modifier et supprimer des activités** : horaires, titre, étiquette, description, lieux (coordonnées ou lien Google Maps) ; chaque activité se range dans le matin, l'après-midi ou la soirée selon son heure de début (midi et 18 h)
+- ✏️ **Ajouter, modifier et supprimer des activités** : horaires, titre, étiquette, description, lieux (un lien Google Maps, celui de « Partager » fonctionne, ou des coordonnées ; quand le lien ne contient pas la position, elle est trouvée à partir de l'adresse) ; chaque activité se range dans le matin, l'après-midi ou la soirée selon son heure de début (midi et 18 h)
 - 🗂️ **Un jour à la fois** : une barre défilante des jours pour en choisir un, des flèches de chaque côté pour passer de l'un à l'autre
 - 📅 **Changer les dates** : décaler toute la sortie de quelques jours, changer la date d'un jour, ajouter ou retirer un jour ; le rendez-vous suit
 - 💾 **Enregistrement sûr** : rien n'est enregistré tant qu'il reste un problème (chacun est listé), et deux organisateurs qui enregistrent en même temps ne s'écrasent pas
@@ -183,6 +183,7 @@ Chaque module s'ouvre sur un commentaire qui dit ce qu'il fait et pourquoi.
 | [Open-Meteo](https://open-meteo.com) | Prévisions météo, gratuites, sans clé |
 | [Vitest](https://vitest.dev) | Tests unitaires |
 | [Supabase](https://supabase.com) | Base de données, connexion et règles d'accès des sorties enregistrées |
+| [Nominatim](https://nominatim.org) (OpenStreetMap) | Position d'un lieu à partir de son adresse, quand son lien ne la contient pas ; l'adresse est envoyée à OpenStreetMap |
 | GitHub Pages | Hébergement |
 
 Pas de framework front-end.

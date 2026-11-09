@@ -50,6 +50,7 @@
 .place-row { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: flex-end; padding: var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-md); }
 .place-row.bad { border-color: var(--danger); border-style: solid; }
 .place-error { flex-basis: 100%; margin: 0; font-size: var(--text-sm); color: var(--danger); }
+.place-error.pending { color: var(--muted); }
 .note { font-size: var(--text-sm); color: var(--muted); font-style: italic; }
 
 .save-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow-bar); }

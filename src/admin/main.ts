@@ -12,12 +12,13 @@ import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t 
 import { initTheme } from "../theme";
 import { $, esc } from "../ui/dom";
 import { mountSettingsButton } from "../ui/settings";
+import { geocodeAddress } from "../geocode";
 import { enableLabelMarquee } from "../ui/marquee";
 import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
-  addDay, isShortMapsLink, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
+  addDay, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
 } from "./edit";
 
 const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE === "true";
@@ -217,44 +218,77 @@ function meetingOptions(trip: Trip): string {
   return `<option value="">${esc(t.meetingNone)}</option>${opts.join("")}`;
 }
 
+/** A place row. The position found for the place is kept on the row (data-lat / data-lng) until its link or address changes. */
 function placeRow(p?: Place): string {
-  const coords = p && Number.isFinite(p.lat) && Number.isFinite(p.lng) ? `${p.lat}, ${p.lng}` : "";
-  return `<div class="place-row">
+  const known = p && Number.isFinite(p.lat) && Number.isFinite(p.lng);
+  // Show the link the organiser pasted, or else the coordinates
+  const shown = p?.mapsUrl ?? (known ? `${p!.lat}, ${p!.lng}` : "");
+  return `<div class="place-row"${known ? ` data-lat="${p!.lat}" data-lng="${p!.lng}"` : ""}>
     <label class="field"><span class="lbl">${esc(t.placeName)}</span><input data-k="name" value="${esc(p?.name ?? "")}"></label>
     <label class="field"><span class="lbl">${esc(t.placeAddress)}</span><input data-k="address" value="${esc(p?.address ?? "")}"></label>
-    <label class="field"><span class="lbl">${esc(t.placeCoordinates)}</span><input data-k="coords" value="${esc(coords)}" placeholder="44.84, -0.57"></label>
+    <label class="field"><span class="lbl">${esc(t.placeCoordinates)}</span><input data-k="coords" value="${esc(shown)}" placeholder="https://maps.app.goo.gl/…"></label>
     <button type="button" class="btn small danger" data-remove-place>${esc(t.removePlace)}</button>
     <p class="place-error" hidden></p>
   </div>`;
 }
 
+const rowValue = (r: Element, k: string) => (r.querySelector<HTMLInputElement>(`[data-k="${k}"]`)?.value ?? "").trim();
+const rowIsEmpty = (r: Element) => ["name", "address", "coords"].every((k) => !rowValue(r, k));
+
+/** Position of a place row: from its link or typed coordinates, else the one already found for it. */
+function rowPosition(r: HTMLElement): { lat: number; lng: number } | null {
+  const typed = parseCoordinates(rowValue(r, "coords"));
+  if (typed) return typed;
+  const lat = Number(r.dataset.lat);
+  const lng = Number(r.dataset.lng);
+  return r.dataset.lat && Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+}
+
 /**
- * Checks the places of the open form before anything is saved: a place needs a name, an address and
- * coordinates that can be read. Marks each faulty row with what to do; returns false if any is faulty.
+ * Checks the places of the open form before anything is saved. A place needs a name and an address.
+ * Its position comes from the link or coordinates when they hold one (a full Google Maps link does,
+ * a short share link does not), otherwise it is looked up from the address. A faulty row is outlined,
+ * focused and says what to do; returns false if any row is faulty.
  */
-function checkPlaces(form: HTMLFormElement): boolean {
+async function checkPlaces(form: HTMLFormElement): Promise<boolean> {
   let ok = true;
-  form.querySelectorAll<HTMLElement>(".place-row").forEach((r) => {
-    const val = (k: string) => (r.querySelector<HTMLInputElement>(`[data-k="${k}"]`)?.value ?? "").trim();
+  for (const r of form.querySelectorAll<HTMLElement>(".place-row")) {
     const error = r.querySelector<HTMLElement>(".place-error")!;
-    const empty = !val("name") && !val("address") && !val("coords");
-    let message = "";
-    let field = "";
-    if (!empty) {
-      if (!val("name") || !val("address")) {
-        message = t.placeNeedsNameAddress;
-        field = val("name") ? "address" : "name";
-      } else if (!parseCoordinates(val("coords"))) {
-        message = isShortMapsLink(val("coords")) ? t.placeShortLink : t.placeNoCoordinates;
-        field = "coords";
-      }
+    const say = (message: string, field: string, bad = true) => {
+      error.textContent = message;
+      error.hidden = !message;
+      error.classList.toggle("pending", !bad);
+      r.classList.toggle("bad", bad && Boolean(message));
+      if (bad && message && ok) r.querySelector<HTMLInputElement>(`[data-k="${field}"]`)?.focus();
+      if (bad && message) ok = false;
+    };
+    if (rowIsEmpty(r)) {
+      say("", "");
+      continue;
     }
-    error.textContent = message;
-    error.hidden = !message;
-    r.classList.toggle("bad", Boolean(message));
-    if (message && ok) r.querySelector<HTMLInputElement>(`[data-k="${field}"]`)?.focus();
-    if (message) ok = false;
-  });
+    if (!rowValue(r, "name") || !rowValue(r, "address")) {
+      say(t.placeNeedsNameAddress, rowValue(r, "name") ? "address" : "name");
+      continue;
+    }
+    if (rowPosition(r)) {
+      say("", "");
+      continue;
+    }
+    const link = rowValue(r, "coords");
+    if (link && !mapsLinkOf(link)) {
+      say(t.placeNoCoordinates, "coords");
+      continue;
+    }
+    say(t.placeLocating, "", false);
+    const found = await geocodeAddress(rowValue(r, "address"), lang);
+    if (found) {
+      r.dataset.lat = String(found.lat);
+      r.dataset.lng = String(found.lng);
+      say("", "");
+    } else {
+      say(t.placeNotFound, "address");
+    }
+  }
   return ok;
 }
 
@@ -297,12 +331,11 @@ function readItemForm(form: HTMLFormElement, original: Item | null): Item {
   else delete item.tagStyle;
   const rows = form.querySelectorAll<HTMLElement>(".place-row");
   if (!original?.poll) {
-    const places: Place[] = [...rows].filter((r) => [...r.querySelectorAll("input")].some((i) => i.value.trim())).map((r) => {
-      const val = (k: string) => (r.querySelector<HTMLInputElement>(`[data-k="${k}"]`)?.value ?? "").trim();
-      // checkPlaces() has refused the form unless the coordinates can be read
-      const c = parseCoordinates(val("coords"))!;
-      const place: Place = { name: val("name"), address: val("address"), lat: c.lat, lng: c.lng };
-      const link = mapsLinkOf(val("coords"));
+    const places: Place[] = [...rows].filter((r) => !rowIsEmpty(r)).map((r) => {
+      // checkPlaces() has refused the form unless every place has a position
+      const c = rowPosition(r)!;
+      const place: Place = { name: rowValue(r, "name"), address: rowValue(r, "address"), lat: c.lat, lng: c.lng };
+      const link = mapsLinkOf(rowValue(r, "coords"));
       if (link) place.mapsUrl = link;
       return place;
     });
@@ -489,7 +522,15 @@ function wireEditor(ed: Editor): void {
     const [d, s, i] = ed.open;
     const original = i === null || s < 0 ? null : ed.draft.days[d].sections[s].items[i];
     form.querySelector<HTMLInputElement>("input[name=title]")?.focus({ preventScroll: true });
-    const wirePlace = (row: Element) => row.querySelector("[data-remove-place]")?.addEventListener("click", () => row.remove());
+    const wirePlace = (row: Element) => {
+      row.querySelector("[data-remove-place]")?.addEventListener("click", () => row.remove());
+      // A new link or address makes the position found earlier stale
+      row.querySelectorAll<HTMLInputElement>('[data-k="coords"], [data-k="address"]').forEach((input) =>
+        input.addEventListener("input", () => {
+          delete (row as HTMLElement).dataset.lat;
+          delete (row as HTMLElement).dataset.lng;
+        }));
+    };
     form.querySelectorAll(".place-row").forEach(wirePlace);
     document.getElementById("add-place")?.addEventListener("click", () => {
       $("places").insertAdjacentHTML("beforeend", placeRow());
@@ -499,9 +540,13 @@ function wireEditor(ed: Editor): void {
       ed.open = null;
       renderEditor(ed);
     });
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!checkPlaces(form)) return;
+      const done = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      done.disabled = true;
+      const ok = await checkPlaces(form);
+      done.disabled = false;
+      if (!ok) return;
       ed.open = null;
       update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], readItemForm(form, original)));
     });
