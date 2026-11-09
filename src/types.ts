@@ -11,8 +11,6 @@ export interface Trip {
   timezone: string;
   theme?: Theme;
   participants: string[];
-  /** Highlighted in the header; clicking it scrolls to the matching activity. */
-  meetingPoint?: { date: string; time: string };
   days: Day[];
   polls?: Record<string, Poll>;
   /** Purely decorative shapes for the schematic map (rivers, coastlines). */
@@ -77,14 +75,19 @@ export interface Choice {
   repeatLoserOf?: string;
 }
 
+/**
+ * meeting: the day's meeting point, where everyone joins; optional: come if you like; paid: costs
+ * something; booking: has to be booked beforehand. A poll-driven activity also shows a poll label.
+ */
+export type Label = "meeting" | "optional" | "paid" | "booking";
+
 export interface Item {
   /** HH:MM, local time. Times after midnight (e.g. "01:30") belong to the same night. */
   start: string;
   end: string;
   title: string;
-  tag?: string;
-  /** "all" marks the activity everyone attends. */
-  tagStyle?: "all" | "optional";
+  /** Labels shown on the card, from a fixed set (see labels.ts for the rules between them). */
+  labels?: Label[];
   illustration?: string;
   /** URL of a photo shown as a banner on the card. */
   photo?: string;

@@ -16,10 +16,6 @@
     "Léa",
     "Tom"
   ],
-  "meetingPoint": {
-    "date": "2026-11-28",
-    "time": "12:30"
-  },
   "mapDecor": {
     "river": {
       "label": "Garonne",
@@ -94,7 +90,10 @@
                 }
               ],
               "text": "Rendez-vous à la gare, puis dépôt des sacs à l'hôtel.",
-              "addressLine": "Gare Saint-Jean"
+              "addressLine": "Gare Saint-Jean",
+              "labels": [
+                "meeting"
+              ]
             },
             {
               "start": "20:00",
@@ -127,8 +126,6 @@
               "start": "10:00",
               "end": "11:00",
               "title": "Marché des Capucins",
-              "tag": "OPTIONNEL",
-              "tagStyle": "optional",
               "illustration": "market",
               "places": [
                 {
@@ -139,14 +136,15 @@
                 }
               ],
               "text": "Café et ambiance du samedi matin.",
-              "addressLine": "Place des Capucins"
+              "addressLine": "Place des Capucins",
+              "labels": [
+                "optional"
+              ]
             },
             {
               "start": "11:00",
               "end": "12:30",
               "title": "Balade dans le centre historique",
-              "tag": "OPTIONNEL",
-              "tagStyle": "optional",
               "illustration": "belltower",
               "places": [
                 {
@@ -185,6 +183,9 @@
                   ],
                   "note": "librairies manga"
                 }
+              ],
+              "labels": [
+                "optional"
               ]
             }
           ]
@@ -197,8 +198,6 @@
               "start": "12:30",
               "end": "14:30",
               "title": "Déjeuner",
-              "tag": "RENDEZ-VOUS DE TOUS",
-              "tagStyle": "all",
               "illustration": "meal",
               "poll": "lunch",
               "choices": [
@@ -233,12 +232,19 @@
                   "text": "Tout autour du canard : magret, confit, cœurs de canard.",
                   "addressLine": "14 rue de la Cour des Aides"
                 }
+              ],
+              "labels": [
+                "meeting"
               ]
             },
             {
               "start": "14:30",
               "end": "16:00",
               "title": "Escape game",
+              "labels": [
+                "paid",
+                "booking"
+              ],
               "illustration": "escape",
               "poll": "escape",
               "choices": [
@@ -400,8 +406,6 @@
               "start": "00:30",
               "end": "01:30",
               "title": "Dernier verre",
-              "tag": "OPTIONNEL",
-              "tagStyle": "optional",
               "illustration": "cocktail",
               "places": [
                 {
@@ -428,6 +432,9 @@
                     }
                   ]
                 }
+              ],
+              "labels": [
+                "optional"
               ]
             }
           ]
@@ -457,7 +464,12 @@
                 }
               ],
               "text": "Exposition numérique immersive dans l'ancienne base sous-marine. Réserver un créneau.",
-              "addressLine": "Base sous-marine · tram B, arrêt Cité du Vin"
+              "addressLine": "Base sous-marine · tram B, arrêt Cité du Vin",
+              "labels": [
+                "optional",
+                "paid",
+                "booking"
+              ]
             }
           ]
         },
@@ -469,8 +481,6 @@
               "start": "12:30",
               "end": "14:00",
               "title": "Déjeuner",
-              "tag": "RENDEZ-VOUS DE TOUS",
-              "tagStyle": "all",
               "illustration": "meal",
               "places": [
                 {
@@ -481,12 +491,18 @@
                 }
               ],
               "text": "Halle gourmande : chacun choisit son stand, idéal à 5.",
-              "addressLine": "149 quai de Bacalan"
+              "addressLine": "149 quai de Bacalan",
+              "labels": [
+                "meeting"
+              ]
             },
             {
               "start": "14:00",
               "end": "16:30",
               "title": "La Cité du Vin",
+              "labels": [
+                "paid"
+              ],
               "illustration": "cocktail",
               "places": [
                 {
@@ -525,7 +541,10 @@
                 }
               ],
               "text": "Café et dernières emplettes au marché.",
-              "addressLine": "Place des Capucins"
+              "addressLine": "Place des Capucins",
+              "labels": [
+                "meeting"
+              ]
             },
             {
               "start": "11:30",

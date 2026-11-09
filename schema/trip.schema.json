@@ -24,12 +24,6 @@
       }
     },
     "participants": { "type": "array", "items": { "type": "string" } },
-    "meetingPoint": {
-      "type": "object",
-      "required": ["date", "time"],
-      "additionalProperties": false,
-      "properties": { "date": { "$ref": "#/$defs/date" }, "time": { "$ref": "#/$defs/time" } }
-    },
     "mapDecor": {
       "type": "object",
       "additionalProperties": false,
@@ -104,8 +98,7 @@
         "start": { "$ref": "#/$defs/time" },
         "end": { "$ref": "#/$defs/time" },
         "title": { "type": "string" },
-        "tag": { "type": "string" },
-        "tagStyle": { "enum": ["all", "optional"] },
+        "labels": { "type": "array", "uniqueItems": true, "items": { "enum": ["meeting", "optional", "paid", "booking"] } },
         "illustration": { "enum": ["market", "belltower", "meal", "escape", "bubbleTea", "monument", "christmasMarket", "boardGames", "cocktail"] },
         "photo": { "type": "string", "format": "uri" },
         "text": { "type": "string" },

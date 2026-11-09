@@ -4,6 +4,7 @@
 import type { Trip } from "../types";
 import { capitalize, formatDate, formatTime, t } from "../i18n";
 import { daysBetween } from "../time";
+import { headlineMeeting } from "../labels";
 import { $, esc } from "./dom";
 
 export interface HeaderHandlers {
@@ -33,9 +34,10 @@ export function renderHeader(trip: Trip, today: string, h: HeaderHandlers): void
     `<button type="button" class="chip" id="chip-people" aria-describedby="tip-people">${esc(t.participants(trip.participants.length))}` +
       `<span class="tip" role="tooltip" id="tip-people"><b>${esc(t.participantsTitle)}</b>${trip.participants.map(esc).join("<br>")}</span></button>`,
   );
-  if (trip.meetingPoint) {
+  const meeting = headlineMeeting(trip, today);
+  if (meeting) {
     const multi = trip.days.length > 1;
-    const when = (multi ? capitalize(formatDate(trip.meetingPoint.date, { weekday: "short" })) + " " : "") + formatTime(trip.meetingPoint.time);
+    const when = (multi ? capitalize(formatDate(meeting.date, { weekday: "short" })) + " " : "") + formatTime(meeting.item.start);
     chips.push(`<button type="button" class="chip" id="chip-meet">${esc(t.meetingAt(when))}</button>`);
   }
   if (trip.example) chips.push(`<span class="chip">${esc(t.example)}</span>`);

@@ -23,6 +23,7 @@ import { mountSettingsButton } from "./ui/settings";
 import { enableDragScroll, enableScrollArrows } from "./ui/dragScroll";
 import { renderTabs, selectTab, syncTabWithScroll } from "./ui/tabs";
 import { renderWeather } from "./ui/weatherPanel";
+import { hasLabel, headlineMeeting, migrateTrip } from "./labels";
 
 const DEFAULT_TRIP = "bordeaux-2026-11-28";
 
@@ -87,12 +88,12 @@ async function loadTrip(id: string): Promise<{ trip: Trip; canEdit: boolean }> {
   const res = await fetch(`${import.meta.env.BASE_URL}trips/${id}.json`);
   // The dev server answers a missing file with the HTML page (status 200): only JSON counts as a trip file.
   const isFile = res.ok && (res.headers.get("content-type") ?? "").includes("json");
-  if (isFile) return { trip: await res.json(), canEdit: false };
+  if (isFile) return { trip: migrateTrip(await res.json()), canEdit: false };
   if ((!res.ok && res.status !== 404) || !dataConfigured()) throw new Error(`HTTP ${res.status}`);
   const { loadStoredTrip } = await loadDataSource();
   const stored = await loadStoredTrip(id);
   if (!stored) throw new PrivateTrip();
-  return { trip: stored.data, canEdit: stored.role === "owner" || stored.role === "organiser" };
+  return { trip: migrateTrip(stored.data), canEdit: stored.role === "owner" || stored.role === "organiser" };
 }
 
 
@@ -112,11 +113,9 @@ function initialDay(trip: Trip, today: string): number {
   return today > trip.days[trip.days.length - 1].date ? trip.days.length - 1 : 0;
 }
 
+/** Map stop of the shown day's meeting point. */
 function meetingStop(s: State): number | null {
-  const mp = s.trip.meetingPoint;
-  if (!mp || s.day.day.date !== mp.date) return null;
-  const r = s.day.items.find((it) => it.item.start === mp.time);
-  return r?.stops[0] ?? null;
+  return s.day.items.find((r) => hasLabel(r.item, "meeting"))?.stops[0] ?? null;
 }
 
 function render(s: State, keepScroll = true): void {
@@ -170,14 +169,15 @@ function mount(s: State, canEdit: boolean, first: boolean): void {
 
   renderHeader(trip, today, {
     onMeetingHover(active) {
-      const stop = meetingStop(s);
+      // Only when the announced meeting point is on the day shown
+      const stop = headlineMeeting(trip, today)?.dayIndex === s.dayIndex ? meetingStop(s) : null;
       highlightStops(active && stop !== null ? [stop] : []);
     },
     onMeetingClick() {
-      const mp = trip.meetingPoint!;
-      const di = trip.days.findIndex((d) => d.date === mp.date);
-      if (di >= 0 && di !== s.dayIndex) showDay(s, di);
-      const r = s.day.items.find((it) => it.item.start === mp.time);
+      const di = headlineMeeting(trip, today)?.dayIndex;
+      if (di === undefined) return;
+      if (di !== s.dayIndex) showDay(s, di);
+      const r = s.day.items.find((it) => hasLabel(it.item, "meeting"));
       if (r) focusCard(document.querySelector(`.card[data-i="${r.index}"]`));
     },
   });

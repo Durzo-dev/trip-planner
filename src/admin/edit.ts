@@ -49,20 +49,17 @@ export function newTrip(n: NewTrip): Trip {
   return { id: tripId(n.title, n.firstDay), title: n.title.trim(), timezone: n.timezone, participants: [], days };
 }
 
-/** Moves the whole trip by n days (negative = earlier): every day and the meeting point follow. */
+/** Moves the whole trip by n days (negative = earlier). */
 export function shiftTrip(trip: Trip, n: number): Trip {
   const t = clone(trip);
   t.days.forEach((d) => (d.date = addDays(d.date, n)));
-  if (t.meetingPoint) t.meetingPoint.date = addDays(t.meetingPoint.date, n);
   return t;
 }
 
-/** Changes one day's date; the meeting point follows its day. Days are kept in date order. */
+/** Changes one day's date. Days are kept in date order. */
 export function setDayDate(trip: Trip, dayIndex: number, date: string): Trip {
   const t = clone(trip);
-  const old = t.days[dayIndex].date;
   t.days[dayIndex].date = date;
-  if (t.meetingPoint?.date === old) t.meetingPoint.date = date;
   t.days.sort((a, b) => a.date.localeCompare(b.date));
   return t;
 }
@@ -78,8 +75,7 @@ export function addDay(trip: Trip, sectionLabels: [string, string, string]): Tri
 
 export function removeDay(trip: Trip, dayIndex: number): Trip {
   const t = clone(trip);
-  const [gone] = t.days.splice(dayIndex, 1);
-  if (t.meetingPoint?.date === gone.date) delete t.meetingPoint;
+  t.days.splice(dayIndex, 1);
   return t;
 }
 
@@ -102,65 +98,22 @@ export function sectionForTime(start: string, sectionCount: number): number {
 
 /**
  * Adds an activity (from null) or replaces the one at [section, item], filing it in the part of the day
- * its start time belongs to. The meeting point follows an edited activity.
+ * its start time belongs to.
  */
 export function placeItem(trip: Trip, dayIndex: number, from: [number, number] | null, item: Item): Trip {
   const t = clone(trip);
   const day = t.days[dayIndex];
-  const old = from ? day.sections[from[0]].items.splice(from[1], 1)[0] : null;
+  if (from) day.sections[from[0]].items.splice(from[1], 1);
   const target = day.sections[sectionForTime(item.start, day.sections.length)].items;
   target.push(clone(item));
   target.sort(byStart);
-  if (old && t.meetingPoint && t.meetingPoint.date === day.date && t.meetingPoint.time === old.start) t.meetingPoint.time = item.start;
   return t;
 }
 
 export function removeItem(trip: Trip, dayIndex: number, sectionIndex: number, itemIndex: number): Trip {
   const t = clone(trip);
   const [gone] = t.days[dayIndex].sections[sectionIndex].items.splice(itemIndex, 1);
-  if (t.meetingPoint && t.meetingPoint.date === t.days[dayIndex].date && t.meetingPoint.time === gone.start) delete t.meetingPoint;
   if (gone.poll && !t.days.some((d) => d.sections.some((s) => s.items.some((i) => i.poll === gone.poll)))) delete t.polls?.[gone.poll];
-  return t;
-}
-
-/** Every activity of the trip in schedule order (day, part of the day, start), with where it is. */
-function scheduled(trip: Trip): { item: Item; date: string }[] {
-  return trip.days.flatMap((d) => d.sections.flatMap((s) => s.items.map((item) => ({ item, date: d.date }))));
-}
-
-/**
- * Keeps the meeting point consistent with the schedule:
- * - with at least one activity there is always a meeting point, the earliest activity by default
- *   (also when the chosen one was removed or no longer matches an activity);
- * - activities before the meeting point are optional: they get the optional style and, unless they
- *   already had it, `optionalTag` as their label;
- * - an activity that was made optional this way and is no longer before the meeting point (the meeting
- *   point was moved earlier) goes back to having no label.
- */
-export function withMeetingPoint(trip: Trip, optionalTag: string): Trip {
-  const t = clone(trip);
-  const all = scheduled(t);
-  if (!all.length) {
-    delete t.meetingPoint;
-    return t;
-  }
-  const mp = t.meetingPoint;
-  let at = mp ? all.findIndex((a) => a.date === mp.date && a.item.start === mp.time) : -1;
-  if (at < 0) {
-    at = 0;
-    t.meetingPoint = { date: all[0].date, time: all[0].item.start };
-  }
-  all.forEach(({ item }, i) => {
-    if (i < at) {
-      if (item.tagStyle !== "optional") {
-        item.tagStyle = "optional";
-        item.tag = optionalTag;
-      }
-    } else if (item.tagStyle === "optional" && item.tag === optionalTag) {
-      delete item.tagStyle;
-      delete item.tag;
-    }
-  });
   return t;
 }
 
@@ -204,8 +157,7 @@ export type TripError =
   | { code: "itemTitle"; day: number; section: number; item: number }
   | { code: "time"; day: number; section: number; item: number }
   | { code: "endBeforeStart"; day: number; section: number; item: number }
-  | { code: "place"; day: number; section: number; item: number }
-  | { code: "meetingPoint" };
+  | { code: "place"; day: number; section: number; item: number };
 
 const placeOk = (p: Place) => p.name.trim() !== "" && p.address.trim() !== "" && Number.isFinite(p.lat) && Number.isFinite(p.lng);
 
@@ -227,9 +179,5 @@ export function validateTrip(trip: Trip): TripError[] {
       }),
     );
   });
-  const mp = trip.meetingPoint;
-  if (mp && !trip.days.some((d) => d.date === mp.date && d.sections.some((s) => s.items.some((i) => i.start === mp.time)))) {
-    errors.push({ code: "meetingPoint" });
-  }
   return errors;
 }

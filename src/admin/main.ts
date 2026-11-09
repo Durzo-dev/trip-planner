@@ -8,7 +8,7 @@ import { CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
 import "../styles/tokens.css";
 import "../styles/components.css";
 import "./admin.css";
-import type { Day, Item, Place, Trip } from "../types";
+import type { Day, Item, Label, Place, Trip } from "../types";
 import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t } from "../i18n";
 import { initTheme } from "../theme";
 import { $, esc } from "../ui/dom";
@@ -19,8 +19,9 @@ import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
-  addDay, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, withMeetingPoint, type TripError,
+  addDay, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
 } from "./edit";
+import { LABELS, applyLabelRules, hasLabel, migrateTrip, setLabel } from "../labels";
 
 const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE === "true";
 const dbModule = loadDataSource;
@@ -198,7 +199,6 @@ function describe(err: TripError, trip: Trip): string {
   switch (err.code) {
     case "title": return e.title;
     case "noDays": return e.noDays;
-    case "meetingPoint": return e.meetingPoint;
     case "date": return e.date(err.day + 1);
     case "dayOrder": return e.dayOrder(err.day + 1);
     default: return e[err.code](err.day + 1, activityName(trip, err.day, err.section, err.item));
@@ -207,17 +207,6 @@ function describe(err: TripError, trip: Trip): string {
 
 function dayTitle(date: string): string {
   return capitalize(formatDate(date, { weekday: "long", day: "numeric", month: "long" }));
-}
-
-function meetingOptions(trip: Trip): string {
-  const mp = trip.meetingPoint;
-  const opts = trip.days.flatMap((d) => d.sections.flatMap((s) => s.items.map((it) => {
-    const value = `${d.date}|${it.start}`;
-    const sel = mp && mp.date === d.date && mp.time === it.start ? " selected" : "";
-    return `<option value="${esc(value)}"${sel}>${esc(`${dayTitle(d.date)} · ${formatTime(it.start)} · ${it.title}`)}</option>`;
-  })));
-  // With activities there is always a meeting point (the earliest one by default)
-  return opts.length ? opts.join("") : `<option value="">${esc(t.meetingNone)}</option>`;
 }
 
 /** A place row. The position found for the place is kept on the row (data-lat / data-lng) until its link or address changes. */
@@ -296,21 +285,16 @@ async function checkPlaces(form: HTMLFormElement): Promise<boolean> {
 
 function itemForm(it: Item | null): string {
   const v = (s?: string) => esc(s ?? "");
-  const style = it?.tagStyle ?? "";
   return `<form class="item-form form" id="item-form">
     <div class="row">
       <label class="field tiny"><span class="lbl">${esc(t.start)}</span><input type="time" name="start" required value="${v(it?.start)}"></label>
       <label class="field tiny"><span class="lbl">${esc(t.end)}</span><input type="time" name="end" required value="${v(it?.end)}"></label>
       <label class="field"><span class="lbl">${esc(t.activityTitle)}</span><input name="title" required value="${v(it?.title)}"></label>
     </div>
-    <div class="row">
-      <label class="field"><span class="lbl">${esc(t.tag)}</span><input name="tag" value="${v(it?.tag)}"></label>
-      <label class="field narrow"><span class="lbl">${esc(t.tagStyle)}</span><select name="tagStyle">
-        <option value=""${style === "" ? " selected" : ""}>${esc(t.tagStyleNone)}</option>
-        <option value="all"${style === "all" ? " selected" : ""}>${esc(t.tagStyleAll)}</option>
-        <option value="optional"${style === "optional" ? " selected" : ""}>${esc(t.tagStyleOptional)}</option>
-      </select></label>
-    </div>
+    <fieldset class="field picks-field"><legend class="lbl">${esc(t.labels)}</legend>
+      <div class="picks">${LABELS.map((l) => `<label class="pick"><input type="checkbox" name="labels" value="${l}"${it && hasLabel(it, l) ? " checked" : ""}><span>${esc(t.label[l])}</span></label>`).join("")}${it?.poll ? `<span class="pick fixed"><span>${esc(t.label.poll)}</span></span>` : ""}</div>
+      <span class="hint">${esc(t.labelsHint)}</span>
+    </fieldset>
     <label class="field"><span class="lbl">${esc(t.description)}</span><textarea name="text">${v(it?.text)}</textarea></label>
     <label class="field"><span class="lbl">${esc(t.addressLine)}</span><input name="addressLine" value="${v(it?.addressLine)}"></label>
     ${it?.poll ? `<p class="note">${esc(t.pollNote)}</p>` : `<div class="places"><span class="field">${esc(t.places)}</span><div class="form" id="places">${(it?.places ?? []).map(placeRow).join("")}</div>
@@ -323,14 +307,14 @@ function itemForm(it: Item | null): string {
 function readItemForm(form: HTMLFormElement, original: Item | null): Item {
   const get = (n: string) => String(new FormData(form).get(n) ?? "").trim();
   const item: Item = { ...(original ?? { start: "", end: "", title: "" }), start: get("start"), end: get("end"), title: get("title") };
-  for (const k of ["tag", "text", "addressLine"] as const) {
+  for (const k of ["text", "addressLine"] as const) {
     const val = get(k);
     if (val) item[k] = val;
     else delete item[k];
   }
-  const style = get("tagStyle");
-  if (style === "all" || style === "optional") item.tagStyle = style;
-  else delete item.tagStyle;
+  // Read from the boxes themselves: a disabled box is left out of FormData
+  const picked = new Set([...form.querySelectorAll<HTMLInputElement>('input[name="labels"]')].filter((c) => c.checked).map((c) => c.value));
+  for (const l of LABELS) setLabel(item, l, picked.has(l));
   const rows = form.querySelectorAll<HTMLElement>(".place-row");
   if (!original?.poll) {
     const places: Place[] = [...rows].filter((r) => !rowIsEmpty(r)).map((r) => {
@@ -367,7 +351,6 @@ function renderEditor(ed: Editor): void {
     <section class="panel form">
       <label class="field"><span class="lbl">${esc(t.tripTitle)}</span><input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
       <label class="field"><span class="lbl">${esc(t.tagline)}</span><input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
-      <label class="field"><span class="lbl">${esc(t.meetingPoint)}</span><select id="f-meeting">${meetingOptions(trip)}</select></label>
       <div class="shift">
         <label for="f-shift">${esc(t.shiftTrip)}</label><input type="number" id="f-shift" value="0" step="1"><span>${esc(t.shiftUnit)}</span>
         <button type="button" class="btn small edit" id="do-shift">${esc(t.apply)}</button>
@@ -394,7 +377,7 @@ function renderEditor(ed: Editor): void {
           const isOpen = ed.open && ed.open[0] === di && ed.open[1] === si && ed.open[2] === ii;
           return isOpen ? `<li>${itemForm(it)}</li>` : `<li class="item">
             <span class="when">${esc(formatTime(it.start))} – ${esc(formatTime(it.end))}</span>
-            <span class="what">${esc(it.title)}${it.tag ? `<span class="item-tag">${esc(it.tag)}</span>` : ""}</span>
+            <span class="what">${esc(it.title)}${[...LABELS.filter((l) => hasLabel(it, l)), ...(it.poll ? ["poll" as const] : [])].map((l) => `<span class="item-tag${l === "meeting" ? " meeting" : ""}">${esc(t.label[l])}</span>`).join("")}</span>
             <button type="button" class="btn small edit" data-edit="${di},${si},${ii}">${esc(t.edit)}</button>
             <button type="button" class="btn small danger" data-remove="${di},${si},${ii}">${esc(t.remove)}</button>
           </li>`;
@@ -440,9 +423,10 @@ function refreshSaveBar(ed: Editor, message?: { text: string; bad?: boolean; rel
 }
 
 function wireEditor(ed: Editor): void {
-  const update = (next: Trip, rerender = true) => {
+  /** `chosen`: an activity just made its day's meeting point (see applyLabelRules). */
+  const update = (next: Trip, rerender = true, chosen?: { day: number; item: Item }) => {
     const before = JSON.stringify(next.days);
-    ed.draft = withMeetingPoint(next, t.optionalTag);
+    ed.draft = applyLabelRules(next, chosen);
     // Activities that just became optional (or stopped being) must show it
     if (JSON.stringify(ed.draft.days) !== before) rerender = true;
     if (rerender) renderEditor(ed);
@@ -455,13 +439,6 @@ function wireEditor(ed: Editor): void {
     const tagline = (e.target as HTMLInputElement).value;
     const next: Trip = { ...ed.draft, tagline };
     if (!tagline.trim()) delete next.tagline;
-    update(next, false);
-  });
-  $<HTMLSelectElement>("f-meeting").addEventListener("change", (e) => {
-    const v = (e.target as HTMLSelectElement).value;
-    const next = { ...ed.draft };
-    if (v) next.meetingPoint = { date: v.split("|")[0], time: v.split("|")[1] };
-    else delete next.meetingPoint;
     update(next, false);
   });
   $("do-shift").addEventListener("click", () => {
@@ -541,6 +518,19 @@ function wireEditor(ed: Editor): void {
       $("places").insertAdjacentHTML("beforeend", placeRow());
       wirePlace($("places").lastElementChild!);
     });
+    // A meeting point is never optional; the day's meeting point moves only by ticking another activity
+    const box = (l: Label) => form.querySelector<HTMLInputElement>(`input[name="labels"][value="${l}"]`)!;
+    const meeting = box("meeting");
+    const optional = box("optional");
+    const isMeeting = !!original && hasLabel(original, "meeting");
+    const syncPicks = () => {
+      if (meeting.checked) optional.checked = false;
+      optional.disabled = meeting.checked;
+      meeting.disabled = isMeeting || optional.checked;
+    };
+    meeting.addEventListener("change", syncPicks);
+    optional.addEventListener("change", syncPicks);
+    syncPicks();
     $("cancel-item").addEventListener("click", () => {
       ed.open = null;
       renderEditor(ed);
@@ -553,7 +543,9 @@ function wireEditor(ed: Editor): void {
       done.disabled = false;
       if (!ok) return;
       ed.open = null;
-      update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], readItemForm(form, original)));
+      const item = readItemForm(form, original);
+      const madeMeeting = hasLabel(item, "meeting") && !(original && hasLabel(original, "meeting"));
+      update(placeItem(ed.draft, d, i === null || s < 0 ? null : [s, i], item), true, madeMeeting ? { day: d, item } : undefined);
       // "Done" also saves: the activity reaches the trip page without a second step
       void save(ed);
     });
@@ -595,8 +587,8 @@ async function openEditor(id: string): Promise<void> {
     redraw();
     return;
   }
-  // A trip saved before the meeting-point rule follows it as soon as it is opened; it is saved with the next change
-  stored.data = withMeetingPoint(stored.data, t.optionalTag);
+  // A trip saved in an older format (or before the label rules) is shown up to date; it is saved with the next change
+  stored.data = migrateTrip(stored.data);
   const ed: Editor = { stored, draft: structuredClone(stored.data), open: null, saving: false, day: 0 };
   // Preview page: ?edit=day,section,item opens that activity's form
   const preview = import.meta.env.DEV ? new URLSearchParams(location.search).get("edit") : null;

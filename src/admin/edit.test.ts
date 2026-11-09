@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Item, Trip } from "../types";
 import {
-  addDay, addDays, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip, withMeetingPoint,
+  addDay, addDays, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, sectionForTime, setDayDate, shiftTrip, tripId, validateTrip,
 } from "./edit";
 
 const LABELS: [string, string, string] = ["Morning", "Afternoon", "Evening"];
@@ -40,33 +40,25 @@ describe("dates", () => {
     expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
   });
 
-  it("shifts every day and the meeting point, without touching the original", () => {
+  it("shifts every day, without touching the original", () => {
     const t = placeItem(base(), 1, null, item("12:30", "14:00"));
-    t.meetingPoint = { date: "2026-11-28", time: "12:30" };
     const s = shiftTrip(t, 7);
     expect(s.days.map((d) => d.date)).toEqual(["2026-12-04", "2026-12-05", "2026-12-06"]);
-    expect(s.meetingPoint).toEqual({ date: "2026-12-05", time: "12:30" });
     expect(t.days[0].date).toBe("2026-11-27");
     expect(validateTrip(s)).toEqual([]);
   });
 
-  it("moving one day keeps days in date order and takes the meeting point along", () => {
+  it("moving one day keeps days in date order, activities included", () => {
     const t = placeItem(base(), 0, null, item("10:00", "11:00"));
-    t.meetingPoint = { date: "2026-11-27", time: "10:00" };
     const s = setDayDate(t, 0, "2026-11-30");
     expect(s.days.map((d) => d.date)).toEqual(["2026-11-28", "2026-11-29", "2026-11-30"]);
     expect(s.days[2].sections[0].items[0].title).toBe("Walk");
-    expect(s.meetingPoint?.date).toBe("2026-11-30");
   });
 
-  it("adds a day after the last one and removes one with its meeting point", () => {
+  it("adds a day after the last one and removes one", () => {
     expect(addDay(base(), LABELS).days.at(-1)?.date).toBe("2026-11-30");
-    const t = base();
-    t.days[1].sections[0].items.push(item("09:00", "10:00"));
-    t.meetingPoint = { date: "2026-11-28", time: "09:00" };
-    const r = removeDay(t, 1);
+    const r = removeDay(base(), 1);
     expect(r.days.map((d) => d.date)).toEqual(["2026-11-27", "2026-11-29"]);
-    expect(r.meetingPoint).toBeUndefined();
   });
 });
 
@@ -79,19 +71,10 @@ describe("activities", () => {
     expect(t.days[0].sections[2].items.map((i) => i.title)).toEqual(["Dinner", "Games", "Last drink"]);
   });
 
-  it("editing an activity's start moves the meeting point with it", () => {
-    let t = placeItem(base(), 0, null, item("12:30", "14:00"));
-    t.meetingPoint = { date: "2026-11-27", time: "12:30" };
-    t = placeItem(t, 0, [1, 0], item("13:00", "14:30"));
-    expect(t.meetingPoint?.time).toBe("13:00");
-  });
-
-  it("removing the meeting activity removes the meeting point; removing a poll's last activity removes the poll", () => {
+  it("removing a poll's last activity removes the poll", () => {
     let t = placeItem(base(), 0, null, { ...item("12:30", "14:00"), poll: "lunch", choices: [{ title: "A" }] });
     t.polls = { lunch: { question: "Where?", options: [{ label: "A", voters: [] }] } };
-    t.meetingPoint = { date: "2026-11-27", time: "12:30" };
     t = removeItem(t, 0, 1, 0);
-    expect(t.meetingPoint).toBeUndefined();
     expect(t.polls).toEqual({});
   });
 });
@@ -137,7 +120,6 @@ describe("validateTrip", () => {
     t.days[2].date = "2026-11-28";
     t.days[0].sections[0].items.push(item("10:00", "09:00", ""), item("25:00", "26:00"));
     t.days[0].sections[1].items.push({ ...item("14:00", "15:00"), places: [{ name: "Bourse", address: "", lat: 44.8, lng: -0.57 }] });
-    t.meetingPoint = { date: "2026-11-27", time: "08:00" };
     expect(validateTrip(t)).toEqual([
       { code: "title" },
       { code: "itemTitle", day: 0, section: 0, item: 0 },
@@ -145,7 +127,6 @@ describe("validateTrip", () => {
       { code: "time", day: 0, section: 0, item: 1 },
       { code: "place", day: 0, section: 1, item: 0 },
       { code: "dayOrder", day: 2 },
-      { code: "meetingPoint" },
     ]);
   });
 
@@ -168,58 +149,10 @@ describe("parts of the day", () => {
     expect(sectionForTime("20:00", 2)).toBe(1);
     expect(sectionForTime("20:00", 1)).toBe(0);
   });
-  it("moves an edited activity to the part its new time belongs to, meeting point included", () => {
+  it("moves an edited activity to the part its new time belongs to", () => {
     let t = placeItem(base(), 0, null, item("10:00", "11:00", "Coffee"));
-    t.meetingPoint = { date: "2026-11-27", time: "10:00" };
     t = placeItem(t, 0, [0, 0], item("19:00", "20:00", "Coffee"));
     expect(t.days[0].sections.map((s) => s.items.map((i) => i.title))).toEqual([[], [], ["Coffee"]]);
-    expect(t.meetingPoint?.time).toBe("19:00");
   });
 });
 
-describe("meeting point", () => {
-  const OPT = "OPTIONAL";
-  const planned = () => {
-    let t = base();
-    t = placeItem(t, 0, null, item("10:00", "11:00", "Market"));
-    t = placeItem(t, 0, null, item("12:30", "14:00", "Lunch"));
-    t = placeItem(t, 1, null, item("09:00", "10:00", "Museum"));
-    return t;
-  };
-  const titles = (t: Trip) => t.days.flatMap((d) => d.sections.flatMap((s) => s.items.filter((i) => i.tagStyle === "optional").map((i) => i.title)));
-
-  it("defaults to the earliest activity, and to none without activities", () => {
-    expect(withMeetingPoint(planned(), OPT).meetingPoint).toEqual({ date: "2026-11-27", time: "10:00" });
-    expect(withMeetingPoint({ ...base(), meetingPoint: { date: "2026-11-27", time: "10:00" } }, OPT).meetingPoint).toBeUndefined();
-  });
-
-  it("makes every activity before the chosen one optional, across days", () => {
-    const t = withMeetingPoint({ ...planned(), meetingPoint: { date: "2026-11-28", time: "09:00" } }, OPT);
-    expect(titles(t)).toEqual(["Market", "Lunch"]);
-    expect(t.days[0].sections[0].items[0]).toMatchObject({ tag: OPT, tagStyle: "optional" });
-  });
-
-  it("gives back the activities it made optional when the meeting point moves earlier, not the ones marked by hand", () => {
-    const p = planned();
-    p.days[0].sections[0].items[0] = { ...p.days[0].sections[0].items[0], tag: "IF YOU WANT", tagStyle: "optional" };
-    let t = withMeetingPoint({ ...p, meetingPoint: { date: "2026-11-28", time: "09:00" } }, OPT);
-    t = withMeetingPoint({ ...t, meetingPoint: { date: "2026-11-27", time: "10:00" } }, OPT);
-    expect(titles(t)).toEqual(["Market"]);
-    expect(t.days[0].sections[1].items[0].tag).toBeUndefined();
-  });
-
-  it("falls back to the earliest activity when the meeting activity is removed", () => {
-    let t = withMeetingPoint({ ...planned(), meetingPoint: { date: "2026-11-27", time: "12:30" } }, OPT);
-    t = withMeetingPoint(removeItem(t, 0, 1, 0), OPT);
-    expect(t.meetingPoint).toEqual({ date: "2026-11-27", time: "10:00" });
-    expect(titles(t)).toEqual([]);
-  });
-
-  it("is already followed by every bundled trip", () => {
-    const dir = join(__dirname, "../../public/trips");
-    for (const f of readdirSync(dir)) {
-      const trip = JSON.parse(readFileSync(join(dir, f), "utf8")) as Trip;
-      expect(withMeetingPoint(trip, "OPTIONNEL").meetingPoint, f).toEqual(trip.meetingPoint);
-    }
-  });
-});

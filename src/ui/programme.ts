@@ -9,6 +9,7 @@ import { formatTime, sectionLabel, t } from "../i18n";
 import { ILLUSTRATIONS } from "../illustrations";
 import { progress, toMinutes } from "../time";
 import { $, esc, extLink, highlightStops } from "./dom";
+import { LABELS, hasLabel } from "../labels";
 
 export interface ProgrammeHandlers {
   onVote(pollKey: string, option: number): void;
@@ -36,7 +37,12 @@ export function renderProgramme(trip: Trip, day: ResolvedDay, votes: MyVotes, h:
 function card(trip: Trip, r: ResolvedItem, votes: MyVotes): string {
   const { item } = r;
   let tags = `<span class="tag now" hidden>${esc(t.now)}</span>`;
-  if (item.tag) tags += `<span class="tag ${item.tagStyle === "all" ? "all" : ""}">${esc(item.tag)}</span>`;
+  for (const l of LABELS) if (hasLabel(item, l)) tags += `<span class="tag ${l}">${esc(t.label[l])}</span>`;
+  if (item.poll && trip.polls?.[item.poll]) {
+    // The poll label tells whether this viewer still has to answer
+    const answered = votes[item.poll] !== undefined;
+    tags += `<span class="tag poll-label${answered ? " answered" : ""}" title="${esc(answered ? t.pollAnswered : t.pollToAnswer)}">${answered ? "✓ " : ""}${esc(t.label.poll)}<span class="sr"> (${esc(answered ? t.pollAnswered : t.pollToAnswer)})</span></span>`;
+  }
   if (r.result) tags += r.result.tie ? `<span class="tag tie">${esc(t.tie)}</span>` : `<span class="tag vote">${esc(t.groupChoice(r.result.votes))}</span>`;
 
   let body = "";

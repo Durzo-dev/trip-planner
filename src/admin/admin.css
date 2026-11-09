@@ -44,6 +44,7 @@
 .item .when { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 92px; color: var(--accent-ink); }
 .item .what { flex: 1 1 160px; min-width: 0; }
 .item .item-tag { font-size: var(--text-2xs); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius-xs); padding: 1px 6px; margin-left: 6px; }
+.item .item-tag.meeting { color: var(--accent-ink); border-color: var(--accent); }
 .item-form { border: 1.5px solid var(--accent); border-radius: var(--radius-lg); padding: 14px; background: var(--surface); }
 /* Form buttons on the right: Back, then the main action last */
 .item-form .form-actions { justify-content: flex-end; }
