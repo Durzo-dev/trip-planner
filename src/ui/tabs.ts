@@ -15,6 +15,16 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
   const nav = wrap.closest("nav")!;
   const multi = trip.days.length > 1;
   const spacer = `<span class="spacer-end"></span>`;
+  // Redrawn after a click on a day: the strip stays where the viewer scrolled it. Only a first draw
+  // (or a new "today") lines today up on the left.
+  const keep = wrap.dataset.today === today && wrap.querySelector(".tab") ? wrap.scrollLeft : null;
+  wrap.dataset.today = today;
+  // Built once: choosing another day only moves the selection, the strip does not move
+  if (multi && keep !== null && wrap.querySelectorAll(".tab").length === trip.days.length) {
+    selectTab(dayIndex);
+    wrap.querySelector<HTMLElement>(`#tab-${dayIndex}`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return;
+  }
 
   if (multi) {
     nav.setAttribute("aria-label", t.dayTabs);
@@ -28,7 +38,7 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
           `${d.label ? `<small>${esc(d.label)}</small>` : ""}</button>`;
       }).join("") + spacer;
     wrap.querySelectorAll<HTMLButtonElement>(".tab").forEach((b, i) => b.addEventListener("click", () => onDay(i)));
-    scrollTodayToStart(wrap, trip, today);
+    scrollTodayToStart(wrap, trip, today, keep);
   } else {
     nav.setAttribute("aria-label", t.partTabs);
     const sections = trip.days[0].sections;
@@ -45,7 +55,7 @@ export function renderTabs(trip: Trip, dayIndex: number, today: string, onDay: (
   }
 }
 
-function scrollTodayToStart(wrap: HTMLElement, trip: Trip, today: string): void {
+function scrollTodayToStart(wrap: HTMLElement, trip: Trip, today: string, keep: number | null): void {
   let i = trip.days.findIndex((d) => d.date === today);
   if (i < 0) i = today < trip.days[0].date ? 0 : trip.days.length - 1;
   const target = document.getElementById(`tab-${i}`);
@@ -59,7 +69,13 @@ function scrollTodayToStart(wrap: HTMLElement, trip: Trip, today: string): void 
   const gap = want + wrap.clientWidth - (parseFloat(cs.paddingLeft) + content + parseFloat(cs.paddingRight));
   // let today reach the left edge even when the tabs would otherwise fit
   (wrap.querySelector(".spacer-end") as HTMLElement).style.minWidth = gap > 0 ? `${Math.ceil(gap)}px` : "";
-  wrap.scrollLeft = want;
+  if (keep === null) {
+    wrap.scrollLeft = want;
+    return;
+  }
+  wrap.scrollLeft = keep;
+  // The day just chosen stays fully visible, without moving the strip more than needed
+  wrap.querySelector<HTMLElement>('.tab[aria-selected="true"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 export function selectTab(i: number): void {
