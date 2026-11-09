@@ -11,6 +11,7 @@ import "./admin.css";
 import type { Day, Item, Label, Place, Trip } from "../types";
 import { capitalize, formatDate, formatTime, lang, LANG_CHANGE, sectionLabel, t } from "../i18n";
 import { initTheme } from "../theme";
+import { daysBetween } from "../time";
 import { $, esc } from "../ui/dom";
 import { mountSettingsButton } from "../ui/settings";
 import { geocodeAddress } from "../geocode";
@@ -19,7 +20,7 @@ import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
-  addDay, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
+  addDay, addDays, mapsLinkOf, newTrip, parseCoordinates, placeItem, removeDay, removeItem, setDayDate, shiftTrip, validateTrip, type TripError,
 } from "./edit";
 import { LABELS, applyLabelRules, hasLabel, migrateTrip, setLabel } from "../labels";
 
@@ -205,6 +206,14 @@ function describe(err: TripError, trip: Trip): string {
   }
 }
 
+/** "From Sat 19 Dec to Sun 20 Dec 2026 · 2 days", the trip's days moved by `offset` days. */
+function periodText(trip: Trip, offset: number): string {
+  const first = addDays(trip.days[0].date, offset);
+  const last = addDays(trip.days[trip.days.length - 1].date, offset);
+  const short = (d: string) => formatDate(d, { weekday: "short", day: "numeric", month: "short" });
+  return t.period(short(first), `${short(last)} ${last.slice(0, 4)}`, daysBetween(first, last) + 1);
+}
+
 function dayTitle(date: string): string {
   return capitalize(formatDate(date, { weekday: "long", day: "numeric", month: "long" }));
 }
@@ -354,10 +363,11 @@ function renderEditor(ed: Editor): void {
     <section class="panel form">
       <label class="field"><span class="lbl">${esc(t.tripTitle)}</span><input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
       <label class="field"><span class="lbl">${esc(t.tagline)}</span><input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
-      <div class="shift">
-        <label for="f-shift">${esc(t.shiftTrip)}</label><input type="number" id="f-shift" value="0" step="1"><span>${esc(t.shiftUnit)}</span>
-        <button type="button" class="btn small edit" id="do-shift">${esc(t.apply)}</button>
-      </div>
+      ${trip.days.length ? `<div class="row move-trip">
+        <label class="field narrow"><span class="lbl">${esc(t.tripStart)}</span><input type="date" id="f-start" value="${esc(trip.days[0].date)}"></label>
+        <div class="field"><span class="lbl">${esc(t.tripPeriod)}</span><p class="period" id="f-period">${esc(periodText(trip, 0))}</p></div>
+        <button type="button" class="btn small edit" id="do-shift" hidden>${esc(t.moveTrip)}</button>
+      </div>` : ""}
       <div class="panel-foot"><button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button></div>
     </section>
     <nav class="day-strip" aria-label="${esc(t.days)}">
@@ -444,10 +454,25 @@ function wireEditor(ed: Editor): void {
     if (!tagline.trim()) delete next.tagline;
     update(next, false);
   });
-  $("do-shift").addEventListener("click", () => {
-    const n = Math.trunc(Number($<HTMLInputElement>("f-shift").value));
-    if (n) update(shiftTrip(ed.draft, n));
-  });
+  // Picking a new first day previews the whole period moved; "Move the trip" applies it
+  const start = document.getElementById("f-start") as HTMLInputElement | null;
+  if (start) {
+    const offset = () => (start.value ? daysBetween(ed.draft.days[0].date, start.value) : 0);
+    start.addEventListener("click", () => {
+      try {
+        start.showPicker(); // open the calendar on a click anywhere in the field
+      } catch {
+        // not supported, or already open
+      }
+    });
+    start.addEventListener("input", () => {
+      $("f-period").textContent = periodText(ed.draft, offset());
+      $("do-shift").hidden = offset() === 0;
+    });
+    $("do-shift").addEventListener("click", () => {
+      if (offset()) update(shiftTrip(ed.draft, offset()));
+    });
+  }
   root.querySelectorAll<HTMLInputElement>("[data-day-date]").forEach((input) =>
     input.addEventListener("change", () => {
       if (!input.value) return;
