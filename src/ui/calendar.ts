@@ -1,5 +1,5 @@
 /**
- * Period calendar: a button that opens the month of the period under it, and the next one beside it
+ * Calendar for a period or a single day (length 1): a button that opens the month of the period under it, and the next one beside it
  * when the period runs into it (on a wide screen), with a period of fixed length drawn on
  * them. Hovering (or moving the keyboard focus to) a day previews the period starting that day; a
  * click picks it. Escape, a click outside or a pick closes it. Styles: .calendar in components.css.
@@ -10,13 +10,17 @@ import { CHEVRON_BACK, CHEVRON_FORWARD } from "./icons";
 import { esc } from "./dom";
 
 export interface PeriodPicker {
-  /** First day of the period currently chosen (ISO date). */
+  /** First day of the period currently chosen (ISO date), or "" when none is yet. */
   start(): string;
+  /** Days before this one (ISO date) cannot be picked. */
+  min?(): string;
   /** Number of days in the period. */
   length(): number;
   /** Today, marked on the calendar. */
   today: string;
   onPick(date: string): void;
+  /** Name of the calendar for screen readers (default: pick the trip's first day). */
+  label?: string;
 }
 
 const monthOf = (iso: string) => `${iso.slice(0, 7)}-01`;
@@ -38,7 +42,9 @@ export function monthCells(first: string, weekStartsMonday: boolean): (string | 
 
 export function attachPeriodPicker(trigger: HTMLButtonElement, p: PeriodPicker, signal?: AbortSignal): void {
   let pop: HTMLElement | null = null;
-  let view = monthOf(p.start());
+  /** The day the calendar opens on: the chosen one, else the first allowed one, else today. */
+  const anchor = () => p.start() || (p.min?.() ?? "") || p.today;
+  let view = monthOf(anchor());
   const monday = lang !== "en";
 
   const close = (refocus = false) => {
@@ -52,6 +58,7 @@ export function attachPeriodPicker(trigger: HTMLButtonElement, p: PeriodPicker, 
   const mark = (from: string | null) => {
     if (!pop) return;
     const first = from ?? p.start();
+    if (!first) return;
     const last = addDays(first, p.length() - 1);
     pop.querySelectorAll<HTMLButtonElement>(".cal-day").forEach((b) => {
       const d = b.dataset.date!;
@@ -68,14 +75,14 @@ export function attachPeriodPicker(trigger: HTMLButtonElement, p: PeriodPicker, 
       `<span>${esc(capitalize(formatDate(first, { month: "long", year: "numeric" })))}</span>` +
       `${i === count - 1 ? `<button type="button" class="arrow-btn" data-step="1" aria-label="${esc(t.nextMonth)}">${CHEVRON_FORWARD}</button>` : "<span></span>"}</div>`;
     const cells = monthCells(first, monday).map((d) => (d
-      ? `<button type="button" class="cal-day${d === p.today ? " today" : ""}" data-date="${d}" tabindex="-1" aria-label="${esc(capitalize(formatDate(d, { weekday: "long", day: "numeric", month: "long", year: "numeric" })))}">${Number(d.slice(8))}</button>`
+      ? `<button type="button" class="cal-day${d === p.today ? " today" : ""}" data-date="${d}" tabindex="-1"${d < (p.min?.() ?? "") ? " disabled" : ""} aria-label="${esc(capitalize(formatDate(d, { weekday: "long", day: "numeric", month: "long", year: "numeric" })))}">${Number(d.slice(8))}</button>`
       : `<span></span>`)).join("");
     return `<div class="cal-month">${head}<div class="cal-grid">${names.map((n) => `<span class="cal-wd" aria-hidden="true">${esc(n)}</span>`).join("")}${cells}</div></div>`;
   };
 
   /** Two months only when the chosen period spans them and the screen is wide enough. */
   const shown = () => {
-    const spans = monthOf(p.start()) !== monthOf(addDays(p.start(), p.length() - 1));
+    const spans = monthOf(anchor()) !== monthOf(addDays(anchor(), p.length() - 1));
     return spans && matchMedia("(min-width: 640px)").matches ? 2 : 1;
   };
   const draw = (focusDate?: string) => {
@@ -83,20 +90,20 @@ export function attachPeriodPicker(trigger: HTMLButtonElement, p: PeriodPicker, 
     const n = shown();
     pop.innerHTML = `<div class="cal-months">${[...Array(n).keys()].map((i) => month(addMonths(view, i), i, n)).join("")}</div>`;
     mark(null);
-    const target = pop.querySelector<HTMLButtonElement>(`.cal-day[data-date="${focusDate ?? p.start()}"]`) ?? pop.querySelector<HTMLButtonElement>(".cal-day")!;
+    const target = pop.querySelector<HTMLButtonElement>(`.cal-day[data-date="${focusDate ?? anchor()}"]`) ?? pop.querySelector<HTMLButtonElement>(".cal-day:not(:disabled)") ?? pop.querySelector<HTMLButtonElement>(".cal-day")!;
     target.tabIndex = 0;
     if (focusDate) target.focus();
   };
 
   const open = () => {
-    view = monthOf(p.start());
+    view = monthOf(anchor());
     pop = document.createElement("div");
     pop.className = "calendar";
     pop.setAttribute("role", "dialog");
-    pop.setAttribute("aria-label", t.pickStart);
+    pop.setAttribute("aria-label", p.label ?? t.pickStart);
     trigger.after(pop);
     trigger.setAttribute("aria-expanded", "true");
-    draw(p.start());
+    draw(anchor());
 
     pop.addEventListener("click", (e) => {
       const el = (e.target as HTMLElement).closest<HTMLButtonElement>("button");
@@ -130,6 +137,7 @@ export function attachPeriodPicker(trigger: HTMLButtonElement, p: PeriodPicker, 
       if (!d || !step) return;
       e.preventDefault();
       const next = addDays(d, step);
+      if (next < (p.min?.() ?? "")) return;
       if (next < view || next >= addMonths(view, shown())) view = next < view ? monthOf(next) : addMonths(monthOf(next), 1 - shown());
       draw(next);
     });

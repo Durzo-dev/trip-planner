@@ -99,6 +99,9 @@ export const en = {
   /** First and last day of the trip, already formatted, and its number of days. */
   period: (from: string, to: string, n: number) => (n === 1 ? from : `${from} → ${to} · ${n} days`),
   pickStart: "Pick the trip's first day",
+  pickDate: "Pick a date",
+  hours: "Hours",
+  minutes: "Minutes",
   prevMonth: "Previous month",
   nextMonth: "Next month",
   moveTrip: "Move the trip",

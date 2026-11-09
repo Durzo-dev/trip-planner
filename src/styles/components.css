@@ -100,7 +100,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 fieldset.field > legend.lbl { padding: 0; margin-bottom: var(--space-1); }
 
 /* ---------- Date button and calendar (ui/calendar.ts) ----------
-   .picker         wraps the button; the calendar opens under it
+   .picker         wraps the field; the calendar (or the time list) opens under it
    .date-btn       a field that shows a date or a period and opens the calendar
    .calendar       one month, two when the period spans them; .cal-day.in = in the period, .first / .last its ends, .preview = while
                    hovering another start, .today */
@@ -123,6 +123,20 @@ fieldset.field > legend.lbl { padding: 0; margin-bottom: var(--space-1); }
 .cal-day.first, .cal-day.last { background: var(--accent); color: var(--white); font-weight: var(--weight-semibold); }
 .cal-day.preview.first, .cal-day.preview.last { background: var(--tint); color: var(--accent-ink); box-shadow: inset 0 0 0 2px var(--accent); }
 .cal-day:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.cal-day:disabled { color: var(--muted); opacity: .4; cursor: default; background: transparent; }
+.date-btn .placeholder { color: var(--muted); }
+.date-btn.invalid { border-color: var(--danger); }
+/* A date field needs room for "19 décembre 2026" */
+.field.narrow:has(.picker) { flex-basis: 210px; }
+
+/* ---------- Time field (ui/pickers.ts) ----------
+   .time-input     typed HH:MM; .timepop lists hours and minutes under it, .on = the current ones */
+.time-input { font-variant-numeric: tabular-nums; }
+.timepop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; display: flex; gap: var(--space-1); padding: var(--space-2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); }
+.time-col { display: grid; align-content: start; max-height: 224px; overflow-y: auto; scrollbar-width: thin; padding-right: 2px; }
+.time-col button { font: inherit; font-size: var(--text-md); font-variant-numeric: tabular-nums; padding: 6px 14px; color: var(--fg); background: transparent; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
+.time-col button:hover { background: var(--hover-shade); }
+.time-col button.on { background: var(--accent); color: var(--white); font-weight: var(--weight-semibold); }
 
 /* ---------- Segmented choice (radio buttons that look like one control) ---------- */
 .seg { display: flex; gap: var(--space-1); padding: var(--space-1); border-radius: var(--radius-lg); background: var(--tint); }

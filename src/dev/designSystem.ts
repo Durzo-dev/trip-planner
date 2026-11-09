@@ -13,6 +13,7 @@ import { DEFAULT_THEME, initTheme } from "../theme";
 import { mountSettingsButton } from "../ui/settings";
 import { CALENDAR, CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
 import { attachPeriodPicker } from "../ui/calendar";
+import { enhancePickers } from "../ui/pickers";
 import { enableLabelMarquee } from "../ui/marquee";
 import { LANG_CHANGE } from "../i18n";
 
@@ -54,7 +55,7 @@ function render(): void {
         <label class="field tiny"><span class="lbl">Start</span><input type="time" value="12:30"></label><label class="field narrow"><span class="lbl">Date</span><input type="date" value="2026-11-28"></label>
         <label class="field"><span class="lbl">Title</span><input value="Lunch"></label><label class="field narrow"><span class="lbl">Coordinates or Google Maps link</span><input placeholder="44.84, -0.57"></label></div>
         <label class="field"><span class="lbl">Style</span><select><option>Everyone</option></select></label><label class="field"><span class="lbl">Description</span><textarea>Grilled meat.</textarea></label>
-        <p class="hint">.hint text under a form.</p></div>`, ".form · .row · .field (.narrow, .tiny)")}
+        <p class="hint">.hint text under a form.</p></div>`, ".form · .row · .field (.narrow, .tiny) · date and time fields are drawn by ui/pickers.ts (calendar, list of hours)")}
     ${section("Segmented choice", `<div class="seg" style="max-width:340px"><label><input type="radio" name="ds-seg" checked><span>Auto</span></label><label><input type="radio" name="ds-seg"><span>Light</span></label><label><input type="radio" name="ds-seg"><span>Dark</span></label></div>`)}
     ${section("Messages", `<div class="form" style="max-width:520px"><p class="msg">Link sent. Open it on this device.</p><p class="msg bad">Saving failed. Check your connection.</p></div>`)}
     ${section("Dialog", `<dialog class="dialog ds-dialog" open><div class="dialog-body"><div class="dialog-head"><h2>Settings</h2><button class="dialog-close">✕</button></div>
@@ -64,6 +65,7 @@ function render(): void {
   const gear = document.getElementById("gear")!;
   mountSettingsButton(gear, "btn small settings-btn");
   mountSettingsButton(document.querySelector<HTMLElement>(".chips-demo")!);
+  enhancePickers(document.getElementById("ds")!);
   let start = "2026-12-19";
   attachPeriodPicker(document.querySelector<HTMLButtonElement>("#ds-period")!, { start: () => start, length: () => 14, today: "2026-12-10", onPick: (d) => (start = d) });
 }

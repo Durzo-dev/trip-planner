@@ -18,6 +18,7 @@ import { geocodeAddress } from "../geocode";
 import { enableLabelMarquee } from "../ui/marquee";
 import { enableDragScroll, enableScrollArrows } from "../ui/dragScroll";
 import { attachPeriodPicker } from "../ui/calendar";
+import { enhancePickers } from "../ui/pickers";
 import type { StoredTrip } from "../db";
 import { dataConfigured, loadDataSource, usingMock } from "../dataSource";
 import {
@@ -156,6 +157,7 @@ async function renderList(): Promise<void> {
         <div id="create-msg"></div>
       </form>
     </section>`;
+  enhancePickers(root, freshPickerListeners());
   const form = $<HTMLFormElement>("create");
   const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
   const first = input("first");
@@ -353,6 +355,14 @@ function readItemForm(form: HTMLFormElement, original: Item | null): Item {
   return item;
 }
 
+/** Listeners of the date and time fields (some sit on the document), removed before each redraw. */
+let pickerListeners: AbortController | null = null;
+function freshPickerListeners(): AbortSignal {
+  pickerListeners?.abort();
+  pickerListeners = new AbortController();
+  return pickerListeners.signal;
+}
+
 /** Listeners of the day strip, removed before each redraw. */
 let stripListeners: AbortController | null = null;
 
@@ -423,6 +433,7 @@ function renderEditor(ed: Editor): void {
   enableScrollArrows(strip, $<HTMLButtonElement>("strip-back"), $<HTMLButtonElement>("strip-forward"), ".strip-day", stripListeners.signal);
   strip.scrollLeft = stripLeft;
   strip.querySelector<HTMLElement>(".strip-day.on")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  enhancePickers(root, freshPickerListeners());
   wireEditor(ed);
   refreshSaveBar(ed);
 }
