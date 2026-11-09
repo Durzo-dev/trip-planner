@@ -1,0 +1,46 @@
+# Publishes a GitHub release when a version tag is pushed (git push --follow-tags).
+#
+# Only minor and major versions are tagged (by the post-commit hook, see docs/en/versioning.md): a
+# release per patch would tell nobody anything. The note comes from tools/release-notes.mjs: the
+# CHANGELOG.md section of the tag, else the commit subjects since the previous tag.
+#
+# The site itself is deployed by deploy.yml on every push to main; a release only describes a version.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Creating a release needs write access to contents, nothing more.
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Required: with the default single commit, git describe sees no earlier tag and every
+          # release would call itself the first one.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Write the release note
+        run: node tools/release-notes.mjs "${{ github.ref_name }}" > NOTE.md
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Publishing again (a tag pushed after a failed run) updates the note instead of failing.
+        # --verify-tag refuses to create a tag that does not exist on the server.
+        shell: bash
+        run: |
+          if gh release view "${{ github.ref_name }}" > /dev/null 2>&1; then
+            gh release edit "${{ github.ref_name }}" --notes-file NOTE.md
+          else
+            gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes-file NOTE.md --verify-tag
+          fi

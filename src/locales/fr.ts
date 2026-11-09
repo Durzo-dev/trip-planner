@@ -147,6 +147,7 @@ export const fr: Strings = {
   stateUnpublished: "Pas encore publiée",
   stateDraft: "Modifications non publiées",
   draftPreview: "Aperçu du brouillon",
+  version: (v) => `Version ${v}`,
   tripExists: "Une sortie avec ce titre et cette date existe déjà.",
   errors: {
     title: "La sortie doit avoir un titre.",

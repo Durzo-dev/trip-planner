@@ -34,6 +34,7 @@ function panel(): HTMLDialogElement {
       <div class="seg">${THEME_MODES.map((m) => `<label><input type="radio" name="theme" value="${m}"><span>${esc(modeLabel(m))}</span></label>`).join("")}</div>
     </fieldset>
     ${adminUrl ? `<fieldset><legend>${esc(t.organisation)}</legend><a class="btn fill" href="${esc(adminUrl)}">${esc(t.openAdmin)}</a></fieldset>` : ""}
+    <p class="dialog-foot">${esc(t.version(__APP_VERSION__))}</p>
   </form>`;
   document.body.append(dialog);
   dialog.querySelectorAll<HTMLInputElement>("input[name=lang]").forEach((r) =>

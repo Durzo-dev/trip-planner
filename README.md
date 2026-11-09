@@ -2,7 +2,7 @@
 
 > 🇫🇷 [Version française](README.fr.md)
 
-**Version 0.1.0**
+**Version 0.1.1**
 
 **Interactive trip plans for outings with friends**: a shareable page with the schedule, live weather, a map of the route, polls on activities and the progress of the day.
 
@@ -38,22 +38,24 @@ the illustrations off, switch to the multi-day example, or simulate the day to w
 ### Header
 - ⏳ **Countdown** to the trip
 - 👥 **Participants**: the list shows on hover
-- 🤝 **Meeting time**: hovering it highlights the activity, clicking scrolls to it
+- 🤝 **Meeting time** of the day (today's, else the next day's): hovering it highlights the activity, clicking scrolls to it
+- 🏷️ **Activity labels**: meeting point, optional, paid, book ahead, and a poll label that says whether you have answered
 
 ### Page
 - 🌤️ **Live weather** from [Open-Meteo](https://open-meteo.com), from 16 days before the date
 - 🎨 **Theme from three colours** (gradient start, gradient end, accent), with **light and dark modes**
-- ⚙️ **Settings** (gear next to the trip information): language, and appearance (auto, light, dark), remembered on the device; the page switches language in place, without reloading; the trip's organisers also find the way to its admin page there
+- ⚙️ **Settings** (gear next to the trip information): language, and appearance (auto, light, dark), remembered on the device; the page switches language in place, without reloading; the trip's organisers also find the way to its admin page there; the version shows at the bottom
 - 🌍 **English and French interface**: the language chosen in the settings, otherwise the browser language (English if it is neither)
 - 📱 **Phone and desktop**: one column on phones; on desktop the weather and the map stay put while the schedule scrolls
 
 ### Admin page (`admin.html`)
 - 🔐 **Sign in with an e-mail link**, no password (Google sign-in optional)
 - 🆕 **Create a trip**: title, first and last day, time zone; the days come with Morning / Afternoon / Evening
-- ✏️ **Add, edit and delete activities**: times, title, label, description, places (a Google Maps link, the Share one works, or coordinates; when the link holds no position, it is found from the address); each activity goes in the morning, afternoon or evening by its start time (noon and 6 pm)
+- ✏️ **Add, edit and delete activities**: times (typed or picked from a list), title, labels, description, places (a Google Maps link, the Share one works, or coordinates; when the link holds no position, it is found from the address); each activity goes in the morning, afternoon or evening by its start time (noon and 6 pm)
+- 🏷️ **Labels from a fixed set**, ticked: one meeting point per day (the earliest activity by default), and the activities before it become optional
 - 🗂️ **One day at a time**: a scrolling strip of the days to pick one, arrows on both sides to step through them
-- 📅 **Change the dates**: move the whole trip by a number of days, change one day's date, add or remove a day; the meeting point follows
-- 💾 **Safe saving**: nothing is saved while something is wrong (each problem is listed), and two organisers saving at once cannot overwrite each other
+- 📅 **Change the dates** in a calendar that shows the whole trip: pick its new first day, change one day's date, add or remove a day
+- 📝 **Draft, then publish**: every change is saved as you go into a draft shared by the organisers; participants see the changes once they are published from the bar at the bottom, which lists what must be fixed first; a new trip stays hidden from its guests until its first publication; two organisers working at once cannot overwrite each other
 - 🛡️ **Access enforced by the database**: only members see a stored trip, only its organisers edit it
 
 ---
@@ -116,12 +118,13 @@ Colours, text sizes, spacing, radii and shadows are tokens in `src/styles/tokens
 Reference page: [`/trip-planner/design-system.html`](http://localhost:5173/trip-planner/design-system.html).
 Details: [docs/en/design-system.md](docs/en/design-system.md).
 
-### Git hooks
+### Git hooks and versions
 ```bash
 npm run setup-hooks
 ```
-Installs a pre-commit hook that runs the type check and the tests before each commit (bypass:
-`git commit --no-verify`).
+Installs the git hooks: before each commit, the type check and the tests, then the patch number goes up;
+a minor or major version is tagged, and pushing the tag (`git push --follow-tags`) publishes a GitHub
+release with its [CHANGELOG](CHANGELOG.md) section. Details: [docs/en/versioning.md](docs/en/versioning.md).
 
 ### Build
 ```bash
@@ -145,8 +148,9 @@ trip-planner/
 ├── public/trips/           # Trip files, one JSON per trip
 ├── schema/                 # JSON schema of a trip
 ├── supabase/migrations/    # Database tables and access rules (row-level security), with their tests
-├── tools/                  # Git hook installer
-├── docs/en, docs/fr/       # Contributor notes, one folder per language (design system)
+├── tools/                  # Git hooks, version bump, release notes, with their tests
+├── docs/en, docs/fr/       # Contributor notes, one folder per language (design system, versions)
+├── CHANGELOG.md            # What each released version brings (CHANGELOG.fr.md in French)
 ├── src/
 │   ├── main.ts             # Entry point: loads the trip, wires the page
 │   ├── db.ts               # Supabase access (stored trips, sign-in)

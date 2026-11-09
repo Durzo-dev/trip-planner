@@ -7,6 +7,6 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-if (existsSync(join(ROOT, ".git")) && !process.env.CI && !existsSync(join(ROOT, ".git", "hooks", "pre-commit"))) {
-  console.log("\n  Git hooks are not installed: commits will not be checked.\n    npm run setup-hooks\n");
+if (existsSync(join(ROOT, ".git")) && !process.env.CI && !["pre-commit", "post-commit"].every((h) => existsSync(join(ROOT, ".git", "hooks", h)))) {
+  console.log("\n  Git hooks are not installed: commits will not be checked nor versioned.\n    npm run setup-hooks\n");
 }

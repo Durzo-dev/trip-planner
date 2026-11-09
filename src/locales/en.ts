@@ -149,6 +149,8 @@ export const en = {
   stateDraft: "Unpublished changes",
   /** Chip on the trip page when an organiser looks at the draft. */
   draftPreview: "Draft preview",
+  /** Foot of the settings dialog. */
+  version: (v: string) => `Version ${v}`,
   tripExists: "A trip with this title and date already exists.",
   errors: {
     title: "The trip needs a title.",

@@ -2,7 +2,7 @@
 
 > 🇬🇧 [English version](README.md)
 
-**Version 0.1.0**
+**Version 0.1.1**
 
 **Plannings interactifs pour les sorties entre amis** : une page à partager avec le programme, la météo en direct, le plan du trajet, des sondages sur les activités et l'avancement de la journée.
 
@@ -39,22 +39,24 @@ voir se dérouler heure par heure.
 ### Bandeau
 - ⏳ **Compte à rebours** jusqu'à la sortie
 - 👥 **Participants** : la liste s'affiche au survol
-- 🤝 **Heure de rendez-vous** : le survol met l'activité en surbrillance, le clic y fait défiler
+- 🤝 **Heure de rendez-vous** du jour (celui d'aujourd'hui, sinon du jour suivant) : le survol met l'activité en surbrillance, le clic y fait défiler
+- 🏷️ **Étiquettes des activités** : rendez-vous, optionnelle, payant, à réserver, et une étiquette de sondage qui dit si vous avez répondu
 
 ### Page
 - 🌤️ **Météo en direct** via [Open-Meteo](https://open-meteo.com), à partir de 16 jours avant la date
 - 🎨 **Thème à partir de trois couleurs** (début et fin du dégradé, accent), avec **modes clair et sombre**
-- ⚙️ **Réglages** (engrenage à côté des informations de la sortie) : langue, et apparence (auto, clair, sombre), mémorisées sur l'appareil ; la page change de langue sur place, sans se recharger ; les organisateurs de la sortie y trouvent aussi l'accès à sa page d'administration
+- ⚙️ **Réglages** (engrenage à côté des informations de la sortie) : langue, et apparence (auto, clair, sombre), mémorisées sur l'appareil ; la page change de langue sur place, sans se recharger ; les organisateurs de la sortie y trouvent aussi l'accès à sa page d'administration ; la version s'affiche en bas
 - 🌍 **Interface en anglais et en français** : la langue choisie dans les réglages, sinon celle du navigateur (anglais si ce n'est aucune des deux)
 - 📱 **Téléphone et ordinateur** : une colonne sur téléphone ; sur ordinateur, la météo et le plan restent fixes pendant que le programme défile
 
 ### Page d'administration (`admin.html`)
 - 🔐 **Connexion par lien envoyé par e-mail**, sans mot de passe (connexion Google en option)
 - 🆕 **Créer une sortie** : titre, premier et dernier jour, fuseau horaire ; chaque jour arrive avec Matin / Après-midi / Soirée
-- ✏️ **Ajouter, modifier et supprimer des activités** : horaires, titre, étiquette, description, lieux (un lien Google Maps, celui de « Partager » fonctionne, ou des coordonnées ; quand le lien ne contient pas la position, elle est trouvée à partir de l'adresse) ; chaque activité se range dans le matin, l'après-midi ou la soirée selon son heure de début (midi et 18 h)
+- ✏️ **Ajouter, modifier et supprimer des activités** : horaires (tapés ou choisis dans une liste), titre, étiquettes, description, lieux (un lien Google Maps, celui de « Partager » fonctionne, ou des coordonnées ; quand le lien ne contient pas la position, elle est trouvée à partir de l'adresse) ; chaque activité se range dans le matin, l'après-midi ou la soirée selon son heure de début (midi et 18 h)
+- 🏷️ **Étiquettes choisies dans une liste fixe**, à cocher : un rendez-vous par jour (la première activité par défaut), et les activités d'avant deviennent optionnelles
 - 🗂️ **Un jour à la fois** : une barre défilante des jours pour en choisir un, des flèches de chaque côté pour passer de l'un à l'autre
-- 📅 **Changer les dates** : décaler toute la sortie de quelques jours, changer la date d'un jour, ajouter ou retirer un jour ; le rendez-vous suit
-- 💾 **Enregistrement sûr** : rien n'est enregistré tant qu'il reste un problème (chacun est listé), et deux organisateurs qui enregistrent en même temps ne s'écrasent pas
+- 📅 **Changer les dates** dans un calendrier qui montre toute la sortie : choisir son nouveau premier jour, changer la date d'un jour, ajouter ou retirer un jour
+- 📝 **Brouillon, puis publication** : chaque modification est enregistrée au fil de l'eau dans un brouillon partagé par les organisateurs ; les participants voient les changements une fois publiés depuis le bandeau du bas, qui liste ce qu'il faut corriger avant ; une nouvelle sortie reste cachée à ses invités jusqu'à sa première publication ; deux organisateurs qui travaillent en même temps ne s'écrasent pas
 - 🛡️ **Accès contrôlé par la base** : seuls les membres voient une sortie enregistrée, seuls ses organisateurs la modifient
 
 ---
@@ -119,12 +121,14 @@ Les tests refusent les valeurs brutes ailleurs.
 Page de référence : [`/trip-planner/design-system.html`](http://localhost:5173/trip-planner/design-system.html).
 Détails : [docs/fr/design-system.md](docs/fr/design-system.md).
 
-### Hooks git
+### Hooks git et versions
 ```bash
 npm run setup-hooks
 ```
-Installe un hook de pre-commit qui lance la vérification de types et les tests avant chaque commit
-(contourner : `git commit --no-verify`).
+Installe les hooks git : avant chaque commit, la vérification de types et les tests, puis le numéro de
+correctif monte ; une version mineure ou majeure reçoit un tag, et l'envoi du tag (`git push --follow-tags`)
+publie une release GitHub avec sa section du [CHANGELOG](CHANGELOG.fr.md). Détails :
+[docs/fr/versioning.md](docs/fr/versioning.md).
 
 ### Compiler
 ```bash
@@ -148,8 +152,9 @@ trip-planner/
 ├── public/trips/           # Fichiers des sorties, un JSON par sortie
 ├── schema/                 # Schéma JSON d'une sortie
 ├── supabase/migrations/    # Tables et règles d'accès de la base (sécurité par ligne), avec leurs tests
-├── tools/                  # Installation du hook git
-├── docs/en, docs/fr/       # Notes de contributeur, un dossier par langue (design system)
+├── tools/                  # Hooks git, incrément de version, notes de release, avec leurs tests
+├── docs/en, docs/fr/       # Notes de contributeur, un dossier par langue (design system, versions)
+├── CHANGELOG.md            # Ce qu'apporte chaque version publiée (CHANGELOG.fr.md en français)
 ├── src/
 │   ├── main.ts             # Point d'entrée : charge la sortie, assemble la page
 │   ├── db.ts               # Accès à Supabase (sorties enregistrées, connexion)

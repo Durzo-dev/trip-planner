@@ -1,6 +1,6 @@
 {
   "name": "trip-planner",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "license": "CC-BY-NC-SA-4.0",
   "description": "Interactive, shareable trip plans for outings and holidays with friends: schedule, weather, map, polls.",
@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "setup-hooks": "node tools/setup-hooks.mjs",
+    "bump": "node tools/bump-version.mjs",
     "postinstall": "node tools/check-hooks.mjs"
   },
   "devDependencies": {
