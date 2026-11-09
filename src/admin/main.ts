@@ -3,6 +3,7 @@
  * dates, days, activities, meeting point). Edits stay in a draft until "Save"; the draft is checked by
  * validateTrip and saved over the version that was loaded, so two organisers cannot overwrite each other.
  */
+import { CHEVRON_BACK, CHEVRON_FORWARD } from "../ui/icons";
 import "../styles/tokens.css";
 import "../styles/components.css";
 import "./admin.css";
@@ -301,13 +302,13 @@ function renderEditor(ed: Editor): void {
       </div>
     </section>
     <nav class="day-strip" aria-label="${esc(t.days)}">
-      <button type="button" class="arrow-btn" id="strip-back" aria-label="${esc(t.scrollBack)}" hidden>‹</button>
+      <button type="button" class="arrow-btn" id="strip-back" aria-label="${esc(t.scrollBack)}" hidden>${CHEVRON_BACK}</button>
       <div class="strip" id="strip">${trip.days.map((d, i) => `<button type="button" class="strip-day${i === ed.day ? " on" : ""}" data-day-pick="${i}" aria-current="${i === ed.day ? "date" : "false"}">${esc(capitalize(formatDate(d.date, { weekday: "short", day: "numeric", month: "short" })))}${d.label ? `<small>${esc(d.label)}</small>` : ""}</button>`).join("")}
         <button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button></div>
-      <button type="button" class="arrow-btn" id="strip-forward" aria-label="${esc(t.scrollForward)}" hidden>›</button>
+      <button type="button" class="arrow-btn" id="strip-forward" aria-label="${esc(t.scrollForward)}" hidden>${CHEVRON_FORWARD}</button>
     </nav>
     <div class="day-view">
-      <button type="button" class="arrow-btn lg" id="day-prev" aria-label="${esc(t.previousDay)}" title="${esc(t.previousDay)}"${ed.day === 0 ? " disabled" : ""}>‹</button>
+      <button type="button" class="arrow-btn lg" id="day-prev" aria-label="${esc(t.previousDay)}" title="${esc(t.previousDay)}"${ed.day === 0 ? " disabled" : ""}>${CHEVRON_BACK}</button>
       ${((d: Day, di: number) => `<section class="panel day" data-day="${di}" aria-labelledby="day-h">
       <h2 id="day-h">${esc(dayTitle(d.date))}</h2>
       <div class="row">
@@ -334,7 +335,7 @@ function renderEditor(ed: Editor): void {
         <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
       </div>
     </section>`)(trip.days[ed.day], ed.day)}
-      <button type="button" class="arrow-btn lg" id="day-next" aria-label="${esc(t.nextDay)}" title="${esc(t.nextDay)}"${ed.day === trip.days.length - 1 ? " disabled" : ""}>›</button>
+      <button type="button" class="arrow-btn lg" id="day-next" aria-label="${esc(t.nextDay)}" title="${esc(t.nextDay)}"${ed.day === trip.days.length - 1 ? " disabled" : ""}>${CHEVRON_FORWARD}</button>
     </div>
     <div class="save-bar"><div class="wrap">
       <div class="status" id="save-status"></div>

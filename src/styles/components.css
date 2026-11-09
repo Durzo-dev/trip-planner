@@ -102,12 +102,17 @@ dialog.dialog::backdrop { background: var(--backdrop); }
 .tag.vote { background: transparent; color: var(--accent-ink); border: 1px solid var(--accent); }
 .tag.tie { background: transparent; color: var(--muted); border: 1px solid var(--line); }
 
-/* ---------- Round arrow button (scrolls a strip, goes to the previous or next item) ----------
+/* ---------- Arrow button (scrolls a strip, goes to the previous or next item) ----------
+   Only the chevron shows; hovering or pressing reveals the clickable area, a shade darker than
+   whatever is behind it.
    .arrow-btn.lg   larger, beside a panel */
-.arrow-btn { flex: none; align-self: center; width: 28px; height: 28px; display: grid; place-items: center; font: inherit; font-size: var(--text-2xl); line-height: 1; color: var(--accent-ink); background: var(--tint); border: 0; border-radius: var(--radius-round); cursor: pointer; padding: 0 0 2px; }
-.arrow-btn:hover { background: var(--fill); }
-.arrow-btn:disabled { opacity: .35; cursor: default; background: var(--tint); }
-.arrow-btn.lg { width: 36px; height: 36px; font-size: var(--text-3xl); }
+.arrow-btn { flex: none; align-self: center; width: 32px; height: 32px; display: grid; place-items: center; color: var(--accent-ink); background: transparent; border: 0; border-radius: var(--radius-md); cursor: pointer; padding: 0; transition: background .12s; }
+.arrow-btn svg { width: 20px; height: 20px; display: block; }
+.arrow-btn:hover { background: var(--hover-shade); }
+.arrow-btn:active { background: var(--press-shade); }
+.arrow-btn:disabled { opacity: .3; cursor: default; background: transparent; }
+.arrow-btn.lg { width: 44px; height: 72px; border-radius: var(--radius-lg); }
+.arrow-btn.lg svg { width: 30px; height: 30px; }
 
 /* ---------- Gear button (opens the settings dialog) ---------- */
 .settings-btn { display: inline-flex; align-items: center; justify-content: center; padding: var(--space-1) var(--space-2); line-height: 0; }

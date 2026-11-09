@@ -3,6 +3,7 @@
  * (selected day, votes, live progress). ?now= freezes the clock to preview a day; on example trips the
  * test bar can simulate the clock too.
  */
+import { CHEVRON_BACK, CHEVRON_FORWARD } from "./ui/icons";
 import "./styles/tokens.css";
 import "./styles/components.css";
 import "./styles.css";
@@ -38,9 +39,9 @@ const shell = () => `
   </div>
 </header>
 <nav class="tabs"><div class="wrap tabs-row">
-  <button type="button" class="arrow-btn" id="tabs-back" aria-label="${esc(t.scrollBack)}" title="${esc(t.scrollBack)}" hidden>‹</button>
+  <button type="button" class="arrow-btn" id="tabs-back" aria-label="${esc(t.scrollBack)}" title="${esc(t.scrollBack)}" hidden>${CHEVRON_BACK}</button>
   <div class="tab-list" id="tabs" role="tablist"></div>
-  <button type="button" class="arrow-btn" id="tabs-forward" aria-label="${esc(t.scrollForward)}" title="${esc(t.scrollForward)}" hidden>›</button>
+  <button type="button" class="arrow-btn" id="tabs-forward" aria-label="${esc(t.scrollForward)}" title="${esc(t.scrollForward)}" hidden>${CHEVRON_FORWARD}</button>
 </div></nav>
 <main class="wrap main">
   <aside class="side">

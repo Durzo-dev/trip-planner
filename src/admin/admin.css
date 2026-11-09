@@ -33,9 +33,8 @@
 .strip-day:hover { color: var(--fg); }
 .strip-day.on { color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); font-weight: var(--weight-semibold); }
 .strip #add-day { flex: none; }
-.day-view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3); align-items: start; }
-.day-view > .arrow-btn { position: sticky; top: 40vh; margin-top: var(--space-6); }
-@media (max-width: 560px) { .day-view { gap: var(--space-1); } .day-view > .arrow-btn.lg { width: 28px; height: 28px; font-size: var(--text-2xl); } }
+.day-view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; }
+@media (max-width: 560px) { .day-view { gap: 0; } .day-view > .arrow-btn.lg { width: 32px; height: 56px; } .day-view > .arrow-btn.lg svg { width: 24px; height: 24px; } }
 /* Same space above the buttons as the panel keeps below them: they sit centred under the line */
 .day-foot { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .section-h { margin: 6px 0 0; font-size: var(--text-sm); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
