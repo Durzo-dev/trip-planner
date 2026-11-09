@@ -105,7 +105,10 @@ export const fr: Strings = {
   end: "Fin",
   activityTitle: "Activité",
   labels: "Étiquettes",
-  labelsHint: "Un rendez-vous par jour : le cocher ici le retire de l'autre activité, et les activités d'avant deviennent optionnelles.",
+  labelHelp: {
+    meeting: "Un seul rendez-vous par jour : le cocher ici le retire de l'autre activité, et les activités d'avant deviennent optionnelles.",
+    optional: "Les activités avant le rendez-vous sont toujours optionnelles. Une activité optionnelle ne peut pas être le rendez-vous.",
+  },
   description: "Description",
   addressLine: "Adresse affichée",
   places: "Lieux",

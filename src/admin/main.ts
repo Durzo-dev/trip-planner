@@ -292,8 +292,11 @@ function itemForm(it: Item | null): string {
       <label class="field"><span class="lbl">${esc(t.activityTitle)}</span><input name="title" required value="${v(it?.title)}"></label>
     </div>
     <fieldset class="field picks-field"><legend class="lbl">${esc(t.labels)}</legend>
-      <div class="picks">${LABELS.map((l) => `<label class="pick"><input type="checkbox" name="labels" value="${l}"${it && hasLabel(it, l) ? " checked" : ""}><span>${esc(t.label[l])}</span></label>`).join("")}${it?.poll ? `<span class="pick fixed"><span>${esc(t.label.poll)}</span></span>` : ""}</div>
-      <span class="hint">${esc(t.labelsHint)}</span>
+      <div class="picks">${LABELS.map((l) => {
+        const help = l === "meeting" || l === "optional" ? t.labelHelp[l] : "";
+        return `<label class="pick"><input type="checkbox" name="labels" value="${l}"${it && hasLabel(it, l) ? " checked" : ""}${help ? ` aria-describedby="help-${l}"` : ""}><span>${esc(t.label[l])}</span>` +
+          `${help ? `<span class="tip" role="tooltip" id="help-${l}">${esc(help)}</span>` : ""}</label>`;
+      }).join("")}${it?.poll ? `<span class="pick fixed"><span>${esc(t.label.poll)}</span></span>` : ""}</div>
     </fieldset>
     <label class="field"><span class="lbl">${esc(t.description)}</span><textarea name="text">${v(it?.text)}</textarea></label>
     <label class="field"><span class="lbl">${esc(t.addressLine)}</span><input name="addressLine" value="${v(it?.addressLine)}"></label>

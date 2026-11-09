@@ -80,20 +80,24 @@ button.chip:hover, button.chip:focus-visible { filter: brightness(1.12); text-de
 
 /* ---------- Pick (a checkbox that looks like a chip; several can be on) ----------
    .picks          the row of picks
-   .pick.fixed     shown but not choosable (set by the app, e.g. the poll label) */
-.picks { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+   .pick.fixed     shown but not choosable (set by the app, e.g. the poll label)
+   .pick .tip      tooltip explaining the pick's rule */
+.picks { display: flex; flex-wrap: wrap; gap: var(--space-2); position: relative; z-index: 2; } /* above the fields below, for the tooltips */
 .pick { position: relative; display: inline-flex; }
 .pick input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.pick > span { display: block; font-size: var(--text-sm); font-weight: var(--weight-medium); padding: var(--space-1) 12px; border-radius: var(--radius-pill); border: 1.5px solid var(--line); color: var(--muted); }
+.pick > span:not(.tip) { display: block; font-size: var(--text-sm); font-weight: var(--weight-medium); padding: var(--space-1) 12px; border-radius: var(--radius-pill); border: 1.5px solid var(--line); color: var(--muted); }
 .pick input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--white); }
 .pick input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
 .pick input:disabled { cursor: default; }
 .pick input:disabled + span { opacity: .5; }
 .pick input:checked:disabled + span { opacity: 1; }
 .pick.fixed > span { border-style: dashed; }
+/* Explains a pick's rule on hover or keyboard focus, below it (also when the pick is disabled) */
+.pick .tip { top: calc(100% + 8px); left: 0; width: max-content; max-width: 280px; transform: translateY(-4px); }
+.pick .tip::before { bottom: 100%; border-bottom-color: var(--fg); }
+.pick:hover .tip, .pick:focus-within .tip { opacity: 1; transform: none; }
 fieldset.field { border: 0; margin: 0; padding: 0; }
 fieldset.field > legend.lbl { padding: 0; margin-bottom: var(--space-1); }
-fieldset.field .hint { font-size: var(--text-sm); font-weight: var(--weight-regular); }
 
 /* ---------- Segmented choice (radio buttons that look like one control) ---------- */
 .seg { display: flex; gap: var(--space-1); padding: var(--space-1); border-radius: var(--radius-lg); background: var(--tint); }

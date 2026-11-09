@@ -103,7 +103,11 @@ export const en = {
   end: "End",
   activityTitle: "Activity",
   labels: "Labels",
-  labelsHint: "One meeting point per day: ticking it here takes it off the other activity, and the activities before it become optional.",
+  /** Tooltips of the labels that follow rules. */
+  labelHelp: {
+    meeting: "One meeting point per day: ticking it here takes it off the other activity, and the activities before it become optional.",
+    optional: "Activities before the meeting point are always optional. An optional activity cannot be the meeting point.",
+  },
   description: "Description",
   addressLine: "Address shown",
   places: "Places",
