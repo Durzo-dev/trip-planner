@@ -291,7 +291,7 @@ function renderEditor(ed: Editor): void {
   const stripLeft = document.getElementById("strip")?.scrollLeft ?? 0;
   stripListeners?.abort();
   root.innerHTML = `
-    <div class="row" style="justify-content:space-between"><a class="link-btn" href="${here()}">← ${esc(t.myTrips)}</a><a class="btn" href="${viewerUrl(trip.id)}" target="_blank" rel="noopener">${esc(t.open)} ↗</a></div>
+    <div class="row" style="justify-content:space-between"><a class="btn back" href="${here()}">${CHEVRON_BACK}${esc(t.myTrips)}</a><a class="btn" href="${viewerUrl(trip.id)}" target="_blank" rel="noopener">${esc(t.open)} ↗</a></div>
     <section class="panel form">
       <label class="field">${esc(t.tripTitle)}<input id="f-title" value="${esc(trip.title)}" maxlength="80"></label>
       <label class="field">${esc(t.tagline)}<input id="f-tagline" value="${esc(trip.tagline ?? "")}"></label>
@@ -304,7 +304,7 @@ function renderEditor(ed: Editor): void {
     <nav class="day-strip" aria-label="${esc(t.days)}">
       <button type="button" class="arrow-btn" id="strip-back" aria-label="${esc(t.scrollBack)}" hidden>${CHEVRON_BACK}</button>
       <div class="strip" id="strip">${trip.days.map((d, i) => `<button type="button" class="strip-day${i === ed.day ? " on" : ""}" data-day-pick="${i}" aria-current="${i === ed.day ? "date" : "false"}">${esc(capitalize(formatDate(d.date, { weekday: "short", day: "numeric", month: "short" })))}${d.label ? `<small>${esc(d.label)}</small>` : ""}</button>`).join("")}
-        <button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button></div>
+</div>
       <button type="button" class="arrow-btn" id="strip-forward" aria-label="${esc(t.scrollForward)}" hidden>${CHEVRON_FORWARD}</button>
     </nav>
     <div class="day-view">
@@ -331,6 +331,8 @@ function renderEditor(ed: Editor): void {
       </div>`).join("")}
       ${ed.open && ed.open[0] === di && ed.open[1] === -1 ? itemForm(null) : ""}
       <div class="day-foot">
+        <button type="button" class="btn small add" id="add-day">+ ${esc(t.addDay)}</button>
+        <span class="day-foot-gap"></span>
         <button type="button" class="btn small add" data-add="${di}">+ ${esc(t.addActivity)}</button>
         <button type="button" class="btn small danger" data-remove-day="${di}"${trip.days.length < 2 ? " disabled" : ""}>${esc(t.removeDay)}</button>
       </div>
@@ -346,7 +348,7 @@ function renderEditor(ed: Editor): void {
   const strip = $("strip");
   stripListeners = new AbortController();
   enableDragScroll(strip, stripListeners.signal);
-  enableScrollArrows(strip, $<HTMLButtonElement>("strip-back"), $<HTMLButtonElement>("strip-forward"), ".strip-day, #add-day", stripListeners.signal);
+  enableScrollArrows(strip, $<HTMLButtonElement>("strip-back"), $<HTMLButtonElement>("strip-forward"), ".strip-day", stripListeners.signal);
   strip.scrollLeft = stripLeft;
   strip.querySelector<HTMLElement>(".strip-day.on")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   wireEditor(ed);
@@ -494,7 +496,7 @@ async function openEditor(id: string): Promise<void> {
   const { loadStoredTrip } = await dbModule();
   const stored = await loadStoredTrip(id);
   if (!stored || (stored.role !== "owner" && stored.role !== "organiser")) {
-    redraw = () => (root.innerHTML = `<p class="error">${esc(t.loadError)}</p><p><a class="link-btn" href="${here()}">← ${esc(t.myTrips)}</a></p>`);
+    redraw = () => (root.innerHTML = `<p class="error">${esc(t.loadError)}</p><p><a class="btn back" href="${here()}">${CHEVRON_BACK}${esc(t.myTrips)}</a></p>`);
     redraw();
     return;
   }

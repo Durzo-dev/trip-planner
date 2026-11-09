@@ -32,12 +32,12 @@
 .strip-day small { font-size: var(--text-xs); font-weight: var(--weight-regular); }
 .strip-day:hover { color: var(--fg); }
 .strip-day.on { color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); font-weight: var(--weight-semibold); }
-.strip #add-day { flex: none; }
 .day-view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; }
 @media (max-width: 560px) { .day-view { gap: 0; } .day-view > .arrow-btn.lg { width: 32px; height: 56px; } .day-view > .arrow-btn.lg svg { width: 24px; height: 24px; } }
 /* Same space above the buttons as the panel keeps below them: they sit centred under the line */
-.day-foot { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
-.section-h { margin: 6px 0 0; font-size: var(--text-sm); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+.day-foot { display: flex; justify-content: flex-start; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--line); }
+.day-foot-gap { flex: 1; }
+.section-h { margin: 6px 0 var(--space-2); font-size: var(--text-sm); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
 .items { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg); flex-wrap: wrap; }
 .item .when { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 92px; color: var(--accent-ink); }

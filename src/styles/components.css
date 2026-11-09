@@ -34,6 +34,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-
 .btn.edit.fill { background: var(--edit); color: var(--on-action); }
 .btn.danger.fill, .btn.danger[data-armed] { background: var(--danger); color: var(--on-action); }
 .btn.small { padding: var(--space-1) 10px; font-size: var(--text-sm); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn.back { padding-left: 10px; }
 .link-btn { font: inherit; font-size: var(--text-md); color: var(--accent-ink); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 
 /* ---------- Chip (on the banner) ----------
